@@ -4,14 +4,15 @@
 import { auth, db } from '../firebase-config.js';
 import { getDocument } from '../database.js';
 // CORRECTED: This line now uses a valid module specifier for the Firestore library.
-import { collection, query, where, onSnapshot, limit } from "[https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js](https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js)";
+import { collection, query, where, onSnapshot, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-let currentUserId = null;
 let currentUser = null;
 
 export async function init(user) {
-    if (!user || !user.uid) return;
-    currentUserId = user.uid;
+    if (!user || !user.uid) {
+        console.error("Dashboard Error: User not authenticated.");
+        return;
+    }
     currentUser = user;
     console.log("Dynamic Dashboard module initialized.");
 
@@ -37,194 +38,114 @@ async function renderDashboard(style) {
     container.innerHTML = `<p class="text-center text-slate-500 py-10">Loading your dashboard...</p>`;
 
     if (style === 'default') {
-        renderDefaultDashboard();
+        container.innerHTML = await getDefaultDashboardHTML();
     } else if (style === 'kids') {
-        renderKidsDashboard();
+        container.innerHTML = getKidsDashboardHTML();
+    }
+    
+    // After rendering, if there are notifications, attach handlers
+    if (style === 'default') {
+        listenForNotifications();
     }
 }
 
-// --- DEFAULT DASHBOARD ---
-
-async function renderDefaultDashboard() {
-    const container = document.getElementById('dashboard-container');
-    
-    // Fetch all necessary data in parallel
-    const [lifeCvData, personalFinanceData, businessFinanceData, notifications] = await Promise.all([
-        getDocument(`users/${currentUserId}/lifecv/main`),
+async function getDefaultDashboardHTML() {
+    // Fetch dynamic data in parallel
+    const [lifeCvData, personalFinance, businessFinance] = await Promise.all([
+        getDocument('users', currentUser.uid),
         getPersonalFinanceSummary(),
-        getBusinessFinanceSummary(),
-        getNotifications()
+        getBusinessFinanceSummary()
     ]);
 
-    const profileStrength = calculateProfileStrength(lifeCvData);
+    const lifeCvStrength = calculateLifeCvStrength(lifeCvData ? lifeCvData.lifeCv : {});
 
-    container.innerHTML = `
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Left Column -->
-            <div class="lg:col-span-2 space-y-6">
-                ${renderProfileStrengthWidget(profileStrength)}
-                ${renderFinanceSummaryWidget(personalFinanceData, businessFinanceData)}
-                ${renderNextStepsWidget(profileStrength)}
-            </div>
-            <!-- Right Column -->
-            <div class="lg:col-span-1 space-y-6">
-                ${renderNotificationsWidget(notifications)}
-                ${renderActivityWidget()}
-            </div>
-        </div>
-    `;
-}
-
-function calculateProfileStrength(cv) {
-    let score = 0;
-    let total = 7; // Total number of checks
-    let suggestions = [];
-
-    if (cv?.summary?.headline) score++; else suggestions.push({ text: "Add a powerful headline to your Profile Summary.", link: "./life-cv.html" });
-    if (cv?.experience && Object.keys(cv.experience).length >= 2) score++; else suggestions.push({ text: "Document at least two roles in your Professional Experience.", link: "./life-cv.html" });
-    if (cv?.education && Object.keys(cv.education).length >= 1) score++; else suggestions.push({ text: "Add your key qualifications to the Education section.", link: "./life-cv.html" });
-    if (cv?.skills && Object.keys(cv.skills).length >= 5) score++; else suggestions.push({ text: "List at least 5 key Skills & Competencies.", link: "./life-cv.html" });
-    if (cv?.projects && Object.keys(cv.projects).length >= 1) score++; else suggestions.push({ text: "Showcase a key project in your Portfolio.", link: "./life-cv.html" });
-    
-    // Check for HRHelp PDP
-    // This is a placeholder for a real check
-    score++; 
-    
-    // Check for recent training
-    // This is a placeholder for a real check
-    score++;
-
-    const percentage = Math.round((score / total) * 100);
-    let readiness = {};
-    if (percentage > 80) readiness = { job: 'High', sync: 'High', business: 'Ready' };
-    else if (percentage > 50) readiness = { job: 'Medium', sync: 'Medium', business: 'Consider' };
-    else readiness = { job: 'Low', sync: 'Low', business: 'Planning' };
-
-    return { percentage, readiness, suggestions };
-}
-
-// --- WIDGET RENDERING FUNCTIONS ---
-
-function renderProfileStrengthWidget({ percentage, readiness }) {
     return `
-        <div class="dashboard-card bg-white p-6 rounded-lg shadow-sm">
-            <h3 class="font-bold text-lg text-slate-800">LifeCV Strength</h3>
-            <div class="flex items-center gap-4 mt-4">
-                <div class="relative w-24 h-24">
-                    <svg class="w-full h-full" viewBox="0 0 36 36"><path class="text-slate-200" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3"></path><path class="text-indigo-600" stroke-dasharray="${percentage}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path></svg>
-                    <div class="absolute inset-0 flex items-center justify-center text-2xl font-bold text-slate-800">${percentage}%</div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- LifeCV Strength -->
+            <div class="dashboard-card bg-white p-6 rounded-lg shadow-sm col-span-1 md:col-span-2 lg:col-span-2">
+                <h3 class="font-bold text-slate-800 text-lg">LifeCV Strength</h3>
+                <p class="text-sm text-slate-500 mb-4">A measure of your profile's completeness.</p>
+                <div class="w-full bg-slate-200 rounded-full h-2.5">
+                    <div class="bg-indigo-600 h-2.5 rounded-full" style="width: ${lifeCvStrength}%"></div>
                 </div>
-                <div class="flex-1 grid grid-cols-3 gap-2 text-center">
-                    <div><p class="text-sm text-slate-500">Job Readiness</p><span class="font-bold text-green-600">${readiness.job}</span></div>
-                    <div><p class="text-sm text-slate-500">Business Readiness</p><span class="font-bold text-blue-600">${readiness.business}</span></div>
-                    <div><p class="text-sm text-slate-500">LifeSync Readiness</p><span class="font-bold text-pink-600">${readiness.sync}</span></div>
+                <div class="flex justify-between items-center mt-2">
+                    <span class="text-2xl font-bold text-indigo-600">${lifeCvStrength}%</span>
+                    <a href="./life-cv.html" class="text-sm font-semibold text-indigo-600 hover:underline">Improve Profile</a>
                 </div>
             </div>
-        </div>
-    `;
-}
 
-function renderFinanceSummaryWidget(personal, business) {
-    return `
-        <div class="dashboard-card bg-white p-6 rounded-lg shadow-sm">
-            <h3 class="font-bold text-lg text-slate-800">Financial Snapshot</h3>
-            <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="bg-slate-50 p-4 rounded-md">
-                    <p class="text-sm font-semibold text-slate-600">Personal Finances</p>
-                    <p class="text-2xl font-bold text-green-600 mt-2">R ${personal.net.toLocaleString()}</p>
-                    <p class="text-xs text-slate-500">Net Position (This Month)</p>
+            <!-- Personal Finance -->
+            <div class="dashboard-card bg-white p-6 rounded-lg shadow-sm">
+                <h3 class="font-bold text-slate-800 text-lg">Personal Net Worth</h3>
+                <p class="text-sm text-slate-500 mb-4">A snapshot of your finances.</p>
+                <p class="text-3xl font-bold text-green-600">R ${personalFinance.net.toFixed(2)}</p>
+            </div>
+
+            <!-- Business Finance -->
+            <div class="dashboard-card bg-white p-6 rounded-lg shadow-sm">
+                <h3 class="font-bold text-slate-800 text-lg">Business Profit</h3>
+                 <p class="text-sm text-slate-500 mb-4">Your current business health.</p>
+                <p class="text-3xl font-bold text-blue-600">R ${businessFinance.profit.toFixed(2)}</p>
+            </div>
+
+            <!-- Notifications -->
+            <div id="notifications-widget" class="dashboard-card bg-white p-6 rounded-lg shadow-sm col-span-1 md:col-span-2">
+                <h3 class="font-bold text-slate-800 text-lg mb-3">Notifications</h3>
+                <div id="notifications-list" class="space-y-3">
+                    <p class="text-slate-500 text-sm">No new notifications.</p>
                 </div>
-                <div class="bg-slate-50 p-4 rounded-md">
-                    <p class="text-sm font-semibold text-slate-600">Business Finances</p>
-                    <p class="text-2xl font-bold text-blue-600 mt-2">R ${business.profit.toLocaleString()}</p>
-                    <p class="text-xs text-slate-500">Profit (This Month)</p>
-                </div>
+            </div>
+
+            <!-- Suggested Actions -->
+            <div class="dashboard-card bg-white p-6 rounded-lg shadow-sm col-span-1 md:col-span-2">
+                <h3 class="font-bold text-slate-800 text-lg mb-3">Suggested Actions</h3>
+                <ul class="space-y-3 list-disc list-inside text-slate-600">
+                    <li><a href="./finhelp.html" class="hover:underline text-indigo-600 font-medium">Create your first business invoice.</a></li>
+                    <li><a href="./family-hub.html" class="hover:underline text-indigo-600 font-medium">Invite your partner to LifeSync.</a></li>
+                    <li><a href="./publications.html" class="hover:underline text-indigo-600 font-medium">Read the latest CommsHub announcement.</a></li>
+                </ul>
             </div>
         </div>
     `;
 }
 
-function renderNextStepsWidget({ suggestions }) {
-    if (suggestions.length === 0) return '';
+function getKidsDashboardHTML() {
     return `
-        <div class="dashboard-card bg-white p-6 rounded-lg shadow-sm">
-            <h3 class="font-bold text-lg text-slate-800">Suggested Next Steps</h3>
-            <div class="mt-4 space-y-3">
-                ${suggestions.slice(0, 2).map(s => `
-                    <a href="${s.link}" class="flex items-center justify-between p-3 bg-indigo-50 hover:bg-indigo-100 rounded-md">
-                        <span class="text-sm text-indigo-800">${s.text}</span>
-                        <i class="fas fa-arrow-right text-indigo-600"></i>
-                    </a>
-                `).join('')}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Welcome Card -->
+            <div class="dashboard-card bg-yellow-100 p-8 rounded-xl border-4 border-yellow-300 text-center">
+                <h2 class="text-3xl font-bold text-yellow-800">Hi Explorer!</h2>
+                <p class="text-yellow-700 mt-2">Ready for an adventure in your digital world?</p>
             </div>
-        </div>
-    `;
-}
 
-function renderNotificationsWidget(notifications) {
-    return `
-        <div class="dashboard-card bg-white p-6 rounded-lg shadow-sm">
-            <h3 class="font-bold text-lg text-slate-800">Notifications</h3>
-            <div class="mt-4 space-y-3">
-                ${notifications.length > 0 ? notifications.map(n => `
-                    <div class="flex items-start gap-3">
-                        <div class="mt-1"><i class="fas ${n.icon} text-blue-500"></i></div>
-                        <div>
-                            <p class="text-sm text-slate-700">${n.text}</p>
-                            <a href="${n.link}" class="text-xs font-semibold text-indigo-600">View</a>
-                        </div>
-                    </div>
-                `).join('') : '<p class="text-sm text-slate-500">No new notifications.</p>'}
+            <!-- My Chores -->
+            <div class="dashboard-card bg-blue-100 p-6 rounded-xl border-4 border-blue-300">
+                <h3 class="font-bold text-blue-800 text-xl mb-3"><i class="fas fa-tasks mr-2"></i>My Chores</h3>
+                <ul class="space-y-2">
+                    <li class="flex items-center"><input type="checkbox" class="h-5 w-5 rounded mr-3"> Make my bed</li>
+                    <li class="flex items-center"><input type="checkbox" class="h-5 w-5 rounded mr-3"> Feed the dog</li>
+                </ul>
             </div>
-        </div>
-    `;
-}
 
-function renderActivityWidget() {
-    return `
-        <div class="dashboard-card bg-white p-6 rounded-lg shadow-sm">
-            <h3 class="font-bold text-lg text-slate-800">Action Required</h3>
-            <div class="mt-4">
-                <p class="text-sm text-slate-500">You have no pending actions.</p>
-                <!-- Example of an action item -->
-                <!-- <div class="p-3 bg-yellow-50 rounded-md border border-yellow-200">
-                    <p class="text-sm text-yellow-800">Approve content release for 'Family Value'.</p>
-                    <button class="text-xs font-semibold text-yellow-900 mt-1">Go to Family Hub</button>
-                </div> -->
+            <!-- Learning Time -->
+            <div class="dashboard-card bg-green-100 p-6 rounded-xl border-4 border-green-300 col-span-1 md:col-span-2">
+                <h3 class="font-bold text-green-800 text-xl mb-2"><i class="fas fa-graduation-cap mr-2"></i>Learning Time!</h3>
+                <p class="text-green-700">Learn about the Big Rule Book for families.</p>
+                <a href="https://flamea.org/training/course-kids-big_rule_book.html" target="_blank" class="mt-4 inline-block bg-green-500 text-white font-bold py-2 px-4 rounded-lg text-sm hover:bg-green-600">Start Learning!</a>
             </div>
         </div>
     `;
 }
 
 
-// --- KIDS DASHBOARD ---
+// --- DATA FETCHING & LOGIC HELPERS ---
 
-function renderKidsDashboard() {
-    const container = document.getElementById('dashboard-container');
-    container.innerHTML = `
-        <div class="bg-yellow-100 border-4 border-yellow-300 p-6 rounded-xl text-center">
-             <h2 class="text-3xl font-bold text-yellow-800" style="font-family: 'Poppins', sans-serif;">Fun Zone!</h2>
-             <p class="text-yellow-700 mt-1">Let's play and learn!</p>
-        </div>
-        <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="dashboard-card bg-white p-6 rounded-lg shadow-sm text-center">
-                <i class="fas fa-gamepad text-5xl text-red-500"></i>
-                <h3 class="font-bold text-lg text-slate-800 mt-4">Play a Game</h3>
-                <p class="text-sm text-slate-500 mt-1">Challenge yourself with a fun game about your rights!</p>
-                <a href="[https://flamea.org/games/constitution-champions.html](https://flamea.org/games/constitution-champions.html)" target="_blank" class="mt-4 inline-block bg-red-500 text-white font-bold py-2 px-4 rounded-lg text-sm">Play Now!</a>
-            </div>
-            <div class="dashboard-card bg-white p-6 rounded-lg shadow-sm text-center">
-                <i class="fas fa-graduation-cap text-5xl text-green-500"></i>
-                <h3 class="font-bold text-lg text-slate-800 mt-4">Learn Something New</h3>
-                <p class="text-sm text-slate-500 mt-1">Take a quick course about the Constitution.</p>
-                <a href="[https://flamea.org/training/course-kids-big_rule_book.html](https://flamea.org/training/course-kids-big_rule_book.html)" target="_blank" class="mt-4 inline-block bg-green-500 text-white font-bold py-2 px-4 rounded-lg text-sm">Start Learning!</a>
-            </div>
-        </div>
-    `;
+function calculateLifeCvStrength(lifeCv) {
+    if (!lifeCv) return 0;
+    const sections = ['summary', 'experience', 'education', 'skills', 'references', 'projects'];
+    const filledSections = sections.filter(sec => lifeCv[sec] && ( (Array.isArray(lifeCv[sec]) && lifeCv[sec].length > 0) || (!Array.isArray(lifeCv[sec]) && lifeCv[sec])) );
+    return Math.round((filledSections.length / sections.length) * 100);
 }
-
-
-// --- DATA FETCHING HELPERS ---
 
 async function getPersonalFinanceSummary() {
     // In a real scenario, this would fetch and calculate from Firestore.
@@ -238,22 +159,33 @@ async function getBusinessFinanceSummary() {
     return { profit: 45800.00 };
 }
 
-async function getNotifications() {
-    // This function will listen for real-time notifications
-    return new Promise(resolve => {
-        const q = query(collection(db, "syncInvitations"), where("recipientEmail", "==", currentUser.email), where("status", "==", "pending"), limit(1));
-        onSnapshot(q, (snapshot) => {
-            let notifications = [];
-            if (!snapshot.empty) {
-                const invite = snapshot.docs[0].data();
-                notifications.push({
-                    icon: 'fa-user-friends',
-                    text: `You have a LifeSync invitation from ${invite.senderName}.`,
-                    link: './family-hub.html'
-                });
-            }
-            // We can add more queries here for other notification types
-            resolve(notifications);
-        });
+function listenForNotifications() {
+    const notificationsList = document.getElementById('notifications-list');
+    if (!notificationsList) return;
+
+    const q = query(collection(db, "syncInvitations"), where("recipientEmail", "==", currentUser.email), where("status", "===", "pending"));
+    
+    onSnapshot(q, (snapshot) => {
+        if (snapshot.empty) {
+            notificationsList.innerHTML = `<p class="text-slate-500 text-sm">No new notifications.</p>`;
+        } else {
+            let notificationsHTML = '';
+            snapshot.forEach(doc => {
+                const invite = doc.data();
+                notificationsHTML += `
+                    <div class="flex items-start p-3 bg-indigo-50 rounded-lg">
+                        <i class="fas fa-user-friends text-indigo-500 mt-1"></i>
+                        <div class="ml-3">
+                            <p class="text-sm text-slate-800">You have a <strong>LifeSync</strong> invitation from ${invite.senderName}.</p>
+                            <a href="./family-hub.html" class="text-sm font-semibold text-indigo-600 hover:underline">Respond Now</a>
+                        </div>
+                    </div>
+                `;
+            });
+            notificationsList.innerHTML = notificationsHTML;
+        }
+    }, (error) => {
+        console.error("Error listening for notifications:", error);
+        notificationsList.innerHTML = `<p class="text-red-500 text-sm">Could not load notifications.</p>`;
     });
 }

@@ -1,212 +1,189 @@
 /* ================================================================================= */
-/* FILE: assets/js/app.js (MASTER ENGINE - FINAL & COMPLETE)                         */
+/* FILE: assets/js/app.js (MASTER ENGINE - CORRECTED & ROBUST)                     */
 /* PURPOSE: This is the ONLY script loaded by the module pages. It builds the UI,    */
 /* handles auth, and then loads the specific logic for the current page.             */
 /* ================================================================================= */
 import { auth } from './firebase-config.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-// --- 1. DEFINE COMPONENTS ---
+// --- 1. DEFINE SHARED UI COMPONENTS ---
 
 const sidebarHTML = `
 <aside class="w-64 bg-white shadow-lg p-4 flex flex-col h-full flex-shrink-0">
     <div class="text-center mb-6 pt-4">
         <a href="./dashboard.html" class="inline-block group">
-            <svg viewBox="0 0 100 100" class="h-16 w-16 mx-auto text-slate-800 group-hover:text-blue-600 transition-colors">
-                <circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="8" fill="none"/>
-                <path d="M50 10 L 50 90 M10 50 L 90 50" stroke="#4b5563" stroke-width="2"/>
-                <path d="M50 10 L 40 25 L 60 25 Z" fill="currentColor"/>
+            <svg viewBox="0 0 100 100" class="h-16 w-16 mx-auto text-slate-800 group-hover:text-indigo-600 transition-colors">
+                <circle cx="50" cy="50" r="45" stroke="currentColor" stroke-width="5" fill="none"/>
+                <path d="M50 15 V 85 M15 50 H 85" stroke="#94a3b8" stroke-width="1.5"/>
+                <text x="50" y="55" font-size="28" fill="currentColor" text-anchor="middle" font-family="Manrope, sans-serif" font-weight="bold">H</text>
             </svg>
+            <p class="text-slate-800 font-bold text-lg mt-2 group-hover:text-indigo-600">The Hub</p>
         </a>
-        <h1 class="text-xl font-bold text-gray-800 font-poppins mt-2">The Hub</h1>
-        <p class="text-gray-500 text-xs mt-1 font-semibold italic">Your Digital Homestead</p>
     </div>
 
-    <nav class="flex-grow space-y-1 overflow-y-auto">
-        <!-- Homestead Core Group -->
-        <div>
-            <h2 class="px-4 pt-4 pb-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Homestead Core</h2>
-            <a href="./dashboard.html" data-nav="dashboard" class="nav-link flex items-center px-4 py-2.5 text-gray-600 rounded-lg hover:bg-gray-100 hover:text-blue-600 transition-colors duration-200">
-                <i class="fas fa-home w-6 text-center"></i><span class="ml-3">Dashboard</span>
-            </a>
-            <a href="./life-cv.html" data-nav="life-cv" class="nav-link flex items-center px-4 py-2.5 text-gray-600 rounded-lg hover:bg-gray-100 hover:text-blue-600 transition-colors duration-200">
-                <i class="fas fa-id-card w-6 text-center"></i><span class="ml-3">LifeCV</span>
-            </a>
-            <a href="./family-hub.html" data-nav="family-hub" class="nav-link flex items-center px-4 py-2.5 text-gray-600 rounded-lg hover:bg-gray-100 hover:text-blue-600 transition-colors duration-200">
-                <i class="fas fa-users w-6 text-center"></i><span class="ml-3">Family Hub</span>
-            </a>
-        </div>
-
-        <!-- Professional Suite Group -->
-        <div class="pt-4">
-            <h2 class="px-4 pt-4 pb-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Professional Suite</h2>
-            <a href="./finhelp.html" data-nav="finhelp" class="nav-link flex items-center px-4 py-2.5 text-gray-600 rounded-lg hover:bg-gray-100 hover:text-blue-600 transition-colors duration-200">
-                <i class="fas fa-chart-pie w-6 text-center"></i><span class="ml-3">FinHelp</span>
-            </a>
-             <a href="./hrhelp.html" data-nav="hrhelp" class="nav-link flex items-center px-4 py-2.5 text-gray-600 rounded-lg hover:bg-gray-100 hover:text-blue-600 transition-colors duration-200">
-                <i class="fas fa-briefcase w-6 text-center"></i><span class="ml-3">HRHelp</span>
-            </a>
-            <a href="./legalhelp.html" data-nav="legalhelp" class="nav-link flex items-center px-4 py-2.5 text-gray-600 rounded-lg hover:bg-gray-100 hover:text-blue-600 transition-colors duration-200">
-                <i class="fas fa-gavel w-6 text-center"></i><span class="ml-3">LegalHelp</span>
-            </a>
-        </div>
-
-        <!-- Content & Comms Group -->
-        <div class="pt-4">
-            <h2 class="px-4 pt-4 pb-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Content & Comms</h2>
-            <a href="./docuhelp.html" data-nav="docuhelp" class="nav-link flex items-center px-4 py-2.5 text-gray-600 rounded-lg hover:bg-gray-100 hover:text-blue-600 transition-colors duration-200">
-                <i class="fas fa-file-alt w-6 text-center"></i><span class="ml-3">DocuHelp</span>
-            </a>
-            <a href="./commshub.html" data-nav="commshub" class="nav-link flex items-center px-4 py-2.5 text-gray-600 rounded-lg hover:bg-gray-100 hover:text-blue-600 transition-colors duration-200">
-                <i class="fas fa-comments w-6 text-center"></i><span class="ml-3">CommsHub</span>
-            </a>
-            <a href="./publications.html" data-nav="publications" class="nav-link flex items-center px-4 py-2.5 text-gray-600 rounded-lg hover:bg-gray-100 hover:text-blue-600 transition-colors duration-200">
-                <i class="fas fa-book-open w-6 text-center"></i><span class="ml-3">Publications</span>
-            </a>
-             <a href="./public-pages/index.html" data-nav="public-pages" class="nav-link flex items-center px-4 py-2.5 text-gray-600 rounded-lg hover:bg-gray-100 hover:text-blue-600 transition-colors duration-200">
-                <i class="fas fa-globe w-6 text-center"></i><span class="ml-3">Public Pages</span>
-            </a>
-        </div>
+    <nav class="flex-grow space-y-2" id="main-nav">
+        <h3 class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Menu</h3>
+        <a href="./dashboard.html" class="flex items-center px-3 py-2 text-slate-700 hover:bg-slate-100 rounded-md transition-colors"><i class="fas fa-tachometer-alt w-6 text-center"></i><span class="ml-3">Dashboard</span></a>
+        <a href="./life-cv.html" class="flex items-center px-3 py-2 text-slate-700 hover:bg-slate-100 rounded-md transition-colors"><i class="fas fa-user-tie w-6 text-center"></i><span class="ml-3">LifeCV</span></a>
+        <a href="./family-hub.html" class="flex items-center px-3 py-2 text-slate-700 hover:bg-slate-100 rounded-md transition-colors"><i class="fas fa-users w-6 text-center"></i><span class="ml-3">Family Hub</span></a>
         
-         <!-- Growth & Discovery Group -->
         <div class="pt-4">
-            <h2 class="px-4 pt-4 pb-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Growth & Discovery</h2>
-            <a href="./training.html" data-nav="training" class="nav-link flex items-center px-4 py-2.5 text-gray-600 rounded-lg hover:bg-gray-100 hover:text-blue-600 transition-colors duration-200">
-                <i class="fas fa-graduation-cap w-6 text-center"></i><span class="ml-3">Training</span>
-            </a>
-            <a href="../assessment.html" data-nav="assessment" class="nav-link flex items-center px-4 py-2.5 text-gray-600 rounded-lg hover:bg-gray-100 hover:text-blue-600 transition-colors duration-200">
-                <i class="fas fa-map-signs w-6 text-center"></i><span class="ml-3">Tool Assessment</span>
-            </a>
-            <a href="../quiz.html" data-nav="quiz" class="nav-link flex items-center px-4 py-2.5 text-gray-600 rounded-lg hover:bg-gray-100 hover:text-blue-600 transition-colors duration-200">
-                <i class="fas fa-brain w-6 text-center"></i><span class="ml-3">Holistic Quiz</span>
-            </a>
+            <h3 class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Tools</h3>
+            <a href="./finhelp.html" class="flex items-center px-3 py-2 text-slate-700 hover:bg-slate-100 rounded-md transition-colors"><i class="fas fa-dollar-sign w-6 text-center"></i><span class="ml-3">FinHelp</span></a>
+            <a href="./hrhelp.html" class="flex items-center px-3 py-2 text-slate-700 hover:bg-slate-100 rounded-md transition-colors"><i class="fas fa-briefcase w-6 text-center"></i><span class="ml-3">HRHelp</span></a>
+            <a href="./legalhelp.html" class="flex items-center px-3 py-2 text-slate-700 hover:bg-slate-100 rounded-md transition-colors"><i class="fas fa-gavel w-6 text-center"></i><span class="ml-3">LegalHelp</span></a>
+            <a href="./docuhelp.html" class="flex items-center px-3 py-2 text-slate-700 hover:bg-slate-100 rounded-md transition-colors"><i class="fas fa-file-alt w-6 text-center"></i><span class="ml-3">DocuHelp</span></a>
+        </div>
+
+        <div class="pt-4">
+            <h3 class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Community</h3>
+            <a href="./commshub.html" class="flex items-center px-3 py-2 text-slate-700 hover:bg-slate-100 rounded-md transition-colors"><i class="fas fa-bullhorn w-6 text-center"></i><span class="ml-3">CommsHub</span></a>
+            <a href="./publications.html" class="flex items-center px-3 py-2 text-slate-700 hover:bg-slate-100 rounded-md transition-colors"><i class="fas fa-book-open w-6 text-center"></i><span class="ml-3">Publications</span></a>
+            <a href="./training.html" class="flex items-center px-3 py-2 text-slate-700 hover:bg-slate-100 rounded-md transition-colors"><i class="fas fa-chalkboard-teacher w-6 text-center"></i><span class="ml-3">Training</span></a>
         </div>
     </nav>
+
+    <div class="mt-auto">
+         <a href="./public-pages.html" class="flex items-center px-3 py-2 text-slate-700 hover:bg-slate-100 rounded-md transition-colors"><i class="fas fa-globe w-6 text-center"></i><span class="ml-3">Public Profile</span></a>
+    </div>
 </aside>
 `;
 
 const headerHTML = `
-<header class="bg-white shadow-sm p-3 flex justify-between items-center flex-shrink-0">
-    <div><!-- Breadcrumbs can go here --></div>
-    <div class="flex items-center gap-4">
-        <div class="relative">
-            <button id="ecosystem-btn" class="text-gray-600 hover:text-blue-600 transition-colors" title="Ecosystem Menu">
-                <i class="fas fa-project-diagram fa-lg"></i>
-            </button>
-            <div id="ecosystem-menu" class="hidden absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-xl p-4 z-50 border">
-                <p class="text-xs text-slate-500 mb-3 text-center font-semibold">Access the full Sazi Ecosystem</p>
-                <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm font-bold">
-                    <a href="https://safetyfirst.help" target="_blank" class="hover:text-blue-600">Safety<span class="text-blue-600">Help</span></a>
-                    <a href="https://salatiso.com/legalhelp/" target="_blank" class="hover:text-blue-600">Legal<span class="text-blue-600">Help</span></a>
-                    <a href="https://finhelp.salatiso.com" target="_blank" class="hover:text-blue-600">Fin<span class="text-blue-600">Help</span></a>
-                    <a href="https://salatiso.com/hrhelp/" target="_blank" class="hover:text-blue-600">HR<span class="text-blue-600">Help</span></a>
-                    <a href="https://sazi.life" target="_blank" class="hover:text-sky-600">sazi.life</a>
-                    <a href="https://flamea.org" target="_blank" class="hover:text-green-600">Flamea</a>
-                </div>
-            </div>
-        </div>
-        
-        <div class="relative">
-             <i class="fas fa-language absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
-            <select id="language-switcher" class="bg-gray-100 border-gray-300 text-sm rounded-lg pl-9 p-2 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="en">English</option>
-                <option value="xh">isiXhosa</option>
-                <option value="zu">isiZulu</option>
-            </select>
-        </div>
-
-        <button id="theme-switcher-btn" class="text-gray-600 hover:text-blue-600 transition-colors" title="Toggle Theme">
-            <i class="fas fa-sun fa-lg"></i>
+<header class="bg-white shadow-sm p-4 flex justify-between items-center">
+    <div class="flex items-center">
+        <button id="menu-toggle" class="text-slate-600 hover:text-slate-900 lg:hidden mr-4">
+            <i class="fas fa-bars text-xl"></i>
         </button>
-
-        <div class="relative">
-            <button id="user-menu-button" class="flex items-center space-x-2">
-                <span id="user-email" class="font-semibold text-gray-700 text-sm"></span>
-                <i class="fas fa-chevron-down text-gray-500 text-xs"></i>
+        <h1 class="text-xl font-bold text-slate-800" id="page-title">Dashboard</h1>
+    </div>
+    <div class="flex items-center">
+        <div class="relative" id="user-dropdown-container">
+            <button id="user-dropdown-button" class="flex items-center space-x-2">
+                <span id="user-email" class="text-sm font-medium text-slate-700"></span>
+                <img id="user-avatar" class="h-8 w-8 rounded-full" src="https://placehold.co/40x40/E2E8F0/475569?text=U" alt="User avatar">
+                <i class="fas fa-chevron-down text-xs text-slate-500"></i>
             </button>
-            <div id="user-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20 border">
-                <a href="#" id="logout-button" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign Out</a>
+            <div id="user-dropdown-menu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 hidden">
+                <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">Profile</a>
+                <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">Settings</a>
+                <div class="border-t border-slate-200 my-1"></div>
+                <button id="logout-button" class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-red-50">Logout</button>
             </div>
         </div>
     </div>
 </header>
 `;
 
-// --- 2. DEFINE LOGIC ---
 
-function handleDropdowns() {
-    const userMenuBtn = document.getElementById('user-menu-button');
-    const userMenu = document.getElementById('user-menu');
-    const ecosystemBtn = document.getElementById('ecosystem-btn');
-    const ecosystemMenu = document.getElementById('ecosystem-menu');
+// --- 2. CORE INITIALIZATION LOGIC ---
 
-    if (userMenuBtn) userMenuBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        userMenu.classList.toggle('hidden');
-        if (ecosystemMenu) ecosystemMenu.classList.add('hidden');
-    });
-    
-    if (ecosystemBtn) ecosystemBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        ecosystemMenu.classList.toggle('hidden');
-        if (userMenu) userMenu.classList.add('hidden');
-    });
-
-    window.addEventListener('click', () => {
-        if(userMenu && !userMenu.classList.contains('hidden')) userMenu.classList.add('hidden');
-        if(ecosystemMenu && !ecosystemMenu.classList.contains('hidden')) ecosystemMenu.classList.add('hidden');
-    });
-}
-
-function setActiveNavLink() {
-    const path = window.location.pathname;
-    document.querySelectorAll('.nav-link').forEach(link => {
-        const linkPath = new URL(link.href, window.location.origin).pathname;
-        if (path === linkPath) {
-            link.classList.add('bg-blue-50', 'text-blue-600', 'font-bold');
-        }
-    });
-}
-
-// --- 3. MASTER INITIALIZATION ---
-
-async function initializePage() {
+function initializePage() {
+    // This function runs on every protected page.
     onAuthStateChanged(auth, async (user) => {
+        const appContainer = document.getElementById('app-container');
         if (!user) {
-            window.location.replace('../login.html');
+            // No user is signed in, redirect to login.
+            // Pass the current page as a parameter to redirect back after login.
+            const currentPage = window.location.pathname + window.location.search;
+            window.location.replace(`../login.html?redirectUrl=${encodeURIComponent(currentPage)}`);
             return;
         }
 
-        const sidebarPlaceholder = document.getElementById('sidebar-placeholder');
-        const headerPlaceholder = document.getElementById('header-placeholder');
-        if (sidebarPlaceholder) sidebarPlaceholder.innerHTML = sidebarHTML;
-        if (headerPlaceholder) headerPlaceholder.innerHTML = headerHTML;
+        // User is signed in, build the page.
+        injectUI();
         
+        // Populate user-specific elements
         const userEmailEl = document.getElementById('user-email');
-        if (userEmailEl) userEmailEl.textContent = user.isAnonymous ? 'Guest' : user.email;
-        
-        const logoutBtn = document.getElementById('logout-button');
-        if(logoutBtn) logoutBtn.addEventListener('click', () => signOut(auth));
+        const userAvatarEl = document.getElementById('user-avatar');
+        if (userEmailEl) userEmailEl.textContent = user.displayName || user.email;
+        if (userAvatarEl && user.photoURL) userAvatarEl.src = user.photoURL;
 
+        // Attach global event listeners
+        document.getElementById('logout-button').addEventListener('click', () => signOut(auth));
+        
+        // Setup UI handlers
         handleDropdowns();
         setActiveNavLink();
+        updatePageTitle();
 
+        // Dynamically load the specific module for the page
         const pageModule = document.body.dataset.module;
-        const knownModules = ['life-cv', 'family-hub', 'ekhaya', 'dashboard'];
-        if (pageModule && knownModules.includes(pageModule)) {
+        if (pageModule) {
             try {
+                // CORRECTED: Dynamically import module without a hardcoded list.
                 const module = await import(`./modules/${pageModule}.js`);
+                // CORRECTED: Call init with the user object as per the spec.
                 if (module.init) {
-                    module.init();
+                    module.init(user);
                 }
             } catch (error) {
-                console.error(`Failed to load module ${pageModule}:`, error);
+                console.error(`Failed to load or initialize module '${pageModule}':`, error);
+                // Optionally, display a user-friendly error on the page
+                const mainContent = document.querySelector('main');
+                if(mainContent) mainContent.innerHTML = `<div class="text-center py-10"><h2 class="text-2xl font-bold text-red-600">Error</h2><p class="text-slate-600 mt-2">Could not load the content for this page.</p><p class="text-sm text-slate-500 mt-4">${error.message}</p></div>`;
             }
         }
         
-        const appContainer = document.getElementById('app-container');
+        // Make the app visible after everything is set up to avoid flashes of unstyled content.
         if (appContainer) appContainer.style.visibility = 'visible';
     });
 }
 
+// --- 3. UI & EVENT HANDLERS ---
+
+function injectUI() {
+    // Injects the common sidebar and header into the placeholders.
+    const sidebarPlaceholder = document.getElementById('sidebar-placeholder');
+    const headerPlaceholder = document.getElementById('header-placeholder');
+    if (sidebarPlaceholder) sidebarPlaceholder.innerHTML = sidebarHTML;
+    if (headerPlaceholder) headerPlaceholder.innerHTML = headerHTML;
+}
+
+function handleDropdowns() {
+    // Manages all dropdown menus.
+    const userDropdownButton = document.getElementById('user-dropdown-button');
+    const userDropdownMenu = document.getElementById('user-dropdown-menu');
+
+    if (userDropdownButton && userDropdownMenu) {
+        userDropdownButton.addEventListener('click', (event) => {
+            event.stopPropagation();
+            userDropdownMenu.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!userDropdownMenu.classList.contains('hidden') && !userDropdownButton.contains(event.target)) {
+                userDropdownMenu.classList.add('hidden');
+            }
+        });
+    }
+}
+
+function setActiveNavLink() {
+    // Highlights the active link in the sidebar based on the current URL.
+    const navLinks = document.querySelectorAll('#main-nav a');
+    const currentPage = window.location.pathname.split('/').pop();
+
+    navLinks.forEach(link => {
+        const linkPage = link.getAttribute('href').split('/').pop();
+        if (linkPage === currentPage) {
+            link.classList.add('bg-indigo-100', 'text-indigo-700', 'font-semibold');
+            link.classList.remove('text-slate-700');
+        }
+    });
+}
+
+function updatePageTitle() {
+    const pageTitleEl = document.getElementById('page-title');
+    const pageModule = document.body.dataset.module;
+    if (pageTitleEl && pageModule) {
+        // Capitalize the first letter and replace hyphens with spaces
+        const title = pageModule.charAt(0).toUpperCase() + pageModule.slice(1).replace(/-/g, ' ');
+        pageTitleEl.textContent = title;
+    }
+}
+
+// --- 4. SCRIPT EXECUTION ---
+
+// Start the initialization process once the DOM is fully loaded.
 document.addEventListener('DOMContentLoaded', initializePage);

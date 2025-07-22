@@ -1,6 +1,3 @@
-<!-- ================================================================================= -->
-<!-- FILE: modules/life-cv.html (UPGRADED)                                           -->
-<!-- ================================================================================= -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,75 +6,60 @@
     <title>LifeCV | The Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Manrope', sans-serif; } #app-container { visibility: hidden; }
-        .card { background-color: white; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
-        .input-field { width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.5rem; }
-        .btn { padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 600; }
+        body { font-family: 'Manrope', sans-serif; }
+        #app-container { visibility: hidden; }
+        /* Simple transition for accordion */
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
     </style>
 </head>
-<body data-module="life-cv">
+<body class="bg-slate-100" data-module="life-cv">
     <div id="app-container" class="flex h-screen bg-slate-100">
+        <!-- Sidebar will be injected here -->
         <div id="sidebar-placeholder"></div>
-        <div class="flex-1 flex flex-col">
-            <div id="header-placeholder"></div>
-            <main class="flex-1 p-8 overflow-y-auto">
-                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-3xl font-bold text-slate-900">Your LifeCV</h2>
-                    <button id="save-cv-button" class="btn bg-blue-600 text-white hover:bg-blue-700"><i class="fas fa-save mr-2"></i>Save LifeCV</button>
-                </div>
-                <div id="status-box" class="hidden p-3 mb-6 text-center text-sm rounded-lg"></div>
-                
-                <!-- NEW: Import & Sync Section -->
-                <div class="card p-6 mb-8">
-                    <h3 class="text-xl font-bold mb-4">Import & Sync</h3>
-                    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
-                        <h4 class="font-bold text-blue-800">AI-Powered Import</h4>
-                        <p class="text-sm text-blue-700 mt-1">
-                            To quickly populate your LifeCV, paste your existing resume into an AI tool (like Gemini) with the prompt below. Then, paste the JSON output here and click "Import".
-                        </p>
-                        <div class="mt-3">
-                            <p class="text-xs font-mono bg-blue-100 p-2 rounded">"Analyze the following CV and structure it into a JSON object with these exact keys: 'personal' (with 'name', 'email', 'phone', 'linkedin', 'summary'), 'experience' (an array of objects with 'title', 'company', 'startDate', 'endDate', 'description'), and 'education' (an array of objects with 'degree', 'institution', 'year')."</p>
-                        </div>
-                         <div class="mt-4">
-                            <textarea id="json-import-area" rows="5" class="input-field" placeholder="Paste the JSON output from the AI here..."></textarea>
-                            <button id="import-json-btn" class="btn bg-blue-500 text-white hover:bg-blue-600 mt-2 text-sm">
-                                <i class="fas fa-magic-wand-sparkles mr-2"></i>Import from JSON
-                            </button>
-                        </div>
-                    </div>
-                </div>
 
-                <form id="lifecv-form" class="space-y-8">
-                    <div class="card p-6">
-                        <h3 class="text-xl font-bold mb-4">Personal Details</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <input id="cv-name" type="text" placeholder="Full Name" class="input-field">
-                            <input id="cv-email" type="email" placeholder="Contact Email" class="input-field">
-                            <input id="cv-phone" type="tel" placeholder="Phone Number" class="input-field">
-                            <input id="cv-linkedin" type="url" placeholder="LinkedIn Profile URL" class="input-field">
-                        </div>
-                        <textarea id="cv-summary" placeholder="Professional Summary" class="input-field mt-4 w-full" rows="4"></textarea>
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Header will be injected here -->
+            <div id="header-placeholder"></div>
+
+            <!-- Main Content -->
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-slate-100 p-6">
+                <div class="max-w-4xl mx-auto">
+                    <!-- Page Header -->
+                    <div class="mb-6">
+                        <h1 class="text-3xl font-bold text-slate-900">LifeCV</h1>
+                        <p class="mt-1 text-slate-600">Your comprehensive, living curriculum vitae. This is the master source for all your personal and professional data.</p>
                     </div>
-                    <div class="card p-6">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-xl font-bold">Work Experience</h3>
-                            <button type="button" id="add-experience-btn" class="btn bg-gray-200 text-gray-800 hover:bg-gray-300 text-sm"><i class="fas fa-plus mr-2"></i>Add Experience</button>
-                        </div>
-                        <div id="experience-list" class="space-y-4"></div>
+
+                    <!-- LifeCV Container -->
+                    <div id="lifecv-container" class="space-y-4">
+                        <!-- Sections will be dynamically loaded here -->
+                        <p class="text-center text-slate-500 py-10">Loading your LifeCV...</p>
                     </div>
-                    <div class="card p-6">
-                         <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-xl font-bold">Education</h3>
-                            <button type="button" id="add-education-btn" class="btn bg-gray-200 text-gray-800 hover:bg-gray-300 text-sm"><i class="fas fa-plus mr-2"></i>Add Education</button>
-                        </div>
-                        <div id="education-list" class="space-y-4"></div>
-                    </div>
-                </form>
+                </div>
             </main>
         </div>
     </div>
-    <script type="module" src="../assets/js/app.js"></script>
+    
+    <!-- MODAL for adding/editing items -->
+    <div id="item-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg">
+            <h2 id="modal-title" class="text-xl font-bold mb-4">Add Item</h2>
+            <form id="modal-form">
+                <!-- Form fields will be injected here -->
+            </form>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button id="modal-cancel" type="button" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300">Cancel</button>
+                <button id="modal-save" type="submit" form="modal-form" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/js/app.js" type="module"></script>
 </body>
 </html>

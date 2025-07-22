@@ -1,213 +1,246 @@
 /* ================================================================================= */
-/* FILE: assets/js/modules/family-hub.js (CORRECTED)                                 */
+/* FILE: assets/js/modules/family-hub.js (Foundation for Family Value)               */
+/* PURPOSE: This module manages the user's journey from individual, to a synced      */
+/* partner, to creating and managing a formal family structure.                      */
 /* ================================================================================= */
 import { auth, db } from '../firebase-config.js';
-import { getDocument, updateDocument, saveDocument } from '../database.js';
-// CORRECTED: This line now uses a valid module specifier for the Firestore library.
-import { collection, query, where, onSnapshot, doc, writeBatch, serverTimestamp, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { getDocument, updateDocument, saveDocument, addDocument, getDocuments } from '../database.js';
+import { collection, query, where, onSnapshot, doc, writeBatch, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-let currentUserId = null;
-let currentUserEmail = null;
-let currentUserData = null;
-let mainUnsubscribe = null;
+let currentUser = null;
+let mainUnsubscribe = null; // To prevent multiple listeners
 
 const mainContainer = document.getElementById('family-hub-container');
-
-const shareableSections = [
-    { id: 'summary', label: 'Personal Summary' },
-    { id: 'experience', label: 'Work Experience' },
-    { id: 'education', label: 'Education' },
-    { id: 'skills', label: 'Skills & Certifications' },
-    { id: 'projects', label: 'Projects' },
-    { id: 'references', label: 'References' },
-];
 
 export function init(user) {
     if (!user || !user.uid) {
         console.error("Family Hub Error: User not authenticated.");
+        mainContainer.innerHTML = `<p class="text-red-500 text-center">Authentication error. Please refresh.</p>`;
         return;
     }
-    currentUserId = user.uid;
-    currentUserEmail = user.email;
-    console.log("Family Hub module initialized.");
+    currentUser = user;
+    console.log("Family Hub module initialized for user:", currentUser.uid);
 
-    if (mainUnsubscribe) mainUnsubscribe(); // Stop any previous listener
-    checkUserStatus();
+    if (mainUnsubscribe) mainUnsubscribe(); // Stop any previous listener before starting a new one
+    
+    checkUserFamilyStatus();
 }
 
-function checkUserStatus() {
-    mainContainer.innerHTML = `<p class="text-center text-slate-500 py-10">Checking your family status...</p>`;
-    const userDocRef = doc(db, "users", currentUserId);
+/**
+ * Checks the user's status in three stages:
+ * 1. Are they part of a formal Family?
+ * 2. Are they in a LifeSync partnership?
+ * 3. If neither, they are an Individual.
+ */
+function checkUserFamilyStatus() {
+    mainContainer.innerHTML = `<p class="text-center text-slate-500 py-10">Loading your family information...</p>`;
+    const userDocRef = doc(db, "users", currentUser.uid);
 
     mainUnsubscribe = onSnapshot(userDocRef, async (userSnap) => {
-        currentUserData = userSnap.data();
-        if (currentUserData && currentUserData.familyId) {
-            // 1. User is part of a formal Family
-            const familyDoc = await getDocument('families', currentUserData.familyId);
-            renderFamilyValueView(familyDoc);
-        } else if (currentUserData && currentUserData.lifeSync && currentUserData.lifeSync.partnerId) {
-            // 2. User is in a LifeSync relationship
-            const partnerDoc = await getDocument('users', currentUserData.lifeSync.partnerId);
-            renderSyncedView(partnerDoc.profile.displayName);
-        } else {
-            // 3. User is an individual
-            renderIndividualView();
+        if (!userSnap.exists()) {
+             mainContainer.innerHTML = `<p class="text-center text-red-500 py-10">Could not find user data.</p>`;
+             return;
         }
+        const userData = userSnap.data();
+
+        try {
+            if (userData.familyId) {
+                const familyDoc = await getDocument('families', userData.familyId);
+                renderFamilyDashboard(familyDoc, userData);
+            } else if (userData.lifeSync && userData.lifeSync.partnerId) {
+                const partnerDoc = await getDocument('users', userData.lifeSync.partnerId);
+                renderLifeSyncView(partnerDoc);
+            } else {
+                renderIndividualView();
+            }
+        } catch (error) {
+            console.error("Error processing user status:", error);
+            mainContainer.innerHTML = `<p class="text-center text-red-500 py-10">Error loading your family dashboard.</p>`;
+        }
+
     }, (error) => {
-        console.error("Error checking user status: ", error);
-        mainContainer.innerHTML = `<p class="text-center text-red-500 py-10">Error loading your information.</p>`;
+        console.error("Error listening to user document:", error);
+        mainContainer.innerHTML = `<p class="text-center text-red-500 py-10">Error connecting to the database.</p>`;
     });
 }
 
 
-// --- RENDER FUNCTIONS ---
+// --- VIEW RENDERING FUNCTIONS ---
 
+/**
+ * Renders the view for a user who is not in a partnership or family.
+ * Shows options to send or accept LifeSync invitations and to create a new family.
+ */
 function renderIndividualView() {
-    // This view shows options to send or accept invites
     mainContainer.innerHTML = `
         <div class="text-center">
-            <i class="fas fa-users text-5xl text-slate-300 mb-4"></i>
-            <h2 class="text-2xl font-bold text-slate-800">Connect with your Partner</h2>
-            <p class="text-slate-600 mt-2 max-w-lg mx-auto">Use LifeSync to securely share parts of your LifeCV with your partner, manage shared goals, and build a unified view of your life together.</p>
+            <i class="fas fa-user text-5xl text-slate-300 mb-4"></i>
+            <h2 class="text-2xl font-bold text-slate-800">Your Digital Homestead Starts Here</h2>
+            <p class="text-slate-600 mt-2 max-w-xl mx-auto">Connect with a partner using LifeSync, or establish your family's foundation by creating a Family Value structure.</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-            ${getSendInviteHTML()}
-            ${getPendingInvitesHTML()}
+            <!-- Send LifeSync Invite -->
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <h3 class="font-semibold text-lg text-slate-800 mb-3">Connect with a Partner</h3>
+                <form id="send-invite-form">
+                    <label for="recipient-email" class="block text-sm font-medium text-slate-700">Partner's Email</label>
+                    <input type="email" id="recipient-email" required class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    <button type="submit" class="mt-4 w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors">Send LifeSync Invite</button>
+                </form>
+            </div>
+
+            <!-- Create Family -->
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <h3 class="font-semibold text-lg text-slate-800 mb-3">Establish a Family</h3>
+                <form id="create-family-form">
+                    <label for="family-name" class="block text-sm font-medium text-slate-700">Family Name</label>
+                    <input type="text" id="family-name" required placeholder="e.g., The Mbeki Family" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    <button type="submit" class="mt-4 w-full bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition-colors">Create Family</button>
+                </form>
+            </div>
+        </div>
+        <div id="pending-invites-container" class="bg-white p-6 rounded-lg shadow-sm mt-6">
+             <h3 class="font-semibold text-lg text-slate-800 mb-3">Pending Invitations</h3>
+             <div id="invites-list"><p class="text-slate-500 text-sm">Checking for invitations...</p></div>
         </div>
     `;
-    attachSendInviteListener();
+    attachIndividualViewListeners();
+}
+
+/**
+ * Renders the view for a user who is in a LifeSync partnership but not a formal family.
+ */
+async function renderLifeSyncView(partnerData) {
+     mainContainer.innerHTML = `
+        <div class="bg-white p-6 rounded-lg shadow-sm">
+            <div class="text-center">
+                <i class="fas fa-heart text-5xl text-red-400 mb-4"></i>
+                <h2 class="text-2xl font-bold text-slate-800">LifeSync Active</h2>
+                <p class="text-slate-600 mt-2">You are currently synced with <span class="font-semibold text-indigo-600">${partnerData.profile.displayName || 'your partner'}</span>.</p>
+                <p class="text-slate-500 mt-4 max-w-xl mx-auto">You can now view your compatibility dashboard or take the next step by formalizing your family structure.</p>
+                 <div class="mt-6">
+                     <button id="formalize-family-btn" class="bg-green-600 text-white font-bold py-2 px-5 rounded-lg shadow hover:bg-green-700 transition-colors">
+                        <i class="fas fa-home mr-2"></i>Formalize Family
+                    </button>
+                 </div>
+            </div>
+        </div>
+     `;
+     // TODO: Add listener for formalize button
+}
+
+/**
+ * Renders the main dashboard for a user who is part of a formal family.
+ */
+function renderFamilyDashboard(familyData, userData) {
+    const isAdmin = familyData.admin === currentUser.uid;
+    mainContainer.innerHTML = `
+        <div class="bg-white p-6 rounded-lg shadow-sm">
+            <h2 class="text-3xl font-bold text-slate-800">${familyData.name}</h2>
+            <p class="text-slate-600">Family Dashboard</p>
+            ${isAdmin ? '<p class="text-sm text-indigo-600 font-semibold mt-1">You are the family administrator.</p>' : ''}
+            <!-- More family dashboard content will go here -->
+        </div>
+    `;
+}
+
+
+// --- EVENT LISTENERS & LOGIC ---
+
+function attachIndividualViewListeners() {
+    // Listener for sending a LifeSync invite
+    const sendInviteForm = document.getElementById('send-invite-form');
+    sendInviteForm.addEventListener('submit', handleSendInvite);
+
+    // Listener for creating a new family
+    const createFamilyForm = document.getElementById('create-family-form');
+    createFamilyForm.addEventListener('submit', handleCreateFamily);
+    
+    // Start listening for any incoming invites
     listenForPendingInvites();
 }
 
-function renderSyncedView(partnerName) {
-    mainContainer.innerHTML = `
-         <div class="bg-white p-6 rounded-lg shadow-sm">
-            <div class="flex flex-col sm:flex-row justify-between sm:items-center">
-                <div>
-                    <h2 class="text-2xl font-bold text-slate-800">LifeSync Active</h2>
-                    <p class="text-slate-600 mt-1">You are synced with <span class="font-semibold text-indigo-600">${partnerName}</span>.</p>
-                </div>
-                <div class="mt-4 sm:mt-0">
-                    <button id="formalize-family-btn" class="bg-green-600 text-white font-bold py-2 px-5 rounded-lg shadow hover:bg-green-700 transition-colors">
-                        <i class="fas fa-home mr-2"></i>Formalize Family
-                    </button>
-                </div>
-            </div>
-            <div class="border-t my-4"></div>
-            <div id="sync-management-content">
-                <!-- Tabs for managing the sync -->
-            </div>
-        </div>
-    `;
-    // Add logic to render tabs for managing permissions, etc.
-    // Attach listener for the "Formalize" button
-}
+async function handleSendInvite(e) {
+    e.preventDefault();
+    const emailInput = document.getElementById('recipient-email');
+    const email = emailInput.value.trim();
+    const button = e.target.querySelector('button');
+    button.disabled = true;
+    button.textContent = 'Sending...';
 
-function renderFamilyValueView(familyData) {
-     const isAdmin = familyData.admin === currentUserId;
-     const membersHtml = familyData.members.map(memberId => {
-        // In a real app, you'd fetch member names. For now, we use IDs.
-        const isMemberAdmin = memberId === familyData.admin;
-        return `
-            <div class="flex justify-between items-center bg-slate-50 p-3 rounded-md">
-                <div class="flex items-center">
-                    <i class="fas fa-user-circle text-slate-400 text-xl"></i>
-                    <span class="ml-3 text-slate-700 font-medium">${memberId.substring(0, 8)}...</span>
-                    ${isMemberAdmin ? '<span class="ml-2 text-xs bg-indigo-200 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">Admin</span>' : ''}
-                </div>
-                ${isAdmin && memberId !== currentUserId ? '<button class="text-xs text-red-500 font-semibold hover:underline">Remove</button>' : ''}
-            </div>
-        `;
-    }).join('');
+    if (email === currentUser.email) {
+        alert("You cannot send an invite to yourself.");
+        button.disabled = false;
+        button.textContent = 'Send LifeSync Invite';
+        return;
+    }
 
-    mainContainer.innerHTML = `
-        <div class="bg-white p-6 rounded-lg shadow-sm">
-            <div class="flex justify-between items-start">
-                 <div>
-                    <h2 class="text-2xl font-bold text-slate-800">${familyData.name}</h2>
-                    <p class="text-slate-600 mt-1">Family Dashboard</p>
-                </div>
-                ${isAdmin ? '<button class="bg-indigo-100 text-indigo-700 text-sm font-semibold py-2 px-4 rounded-md hover:bg-indigo-200">Manage Family</button>' : ''}
-            </div>
-            <div class="border-t my-4"></div>
-            <h3 class="text-lg font-semibold text-slate-700 mb-3">Members</h3>
-            <div class="space-y-2">${membersHtml}</div>
-        </div>
-    `;
-}
-
-
-// --- HTML COMPONENT BUILDERS ---
-
-function getSendInviteHTML() {
-    return `
-        <div class="bg-white p-6 rounded-lg shadow-sm">
-            <h3 class="font-semibold text-lg text-slate-800 mb-3">Send a LifeSync Invitation</h3>
-            <form id="send-invite-form">
-                <label for="recipient-email" class="block text-sm font-medium text-slate-700">Partner's Email Address</label>
-                <input type="email" id="recipient-email" required class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                <p class="text-xs text-slate-500 mt-1">They will receive a notification to connect with you.</p>
-                <button type="submit" class="mt-4 w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors">Send Invite</button>
-            </form>
-        </div>
-    `;
-}
-
-function getPendingInvitesHTML() {
-    return `
-        <div class="bg-white p-6 rounded-lg shadow-sm">
-            <h3 class="font-semibold text-lg text-slate-800 mb-3">Pending Invitations</h3>
-            <div id="invites-list" class="space-y-3">
-                <p class="text-slate-500 text-sm">Checking for invitations...</p>
-            </div>
-        </div>
-    `;
-}
-
-
-// --- EVENT LISTENERS & DATA HANDLERS ---
-
-function attachSendInviteListener() {
-    const form = document.getElementById('send-invite-form');
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('recipient-email').value;
-        const button = form.querySelector('button');
-        button.disabled = true;
-        button.textContent = 'Sending...';
-
-        try {
-            // Check if user exists
-            const q = query(collection(db, "users"), where("email", "==", email));
-            const querySnapshot = await getDocs(q);
-            if (querySnapshot.empty) {
-                throw new Error("User with that email does not exist in The Hub.");
-            }
-
-            const invite = {
-                senderId: currentUserId,
-                senderName: auth.currentUser.displayName || 'A User',
-                senderEmail: currentUserEmail,
-                recipientEmail: email,
-                status: 'pending',
-                createdAt: serverTimestamp()
-            };
-            await addDoc(collection(db, 'syncInvitations'), invite);
-            alert('Invitation sent successfully!');
-            form.reset();
-        } catch (error) {
-            console.error("Error sending invite:", error);
-            alert(`Error: ${error.message}`);
-        } finally {
-            button.disabled = false;
-            button.textContent = 'Send Invite';
+    try {
+        const q = query(collection(db, "users"), where("email", "==", email));
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) {
+            throw new Error(`No user found with the email: ${email}. Please ask them to sign up for The Hub first.`);
         }
-    });
+
+        const invite = {
+            senderId: currentUser.uid,
+            senderName: currentUser.displayName || 'A Hub User',
+            senderEmail: currentUser.email,
+            recipientEmail: email,
+            status: 'pending',
+            createdAt: serverTimestamp()
+        };
+        await addDocument('syncInvitations', invite);
+        alert('Invitation sent successfully!');
+        emailInput.value = '';
+    } catch (error) {
+        console.error("Error sending invite:", error);
+        alert(`Error: ${error.message}`);
+    } finally {
+        button.disabled = false;
+        button.textContent = 'Send LifeSync Invite';
+    }
+}
+
+async function handleCreateFamily(e) {
+    e.preventDefault();
+    const familyNameInput = document.getElementById('family-name');
+    const familyName = familyNameInput.value.trim();
+    const button = e.target.querySelector('button');
+    button.disabled = true;
+    button.textContent = 'Creating...';
+
+    try {
+        const familyData = {
+            name: familyName,
+            admin: currentUser.uid,
+            members: [currentUser.uid], // Creator is the first member and admin
+            createdAt: serverTimestamp(),
+            governance: {
+                // Default governance structure
+                roles: [{ name: 'Administrator', assignedTo: currentUser.uid }]
+            }
+        };
+        const familyDocRef = await addDocument('families', familyData);
+        
+        // Now, update the user's document to link them to the new family
+        await updateDocument('users', currentUser.uid, { familyId: familyDocRef.id });
+        
+        // The onSnapshot listener will automatically refresh the view to the family dashboard
+        alert(`Successfully created the ${familyName}!`);
+
+    } catch (error) {
+        console.error("Error creating family:", error);
+        alert("There was an error creating the family. Please try again.");
+    } finally {
+         button.disabled = false;
+         button.textContent = 'Create Family';
+    }
 }
 
 function listenForPendingInvites() {
     const invitesList = document.getElementById('invites-list');
-    const q = query(collection(db, 'syncInvitations'), where('recipientEmail', '==', currentUserEmail), where('status', '==', 'pending'));
+    const q = query(collection(db, 'syncInvitations'), where('recipientEmail', '==', currentUser.email), where('status', '==', 'pending'));
 
     onSnapshot(q, (snapshot) => {
         if (snapshot.empty) {
@@ -221,7 +254,6 @@ function listenForPendingInvites() {
                 <div class="bg-slate-50 p-3 rounded-md flex justify-between items-center">
                     <div>
                         <p class="text-sm text-slate-800">Invite from <span class="font-semibold">${invite.senderName}</span></p>
-                        <p class="text-xs text-slate-500">${invite.senderEmail}</p>
                     </div>
                     <div>
                         <button data-invite-id="${doc.id}" data-sender-id="${invite.senderId}" class="accept-invite-btn bg-green-500 text-white px-3 py-1 text-sm rounded-md hover:bg-green-600">Accept</button>
@@ -230,42 +262,38 @@ function listenForPendingInvites() {
             `;
         });
         invitesList.innerHTML = invitesHTML;
-        attachAcceptInviteListeners();
+        
+        document.querySelectorAll('.accept-invite-btn').forEach(button => {
+            button.addEventListener('click', handleAcceptInvite);
+        });
     });
 }
 
-function attachAcceptInviteListeners() {
-    document.querySelectorAll('.accept-invite-btn').forEach(button => {
-        button.addEventListener('click', async (e) => {
-            const inviteId = e.target.dataset.inviteId;
-            const senderId = e.target.dataset.senderId;
-            e.target.disabled = true;
-            e.target.textContent = 'Accepting...';
+async function handleAcceptInvite(e) {
+    const button = e.target;
+    const inviteId = button.dataset.inviteId;
+    const senderId = button.dataset.senderId;
+    button.disabled = true;
+    button.textContent = 'Accepting...';
 
-            try {
-                // Use a batch write to update all documents atomically
-                const batch = writeBatch(db);
+    try {
+        const batch = writeBatch(db);
 
-                // 1. Update this user's doc
-                const currentUserRef = doc(db, 'users', currentUserId);
-                batch.update(currentUserRef, { 'lifeSync.partnerId': senderId, 'lifeSync.status': 'active' });
+        const currentUserRef = doc(db, 'users', currentUser.uid);
+        batch.update(currentUserRef, { 'lifeSync.partnerId': senderId, 'lifeSync.status': 'active' });
 
-                // 2. Update the sender's doc
-                const senderRef = doc(db, 'users', senderId);
-                batch.update(senderRef, { 'lifeSync.partnerId': currentUserId, 'lifeSync.status': 'active' });
+        const senderRef = doc(db, 'users', senderId);
+        batch.update(senderRef, { 'lifeSync.partnerId': currentUser.uid, 'lifeSync.status': 'active' });
 
-                // 3. Update the invitation status
-                const inviteRef = doc(db, 'syncInvitations', inviteId);
-                batch.update(inviteRef, { status: 'accepted' });
+        const inviteRef = doc(db, 'syncInvitations', inviteId);
+        batch.update(inviteRef, { status: 'accepted' });
 
-                await batch.commit();
-                // The onSnapshot listener will automatically re-render the view
-            } catch (error) {
-                console.error("Error accepting invite:", error);
-                alert("Failed to accept invitation.");
-                e.target.disabled = false;
-                e.target.textContent = 'Accept';
-            }
-        });
-    });
+        await batch.commit();
+        // The onSnapshot will now re-render the view to the LifeSync page.
+    } catch (error) {
+        console.error("Error accepting invite:", error);
+        alert("Failed to accept invitation.");
+        button.disabled = false;
+        button.textContent = 'Accept';
+    }
 }

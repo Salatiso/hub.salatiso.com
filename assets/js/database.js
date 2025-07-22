@@ -1,7 +1,8 @@
 /* ================================================================================= */
 /* FILE: /assets/js/database.js (SERVICE - CORRECTED & COMPLETE)                     */
 /* PURPOSE: Provides a set of reusable functions for interacting with Firestore.     */
-/* FIX: Now correctly exports all necessary functions including setDoc.             */
+/* FIX: Now correctly exports all necessary functions including setDoc and           */
+/* getDocumentsRealtime to support all FinHelp modules.                              */
 /* ================================================================================= */
 import { db } from './firebase-config.js';
 import { 
@@ -81,13 +82,33 @@ export const addDocument = (collectionPath, data) => {
  */
 export const getDocuments = async (collectionPath, queryCondition) => {
     const collRef = collection(db, collectionPath);
-    const q = queryCondition 
-        ? query(collRef, where(queryCondition.field, queryCondition.operator, queryCondition.value))
-        : collRef;
-        
+    let q = query(collRef);
+    if (queryCondition) {
+        q = query(collRef, where(queryCondition.field, queryCondition.operator, queryCondition.value));
+    }
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };
+
+/**
+ * Listens for real-time updates on a collection.
+ * @param {string} collectionPath - The path to the collection.
+ * @param {Function} callback - The function to call with the updated data.
+ * @param {object} [queryCondition] - Optional. An object with { field, operator, value }.
+ * @returns {import("firebase/firestore").Unsubscribe} A function to unsubscribe from the listener.
+ */
+export const getDocumentsRealtime = (collectionPath, callback, queryCondition) => {
+    const collRef = collection(db, collectionPath);
+    let q = query(collRef);
+     if (queryCondition) {
+        q = query(collRef, where(queryCondition.field, queryCondition.operator, queryCondition.value));
+    }
+    return onSnapshot(q, (querySnapshot) => {
+        const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        callback(data);
+    });
+};
+
 
 // Re-exporting the core setDoc function for modules that need it directly.
 export { setDoc };

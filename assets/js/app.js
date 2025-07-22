@@ -3,6 +3,7 @@
 /* PURPOSE: This is the ONLY script loaded by the module pages. It builds the UI,    */
 /* handles auth, and then loads the specific logic for the current page.             */
 /* All links have been corrected for the flat /modules/ structure.                   */
+/* LOGO HAS BEEN RESTORED TO THE USER'S ORIGINAL DESIGN.                             */
 /* ================================================================================= */
 import { auth } from './firebase-config.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -84,7 +85,6 @@ function initializePage() {
         const appContainer = document.getElementById('app-container');
         if (!user) {
             const currentPage = window.location.pathname + window.location.search;
-            // CORRECTED: Path to login.html is now relative from a /modules/ page
             window.location.replace(`../login.html?redirectUrl=${encodeURIComponent(currentPage)}`);
             return;
         }
@@ -105,7 +105,6 @@ function initializePage() {
         const pageModule = document.body.dataset.module;
         if (pageModule) {
             try {
-                // CORRECTED: Path to modules is now relative to app.js
                 const module = await import(`./modules/${pageModule}.js`);
                 if (module.init) {
                     module.init(user);

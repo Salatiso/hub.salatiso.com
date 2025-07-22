@@ -1,0 +1,47 @@
+<!-- ================================================================================= -->
+<!-- FILE: modules/commshub.html (NEW - REPLACES PLACEHOLDER)                        -->
+<!-- ================================================================================= -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CommsHub | The Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <style> 
+        body { font-family: 'Manrope', sans-serif; } 
+        #app-container { visibility: hidden; }
+        .announcement-card {
+            border-left: 4px solid #4f46e5; /* indigo-600 */
+        }
+    </style>
+</head>
+<body data-module="commshub" class="bg-slate-100">
+    <div id="app-container" class="flex h-screen">
+        <div id="sidebar-placeholder"></div>
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <div id="header-placeholder"></div>
+            
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-slate-100 p-4 md:p-8">
+                <div class="max-w-4xl mx-auto">
+                    <!-- Page Header -->
+                    <div class="mb-8">
+                        <h1 class="text-3xl font-bold text-slate-900">CommsHub: Announcements</h1>
+                        <p class="mt-1 text-slate-600">Latest news and updates from across the Sazi Ecosystem.</p>
+                    </div>
+
+                    <!-- Announcements Feed -->
+                    <div id="announcements-container" class="space-y-6">
+                        <!-- Announcements will be rendered here by commshub.js -->
+                        <div class="text-center p-12 text-slate-500">Loading announcements...</div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="../assets/js/app.js" type="module"></script>
+</body>
+</html>

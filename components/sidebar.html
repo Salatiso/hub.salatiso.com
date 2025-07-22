@@ -1,0 +1,184 @@
+<!-- ================================================================================= -->
+<!-- FILE: /components/sidebar.html                                                    -->
+<!-- NOTE: The links for "Overview" and "LifeCV" have been corrected.                  -->
+<!-- ================================================================================= -->
+<div class="p-4 flex flex-col h-full">
+    <!-- Logo & Branding Block -->
+    <div class="text-center mb-8 pt-4">
+        <h1 class="text-2xl font-bold text-gray-800 font-poppins">The Hub</h1>
+        <a href="https://salatiso.com" target="_blank" class="inline-block group mt-2">
+            <svg viewBox="0 0 100 100" class="h-16 w-16 mx-auto text-slate-800 group-hover:text-blue-600 transition-colors">
+                <circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="8" fill="none"/>
+                <path d="M50 10 L 50 90 M10 50 L 90 50" stroke="#4b5563" stroke-width="2"/>
+                <path d="M50 10 L 40 25 L 60 25 Z" fill="currentColor"/>
+            </svg>
+        </a>
+        <p class="text-gray-600 text-sm mt-2">by Salatiso</p>
+        <p class="text-gray-500 text-xs mt-4 font-semibold italic">Your digital homestead</p>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex-grow space-y-2">
+        <!-- FIXED LINK -->
+        <a href="/modules/index-modules.html" class="flex items-center px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-100">
+            <i class="fas fa-home w-6 text-center"></i>
+            <span class="ml-3">Overview</span>
+        </a>
+        <a href="/modules/finhelp/index.html" class="flex items-center px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-100">
+            <i class="fas fa-chart-pie w-6 text-center"></i>
+            <span class="ml-3">FinHelp</span>
+        </a>
+        <a href="/modules/familyhub/index.html" class="flex items-center px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-100">
+            <i class="fas fa-users w-6 text-center"></i>
+            <span class="ml-3">FamilyHub</span>
+        </a>
+        <!-- FIXED LINK -->
+        <a href="/modules/life-cv/life-cv.html" class="flex items-center px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-100">
+            <i class="fas fa-id-card w-6 text-center"></i>
+            <span class="ml-3">LifeCV</span>
+        </a>
+        <a href="/modules/commshub/index.html" class="flex items-center px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-100">
+            <i class="fas fa-comments w-6 text-center"></i>
+            <span class="ml-3">CommsHub</span>
+        </a>
+         <a href="/modules/publications/index.html" class="flex items-center px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-100">
+            <i class="fas fa-book-open w-6 text-center"></i>
+            <span class="ml-3">Publications</span>
+        </a>
+        <a href="/quiz.html" class="flex items-center px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-100">
+            <i class="fas fa-brain w-6 text-center"></i>
+            <span class="ml-3">Holistic Quiz</span>
+        </a>
+    </nav>
+
+    <!-- Footer of Sidebar -->
+    <div class="mt-auto text-center text-xs text-gray-400">
+        <p>&copy; 2025 Salatiso. All Rights Reserved.</p>
+    </div>
+</div>
+
+
+<!-- ================================================================================= -->
+<!-- FILE: /modules/life-cv/life-cv.html                                               -->
+<!-- NOTE: This file has been rebuilt with the standard module template.               -->
+<!-- ================================================================================= -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life-CV | The Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Correct relative paths for a nested page -->
+    <link rel="stylesheet" href="../../assets/css/style.css">
+    <link rel="stylesheet" href="../../assets/css/modules.css">
+    
+    <link rel="icon" href="data:,">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto+Slab:wght@700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+
+    <div id="app-container" class="flex h-screen">
+        <!-- Sidebar placeholder -->
+        <div id="sidebar-placeholder" class="w-64 bg-white shadow-md flex-shrink-0">
+            <div class="p-4 text-center text-gray-500">Loading Sidebar...</div>
+        </div>
+
+        <div class="flex-1 flex flex-col">
+            <!-- Header placeholder -->
+            <div id="header-placeholder" class="bg-white shadow-sm">
+                <div class="p-4 text-gray-500">Loading Header...</div>
+            </div>
+
+            <!-- Main content for the Life-CV page -->
+            <main class="flex-1 p-6 md:p-8 overflow-y-auto">
+                <header class="mb-8 flex justify-between items-center">
+                    <div>
+                        <h1 class="text-3xl font-bold font-poppins text-gray-800">Life-CV</h1>
+                        <p class="text-gray-600">Your dynamic portfolio of skills and experience.</p>
+                    </div>
+                    <div>
+                        <button class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700"><i class="fas fa-download mr-2"></i>Download PDF</button>
+                    </div>
+                </header>
+                <div id="lifecv-content" class="space-y-8 bg-white p-6 rounded-lg shadow">
+                    <div class="text-center text-gray-500">
+                        <p>Loading your Life-CV...</p>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Footer placeholder -->
+            <div id="footer-placeholder">
+                 <div class="p-4 text-center text-xs text-gray-400">Loading Footer...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Correct relative path for a nested page -->
+    <script type="module" src="../../assets/js/module.js"></script>
+
+</body>
+</html>
+
+
+<!-- ================================================================================= -->
+<!-- FILE: /quiz.html                                                                  -->
+<!-- NOTE: This file has been rebuilt with the standard module template.               -->
+<!-- ================================================================================= -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Holistic Quiz | The Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Paths are relative to the root directory -->
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/modules.css">
+    <link rel="stylesheet" href="assets/css/quiz.css">
+    
+    <link rel="icon" href="data:,">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto+Slab:wght@700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+
+    <div id="app-container" class="flex h-screen">
+        <!-- Sidebar placeholder -->
+        <div id="sidebar-placeholder" class="w-64 bg-white shadow-md flex-shrink-0">
+            <div class="p-4 text-center text-gray-500">Loading Sidebar...</div>
+        </div>
+
+        <div class="flex-1 flex flex-col">
+            <!-- Header placeholder -->
+            <div id="header-placeholder" class="bg-white shadow-sm">
+                <div class="p-4 text-gray-500">Loading Header...</div>
+            </div>
+
+            <!-- Main content area for the quiz -->
+            <main class="flex-1 p-6 md:p-8 overflow-y-auto">
+                <div id="quiz-container" class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow">
+                    <!-- Quiz engine will render content here -->
+                    <div class="text-center p-8">
+                        <p class="mt-4 text-gray-600">Loading Quiz...</p>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Footer placeholder -->
+            <div id="footer-placeholder">
+                 <div class="p-4 text-center text-xs text-gray-400">Loading Footer...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Paths are relative to the root directory -->
+    <script type="module" src="assets/js/module.js"></script>
+    <script type="module" src="assets/js/quiz.js"></script>
+
+</body>
+</html>

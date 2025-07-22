@@ -1,0 +1,70 @@
+<!-- ================================================================================= -->
+<!-- FILE: /modules/activity.html                                                      -->
+<!-- ================================================================================= -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity | The Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Correct relative paths to CSS -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/modules.css">
+    
+    <link rel="icon" href="data:,">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto+Slab:wght@700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+
+    <div id="app-container" class="flex h-screen">
+        <!-- Sidebar placeholder -->
+        <div id="sidebar-placeholder" class="w-64 bg-white shadow-md flex-shrink-0">
+            <div class="p-4 text-center text-gray-500">Loading Sidebar...</div>
+        </div>
+
+        <div class="flex-1 flex flex-col">
+            <!-- Header placeholder -->
+            <div id="header-placeholder" class="bg-white shadow-sm">
+                <div class="p-4 text-gray-500">Loading Header...</div>
+            </div>
+
+            <!-- Main content for the activity page -->
+            <main class="flex-1 p-6 md:p-8 overflow-y-auto">
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h2 class="text-xl font-bold mb-4">Ecosystem Activity Log</h2>
+                    <ul id="activity-feed" class="space-y-4">
+                        <li class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center"><i class="fas fa-check text-green-500"></i></div>
+                            <div>
+                                <p class="font-semibold">Completed "OHS Basics" on sazi.life</p>
+                                <p class="text-sm text-gray-500">July 14, 2025</p>
+                            </div>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center"><i class="fas fa-file-alt text-blue-500"></i></div>
+                            <div>
+                                <p class="font-semibold">Generated "Safety Plan" on SafetyHelp</p>
+                                <p class="text-sm text-gray-500">July 13, 2025</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </main>
+
+            <!-- Footer placeholder -->
+            <div id="footer-placeholder">
+                 <div class="p-4 text-center text-xs text-gray-400">Loading Footer...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Correct relative path to the single module engine script -->
+    <script type="module" src="../assets/js/module.js"></script>
+
+</body>
+</html>
+
+

@@ -1,0 +1,73 @@
+<!-- ================================================================================= -->
+<!-- FILE: modules/publications.html (NEW - REPLACES PLACEHOLDER)                    -->
+<!-- ================================================================================= -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publications | The Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Newsreader:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <!-- Markdown to HTML converter library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js"></script>
+    <style> 
+        body { font-family: 'Manrope', sans-serif; } 
+        #app-container { visibility: hidden; }
+        .prose h1, .prose h2, .prose h3 { font-family: 'Newsreader', serif; }
+        .prose { max-width: none; } /* Tailwind prose class override */
+    </style>
+</head>
+<body data-module="publications" class="bg-slate-100">
+    <div id="app-container" class="flex h-screen">
+        <div id="sidebar-placeholder"></div>
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <div id="header-placeholder"></div>
+            
+            <main id="publications-main" class="flex-1 overflow-x-hidden overflow-y-auto bg-slate-100 p-4 md:p-8">
+                <!-- This container will be managed by the JS module -->
+            </main>
+        </div>
+    </div>
+
+    <!-- Editor Modal -->
+    <div id="editor-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 h-full w-full hidden z-50">
+        <div class="relative mx-auto w-full h-full shadow-lg bg-white flex flex-col">
+            <div class="flex justify-between items-center py-3 px-4 border-b bg-slate-50">
+                <h3 class="text-xl font-bold text-slate-800">Publication Editor</h3>
+                <div class="flex items-center gap-4">
+                    <button id="save-publication-btn" class="text-sm bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"><i class="fas fa-save mr-2"></i>Save & Close</button>
+                    <button id="close-editor-modal" class="text-slate-400 hover:text-slate-800 text-3xl font-bold">&times;</button>
+                </div>
+            </div>
+            <div class="grid grid-cols-12 flex-1 overflow-hidden">
+                <!-- Editor Inputs -->
+                <div class="col-span-5 p-4 border-r overflow-y-auto bg-white flex flex-col">
+                    <form id="publication-form" class="flex-1 flex flex-col">
+                        <input type="hidden" id="publication-id">
+                        <div>
+                            <label for="publication-title" class="block text-sm font-medium text-slate-700">Title</label>
+                            <input type="text" id="publication-title" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm" placeholder="Your Publication Title" required>
+                        </div>
+                        <div class="mt-4">
+                            <label for="publication-author" class="block text-sm font-medium text-slate-700">Author</label>
+                            <input type="text" id="publication-author" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm" placeholder="Author's Name" required>
+                        </div>
+                        <div class="mt-4 flex-1 flex flex-col">
+                            <label for="publication-content" class="block text-sm font-medium text-slate-700">Content (Markdown)</label>
+                            <textarea id="publication-content" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm flex-1 font-mono text-sm" placeholder="Write your content here using Markdown..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <!-- Live Preview -->
+                <div class="col-span-7 p-8 bg-slate-50 overflow-y-auto">
+                    <div id="editor-preview" class="prose lg:prose-xl bg-white p-8 rounded-md shadow-inner min-h-full"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/js/app.js" type="module"></script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!-- ================================================================================= -->
+<!-- FILE: quiz.html (UPGRADED & INTEGRATED)                                         -->
+<!-- ================================================================================= -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Holistic Quiz | The Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&display=swap" rel="stylesheet">
+    <style> 
+        body { font-family: 'Manrope', sans-serif; } 
+        #app-container { visibility: hidden; }
+        .question-card { display: none; }
+        .question-card.active { display: block; }
+    </style>
+</head>
+<body data-module="quiz" class="bg-slate-100">
+    <div id="app-container" class="flex h-screen">
+        <div id="sidebar-placeholder"></div>
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <div id="header-placeholder"></div>
+            
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-slate-100 p-4 md:p-8">
+                <div class="max-w-3xl mx-auto bg-white p-6 md:p-8 rounded-xl shadow-md">
+                    <div id="quiz-container">
+                        <!-- Start Screen -->
+                        <div id="start-screen">
+                            <h1 class="text-3xl font-bold text-slate-900">Holistic Self-Discovery Quiz</h1>
+                            <p class="mt-2 text-slate-600">Answer these questions to gain insights into your personal and professional inclinations.</p>
+                            <button id="start-quiz-btn" class="mt-6 bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg w-full">Start Quiz</button>
+                        </div>
+
+                        <!-- Quiz Questions -->
+                        <div id="quiz-questions" class="hidden">
+                            <!-- Questions will be rendered here -->
+                        </div>
+
+                        <!-- Results Screen -->
+                        <div id="results-screen" class="hidden text-center">
+                            <h2 class="text-2xl font-bold text-slate-900">Quiz Complete!</h2>
+                            <p class="mt-2 text-slate-600">Your results have been saved to your profile.</p>
+                            <div id="quiz-results-summary" class="mt-6 text-left space-y-2"></div>
+                            <button id="retake-quiz-btn" class="mt-8 bg-slate-200 text-slate-800 font-bold py-3 px-6 rounded-lg">Retake Quiz</button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script src="./assets/js/app.js" type="module"></script>
+</body>
+</html>

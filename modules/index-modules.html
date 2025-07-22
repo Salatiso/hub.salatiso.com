@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Hub | Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Paths to CSS files -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/modules.css">
+    
+    <link rel="icon" href="data:,">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto+Slab:wght@700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+
+    <div id="app-container" class="flex h-screen">
+        <!-- Sidebar placeholder -->
+        <div id="sidebar-placeholder" class="w-64 bg-white shadow-md">
+            <div class="p-4 text-center text-gray-500">Loading Sidebar...</div>
+        </div>
+
+        <div class="flex-1 flex flex-col">
+            <!-- Header placeholder -->
+            <div id="header-placeholder" class="bg-white shadow-sm">
+                <div class="p-4 text-gray-500">Loading Header...</div>
+            </div>
+
+            <!-- Main content -->
+            <main class="flex-1 p-6 md:p-8 overflow-y-auto">
+                <h1 class="text-3xl font-bold text-gray-800 font-poppins">Welcome to The Hub</h1>
+                <p class="mt-2 text-gray-600">This is your digital homestead. Select a module from the sidebar to get started.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+                    <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow">
+                        <h2 class="text-xl font-bold text-gray-800 font-roboto-slab">Quick Actions</h2>
+                        <ul class="mt-4 space-y-2">
+                            <li><a href="/modules/finhelp/index.html" class="text-blue-600 hover:underline">Log an Expense</a></li>
+                            <li><a href="/modules/familyhub/index.html" class="text-blue-600 hover:underline">View Family Tasks</a></li>
+                            <li><a href="/modules/life-cv/life-cv.html" class="text-blue-600 hover:underline">Update Your LifeCV</a></li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow">
+                        <h2 class="text-xl font-bold text-gray-800 font-roboto-slab">Recent Activity</h2>
+                        <p class="mt-4 text-gray-600">No recent activity to display.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow">
+                        <h2 class="text-xl font-bold text-gray-800 font-roboto-slab">Discover Tools</h2>
+                        <p class="mt-4 text-gray-600">Take the <a href="/quiz.html" class="text-blue-600 hover:underline">Holistic Quiz</a> to discover more tools tailored for you.</p>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Footer placeholder -->
+            <div id="footer-placeholder">
+                 <div class="p-4 text-center text-xs text-gray-400">Loading Footer...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT FIX: Changed 'modules.js' to 'module.js' to match your actual file name. -->
+    <script type="module" src="../assets/js/module.js"></script>
+
+</body>
+</html>

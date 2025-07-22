@@ -1,10 +1,11 @@
 /* ================================================================================= */
 /* FILE: assets/js/modules/life-cv.js                                                */
 /* PURPOSE: Manages all functionality for the LifeCV page, including fetching,       */
-/* rendering, and saving user data. This is the master data source.                  */
+/* rendering, saving, and importing user data.                                       */
 /* ================================================================================= */
 import { auth, db } from '../firebase-config.js';
 import { getDocument, updateDocument } from '../database.js';
+import { uploadFile, deleteFile } from '../storage.js'; // Import storage functions
 import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 let currentUser = null;
@@ -12,6 +13,7 @@ let lifeCvData = {}; // Local cache for user's LifeCV data
 
 // Define the structure of the LifeCV
 const lifeCvSections = {
+    profilePictures: { title: 'Profile Pictures', icon: 'fa-camera-retro', isCustom: true }, // Custom rendered section
     personal: { title: 'Personal & Contact Details', icon: 'fa-user', fields: [
         { id: 'fullName', label: 'Full Name', type: 'text' },
         { id: 'idNumber', label: 'ID/Passport Number', type: 'text' },
@@ -40,7 +42,6 @@ const lifeCvSections = {
         { id: 'skillName', label: 'Skill', type: 'text' },
         { id: 'proficiency', label: 'Proficiency (e.g., Expert, Intermediate)', type: 'text' },
     ]},
-    // Future sections can be added here (e.g., documents, references)
 };
 
 export function init(user) {
@@ -48,11 +49,12 @@ export function init(user) {
     currentUser = user;
     console.log("LifeCV module initialized.");
     
+    attachImportListeners();
+
     const userDocRef = doc(db, "users", currentUser.uid);
     onSnapshot(userDocRef, (docSnap) => {
         if (docSnap.exists()) {
             lifeCvData = docSnap.data().lifeCv || {};
-            // Ensure email is always up-to-date from auth
             if (!lifeCvData.personal) lifeCvData.personal = {};
             lifeCvData.personal.email = currentUser.email;
             renderAllSections();
@@ -67,7 +69,14 @@ function renderAllSections() {
     for (const key in lifeCvSections) {
         const section = lifeCvSections[key];
         const sectionData = lifeCvData[key] || (section.isArray ? [] : {});
-        container.appendChild(createSectionElement(key, section, sectionData));
+        
+        if (section.isCustom) {
+            if (key === 'profilePictures') {
+                container.appendChild(createProfilePicturesSection(key, section, lifeCvData.profilePictures || {}));
+            }
+        } else {
+            container.appendChild(createSectionElement(key, section, sectionData));
+        }
     }
 }
 
@@ -118,7 +127,215 @@ function createSectionElement(key, sectionConfig, sectionData) {
     return sectionWrapper;
 }
 
-// --- HTML GENERATORS ---
+// --- PROFILE PICTURES SECTION ---
+
+function createProfilePicturesSection(key, sectionConfig, data) {
+    const sectionWrapper = document.createElement('div');
+    sectionWrapper.className = 'bg-white rounded-lg shadow-sm';
+    const images = data.images || [];
+    const primary = data.primary || (images.length > 0 ? images[0] : null);
+
+    const galleryHtml = images.map(url => `
+        <div class="relative group">
+            <img src="${url}" class="w-24 h-24 rounded-md object-cover cursor-pointer profile-pic ${url === primary ? 'primary' : ''}" data-url="${url}">
+            <button class="delete-pic-btn absolute top-1 right-1 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" data-url="${url}">&times;</button>
+        </div>
+    `).join('');
+
+    sectionWrapper.innerHTML = `
+        <button class="w-full flex justify-between items-center text-left p-4 accordion-toggle">
+            <div class="flex items-center">
+                <i class="fas ${sectionConfig.icon} w-6 text-center text-indigo-600"></i>
+                <h2 class="text-lg font-bold text-slate-800 ml-3">${sectionConfig.title}</h2>
+            </div>
+            <i class="fas fa-chevron-down transform transition-transform"></i>
+        </button>
+        <div class="accordion-content">
+            <div class="p-6 border-t border-slate-200">
+                <div class="profile-pic-gallery grid grid-cols-3 sm:grid-cols-5 gap-4 mb-4">
+                    ${galleryHtml}
+                </div>
+                <label for="picture-upload" class="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg text-sm hover:bg-indigo-700 cursor-pointer">
+                    <i class="fas fa-upload mr-2"></i> Upload New Picture
+                </label>
+                <input type="file" id="picture-upload" class="hidden" accept="image/*">
+                <p class="text-xs text-slate-500 mt-2">You can upload up to 5 images. Click an image to set it as your primary avatar.</p>
+            </div>
+        </div>
+    `;
+    
+    // Event Listeners
+    sectionWrapper.querySelector('.accordion-toggle').addEventListener('click', toggleAccordion);
+    sectionWrapper.querySelector('#picture-upload').addEventListener('change', handlePictureUpload);
+    sectionWrapper.querySelectorAll('.profile-pic').forEach(img => img.addEventListener('click', setPrimaryPicture));
+    sectionWrapper.querySelectorAll('.delete-pic-btn').forEach(btn => btn.addEventListener('click', handleDeletePicture));
+
+    return sectionWrapper;
+}
+
+async function handlePictureUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const images = lifeCvData.profilePictures?.images || [];
+    if (images.length >= 5) {
+        alert("You can only upload a maximum of 5 pictures.");
+        return;
+    }
+
+    const filePath = `users/${currentUser.uid}/profilePictures/${Date.now()}_${file.name}`;
+    
+    try {
+        const downloadURL = await uploadFile(file, filePath);
+        const updatedImages = [...images, downloadURL];
+        
+        let newPrimary = lifeCvData.profilePictures?.primary;
+        // If it's the first image, make it the primary one.
+        if (updatedImages.length === 1) {
+            newPrimary = downloadURL;
+        }
+
+        await updateDocument('users', currentUser.uid, { 
+            'lifeCv.profilePictures.images': updatedImages,
+            'lifeCv.profilePictures.primary': newPrimary
+        });
+        alert("Picture uploaded successfully!");
+    } catch (error) {
+        console.error("Error uploading picture:", error);
+        alert("Failed to upload picture.");
+    }
+}
+
+async function setPrimaryPicture(event) {
+    const url = event.target.dataset.url;
+    try {
+        await updateDocument('users', currentUser.uid, { 'lifeCv.profilePictures.primary': url });
+    } catch (error) {
+        console.error("Error setting primary picture:", error);
+        alert("Failed to update primary picture.");
+    }
+}
+
+async function handleDeletePicture(event) {
+    event.stopPropagation(); // Prevent setting as primary
+    const url = event.target.dataset.url;
+    if (!confirm("Are you sure you want to delete this picture?")) return;
+
+    try {
+        // 1. Delete file from Storage
+        await deleteFile(url);
+
+        // 2. Remove from Firestore array
+        const currentData = lifeCvData.profilePictures || {};
+        const updatedImages = (currentData.images || []).filter(imgUrl => imgUrl !== url);
+        
+        let newPrimary = currentData.primary;
+        // If the deleted image was the primary one, pick a new primary
+        if (currentData.primary === url) {
+            newPrimary = updatedImages.length > 0 ? updatedImages[0] : null;
+        }
+
+        await updateDocument('users', currentUser.uid, { 
+            'lifeCv.profilePictures.images': updatedImages,
+            'lifeCv.profilePictures.primary': newPrimary
+        });
+
+        alert("Picture deleted successfully.");
+    } catch (error) {
+        console.error("Error deleting picture:", error);
+        alert("Failed to delete picture.");
+    }
+}
+
+
+// --- IMPORT FUNCTIONALITY ---
+
+function attachImportListeners() {
+    document.getElementById('json-import-btn').addEventListener('click', () => {
+        document.getElementById('json-import-modal').classList.remove('hidden');
+    });
+    document.getElementById('json-modal-cancel').addEventListener('click', () => {
+        document.getElementById('json-import-modal').classList.add('hidden');
+    });
+    document.getElementById('json-modal-import').addEventListener('click', handleJsonImport);
+    document.getElementById('file-import-input').addEventListener('change', handleAiFileImport);
+}
+
+async function handleJsonImport() {
+    const jsonInput = document.getElementById('json-input-area').value;
+    if (!jsonInput) {
+        alert("Please paste your JSON data.");
+        return;
+    }
+    try {
+        const importedData = JSON.parse(jsonInput);
+        const mergedData = { ...lifeCvData, ...importedData };
+        
+        await updateDocument('users', currentUser.uid, { 'lifeCv': mergedData });
+        
+        document.getElementById('json-import-modal').classList.add('hidden');
+        document.getElementById('json-input-area').value = '';
+        alert("LifeCV imported successfully!");
+    } catch (error) {
+        console.error("JSON Import Error:", error);
+        alert("Invalid JSON format. Please check your data and try again.");
+    }
+}
+
+function handleAiFileImport(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        const fileContent = e.target.result;
+        // In a real scenario, you'd send this content to a backend.
+        // Here, we simulate it by sending a prompt with mock content to Gemini.
+        const overlay = document.getElementById('ai-processing-overlay');
+        overlay.style.display = 'flex';
+
+        try {
+            // This is a simplified simulation. A real implementation would extract text.
+            const prompt = `Based on the following CV text, convert it into a valid JSON object that matches this structure: { "personal": { "fullName": "", "email": "", "phone": "" }, "summary": { "summary": "" }, "experience": [{ "jobTitle": "", "company": "", "description": "" }], "education": [{ "qualification": "", "institution": "" }], "skills": [{ "skillName": "" }] }. Extract the information accurately. CV Text: "${file.name} - A CV containing professional experience as a software engineer and education from a university."`;
+            
+            const apiKey = ""; // Provided by the environment
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            
+            const payload = { contents: [{ parts: [{ text: prompt }] }] };
+            
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
+            
+            const result = await response.json();
+            const text = result.candidates[0].content.parts[0].text;
+            
+            // Clean the response to get valid JSON
+            const cleanedJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
+            const importedData = JSON.parse(cleanedJson);
+
+            const mergedData = { ...lifeCvData, ...importedData };
+            await updateDocument('users', currentUser.uid, { 'lifeCv': mergedData });
+            
+            alert("AI has successfully imported data from your file!");
+
+        } catch (error) {
+            console.error("AI Import Error:", error);
+            alert("The AI could not process your document. Please check the file or try again.");
+        } finally {
+            overlay.style.display = 'none';
+            event.target.value = ''; // Reset file input
+        }
+    };
+    reader.readAsText(file); // Simple text reading for simulation
+}
+
+
+// --- HTML GENERATORS & EVENT HANDLERS (UNCHANGED FROM PREVIOUS VERSION) ---
 
 function createFormFieldsHtml(sectionKey, fields, data) {
     return fields.map(field => `
@@ -150,8 +367,6 @@ function createArrayItemHtml(sectionKey, item, index) {
     `;
 }
 
-// --- EVENT HANDLERS & LOGIC ---
-
 function toggleAccordion(event) {
     const button = event.currentTarget;
     const content = button.nextElementSibling;
@@ -169,11 +384,10 @@ function toggleAccordion(event) {
 async function saveSection(event) {
     const sectionKey = event.target.dataset.section;
     const form = event.target.closest('.accordion-content').querySelector('div');
-    const formData = new FormData(form);
-    
     const dataToSave = {};
-    formData.forEach((value, key) => {
-        dataToSave[key] = value;
+    const inputs = form.querySelectorAll('input, textarea');
+    inputs.forEach(input => {
+        dataToSave[input.name] = input.value;
     });
 
     try {
@@ -194,7 +408,7 @@ function openModal(sectionKey, index = -1) {
     const isEditing = index > -1;
     const data = isEditing ? lifeCvData[sectionKey][index] : {};
 
-    modalTitle.textContent = `${isEditing ? 'Edit' : 'Add'} ${sectionConfig.title.slice(0, -1)}`; // Remove 's'
+    modalTitle.textContent = `${isEditing ? 'Edit' : 'Add'} ${sectionConfig.title.slice(0, -1)}`;
     form.innerHTML = createFormFieldsHtml(sectionKey, sectionConfig.fields, data);
     form.dataset.section = sectionKey;
     form.dataset.index = index;

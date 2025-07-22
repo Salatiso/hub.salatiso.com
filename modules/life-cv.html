@@ -10,11 +10,17 @@
     <style>
         body { font-family: 'Manrope', sans-serif; }
         #app-container { visibility: hidden; }
-        /* Simple transition for accordion */
         .accordion-content {
             max-height: 0;
             overflow: hidden;
             transition: max-height 0.3s ease-out;
+        }
+        .profile-pic-gallery img {
+            border: 4px solid transparent;
+            transition: border-color 0.2s;
+        }
+        .profile-pic-gallery img.primary {
+            border-color: #4f46e5; /* indigo-600 */
         }
     </style>
 </head>
@@ -31,9 +37,38 @@
             <main class="flex-1 overflow-x-hidden overflow-y-auto bg-slate-100 p-6">
                 <div class="max-w-4xl mx-auto">
                     <!-- Page Header -->
-                    <div class="mb-6">
-                        <h1 class="text-3xl font-bold text-slate-900">LifeCV</h1>
-                        <p class="mt-1 text-slate-600">Your comprehensive, living curriculum vitae. This is the master source for all your personal and professional data.</p>
+                    <div class="mb-6 flex justify-between items-start">
+                        <div>
+                            <h1 class="text-3xl font-bold text-slate-900">LifeCV</h1>
+                            <p class="mt-1 text-slate-600">Your comprehensive, living curriculum vitae. The master source for your digital homestead.</p>
+                        </div>
+                    </div>
+
+                    <!-- Import Hub -->
+                    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                        <h2 class="text-xl font-bold text-slate-800 mb-3">Import & Sync</h2>
+                        <p class="text-sm text-slate-500 mb-4">Quickly populate your LifeCV by importing data from existing files.</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <button id="json-import-btn" class="w-full text-left bg-slate-100 hover:bg-slate-200 p-4 rounded-lg transition-colors">
+                                <div class="flex items-center">
+                                    <i class="fas fa-code text-indigo-600 text-xl"></i>
+                                    <div class="ml-4">
+                                        <h3 class="font-bold text-slate-800">Import from JSON</h3>
+                                        <p class="text-sm text-slate-600">Paste your LifeCV data in JSON format.</p>
+                                    </div>
+                                </div>
+                            </button>
+                            <label for="file-import-input" class="w-full text-left bg-slate-100 hover:bg-slate-200 p-4 rounded-lg transition-colors cursor-pointer">
+                                <div class="flex items-center">
+                                    <i class="fas fa-file-alt text-indigo-600 text-xl"></i>
+                                    <div class="ml-4">
+                                        <h3 class="font-bold text-slate-800">Import from File (AI)</h3>
+                                        <p class="text-sm text-slate-600">Upload a CV (PDF, DOCX) to auto-fill.</p>
+                                    </div>
+                                </div>
+                            </label>
+                            <input type="file" id="file-import-input" class="hidden" accept=".pdf,.doc,.docx,.txt">
+                        </div>
                     </div>
 
                     <!-- LifeCV Container -->
@@ -47,7 +82,7 @@
     </div>
     
     <!-- MODAL for adding/editing items -->
-    <div id="item-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div id="item-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-4">
         <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg">
             <h2 id="modal-title" class="text-xl font-bold mb-4">Add Item</h2>
             <form id="modal-form">
@@ -58,6 +93,26 @@
                 <button id="modal-save" type="submit" form="modal-form" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Save</button>
             </div>
         </div>
+    </div>
+
+    <!-- MODAL for JSON Import -->
+    <div id="json-import-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-4">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl">
+            <h2 class="text-xl font-bold mb-2">Import LifeCV from JSON</h2>
+            <p class="text-sm text-slate-500 mb-4">Paste your JSON data below. Existing fields with the same name will be overwritten.</p>
+            <textarea id="json-input-area" class="w-full h-64 p-2 border border-slate-300 rounded-md font-mono text-sm" placeholder='{ "personal": { "fullName": "John Doe" }, "experience": [ ... ] }'></textarea>
+            <div class="mt-4 flex justify-end space-x-3">
+                <button id="json-modal-cancel" type="button" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300">Cancel</button>
+                <button id="json-modal-import" type="button" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Import Data</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- AI Processing Overlay -->
+    <div id="ai-processing-overlay" class="fixed inset-0 bg-black bg-opacity-75 flex-col items-center justify-center hidden z-50 text-white">
+        <i class="fas fa-robot fa-spin text-4xl"></i>
+        <p class="mt-4 text-lg font-semibold">AI is analyzing your document...</p>
+        <p class="text-sm">This may take a moment.</p>
     </div>
 
     <script src="../assets/js/app.js" type="module"></script>

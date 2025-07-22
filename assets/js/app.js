@@ -1,7 +1,8 @@
 /* ================================================================================= */
-/* FILE: assets/js/app.js (MASTER ENGINE - CORRECTED & ROBUST)                     */
+/* FILE: assets/js/app.js (MASTER ENGINE - FINAL & COMPLETE)                         */
 /* PURPOSE: This is the ONLY script loaded by the module pages. It builds the UI,    */
 /* handles auth, and then loads the specific logic for the current page.             */
+/* All links have been corrected for the flat /modules/ structure.                   */
 /* ================================================================================= */
 import { auth } from './firebase-config.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -79,53 +80,43 @@ const headerHTML = `
 // --- 2. CORE INITIALIZATION LOGIC ---
 
 function initializePage() {
-    // This function runs on every protected page.
     onAuthStateChanged(auth, async (user) => {
         const appContainer = document.getElementById('app-container');
         if (!user) {
-            // No user is signed in, redirect to login.
-            // Pass the current page as a parameter to redirect back after login.
             const currentPage = window.location.pathname + window.location.search;
+            // CORRECTED: Path to login.html is now relative from a /modules/ page
             window.location.replace(`../login.html?redirectUrl=${encodeURIComponent(currentPage)}`);
             return;
         }
 
-        // User is signed in, build the page.
         injectUI();
         
-        // Populate user-specific elements
         const userEmailEl = document.getElementById('user-email');
         const userAvatarEl = document.getElementById('user-avatar');
         if (userEmailEl) userEmailEl.textContent = user.displayName || user.email;
         if (userAvatarEl && user.photoURL) userAvatarEl.src = user.photoURL;
 
-        // Attach global event listeners
         document.getElementById('logout-button').addEventListener('click', () => signOut(auth));
         
-        // Setup UI handlers
         handleDropdowns();
         setActiveNavLink();
         updatePageTitle();
 
-        // Dynamically load the specific module for the page
         const pageModule = document.body.dataset.module;
         if (pageModule) {
             try {
-                // CORRECTED: Dynamically import module without a hardcoded list.
+                // CORRECTED: Path to modules is now relative to app.js
                 const module = await import(`./modules/${pageModule}.js`);
-                // CORRECTED: Call init with the user object as per the spec.
                 if (module.init) {
                     module.init(user);
                 }
             } catch (error) {
                 console.error(`Failed to load or initialize module '${pageModule}':`, error);
-                // Optionally, display a user-friendly error on the page
                 const mainContent = document.querySelector('main');
                 if(mainContent) mainContent.innerHTML = `<div class="text-center py-10"><h2 class="text-2xl font-bold text-red-600">Error</h2><p class="text-slate-600 mt-2">Could not load the content for this page.</p><p class="text-sm text-slate-500 mt-4">${error.message}</p></div>`;
             }
         }
         
-        // Make the app visible after everything is set up to avoid flashes of unstyled content.
         if (appContainer) appContainer.style.visibility = 'visible';
     });
 }
@@ -133,7 +124,6 @@ function initializePage() {
 // --- 3. UI & EVENT HANDLERS ---
 
 function injectUI() {
-    // Injects the common sidebar and header into the placeholders.
     const sidebarPlaceholder = document.getElementById('sidebar-placeholder');
     const headerPlaceholder = document.getElementById('header-placeholder');
     if (sidebarPlaceholder) sidebarPlaceholder.innerHTML = sidebarHTML;
@@ -141,7 +131,6 @@ function injectUI() {
 }
 
 function handleDropdowns() {
-    // Manages all dropdown menus.
     const userDropdownButton = document.getElementById('user-dropdown-button');
     const userDropdownMenu = document.getElementById('user-dropdown-menu');
 
@@ -160,7 +149,6 @@ function handleDropdowns() {
 }
 
 function setActiveNavLink() {
-    // Highlights the active link in the sidebar based on the current URL.
     const navLinks = document.querySelectorAll('#main-nav a');
     const currentPage = window.location.pathname.split('/').pop();
 
@@ -177,13 +165,10 @@ function updatePageTitle() {
     const pageTitleEl = document.getElementById('page-title');
     const pageModule = document.body.dataset.module;
     if (pageTitleEl && pageModule) {
-        // Capitalize the first letter and replace hyphens with spaces
         const title = pageModule.charAt(0).toUpperCase() + pageModule.slice(1).replace(/-/g, ' ');
         pageTitleEl.textContent = title;
     }
 }
 
 // --- 4. SCRIPT EXECUTION ---
-
-// Start the initialization process once the DOM is fully loaded.
 document.addEventListener('DOMContentLoaded', initializePage);

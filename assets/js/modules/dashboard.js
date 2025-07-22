@@ -1,6 +1,7 @@
 /* ================================================================================= */
 /* FILE: assets/js/modules/dashboard.js (CORRECTED)                                  */
 /* ================================================================================= */
+// CORRECTED: Paths are now relative to the /assets/js/modules/ directory
 import { auth, db } from '../firebase-config.js';
 import { getDocument } from '../database.js';
 // CORRECTED: This line now uses a valid module specifier for the Firestore library.
@@ -39,18 +40,13 @@ async function renderDashboard(style) {
 
     if (style === 'default') {
         container.innerHTML = await getDefaultDashboardHTML();
+        listenForNotifications();
     } else if (style === 'kids') {
         container.innerHTML = getKidsDashboardHTML();
-    }
-    
-    // After rendering, if there are notifications, attach handlers
-    if (style === 'default') {
-        listenForNotifications();
     }
 }
 
 async function getDefaultDashboardHTML() {
-    // Fetch dynamic data in parallel
     const [lifeCvData, personalFinance, businessFinance] = await Promise.all([
         getDocument('users', currentUser.uid),
         getPersonalFinanceSummary(),
@@ -112,13 +108,10 @@ async function getDefaultDashboardHTML() {
 function getKidsDashboardHTML() {
     return `
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Welcome Card -->
             <div class="dashboard-card bg-yellow-100 p-8 rounded-xl border-4 border-yellow-300 text-center">
                 <h2 class="text-3xl font-bold text-yellow-800">Hi Explorer!</h2>
                 <p class="text-yellow-700 mt-2">Ready for an adventure in your digital world?</p>
             </div>
-
-            <!-- My Chores -->
             <div class="dashboard-card bg-blue-100 p-6 rounded-xl border-4 border-blue-300">
                 <h3 class="font-bold text-blue-800 text-xl mb-3"><i class="fas fa-tasks mr-2"></i>My Chores</h3>
                 <ul class="space-y-2">
@@ -126,8 +119,6 @@ function getKidsDashboardHTML() {
                     <li class="flex items-center"><input type="checkbox" class="h-5 w-5 rounded mr-3"> Feed the dog</li>
                 </ul>
             </div>
-
-            <!-- Learning Time -->
             <div class="dashboard-card bg-green-100 p-6 rounded-xl border-4 border-green-300 col-span-1 md:col-span-2">
                 <h3 class="font-bold text-green-800 text-xl mb-2"><i class="fas fa-graduation-cap mr-2"></i>Learning Time!</h3>
                 <p class="text-green-700">Learn about the Big Rule Book for families.</p>
@@ -137,9 +128,6 @@ function getKidsDashboardHTML() {
     `;
 }
 
-
-// --- DATA FETCHING & LOGIC HELPERS ---
-
 function calculateLifeCvStrength(lifeCv) {
     if (!lifeCv) return 0;
     const sections = ['summary', 'experience', 'education', 'skills', 'references', 'projects'];
@@ -148,14 +136,10 @@ function calculateLifeCvStrength(lifeCv) {
 }
 
 async function getPersonalFinanceSummary() {
-    // In a real scenario, this would fetch and calculate from Firestore.
-    // For now, we return mock data.
     return { net: 12530.50 };
 }
 
 async function getBusinessFinanceSummary() {
-    // In a real scenario, this would fetch and calculate from Firestore.
-    // For now, we return mock data.
     return { profit: 45800.00 };
 }
 

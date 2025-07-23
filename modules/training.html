@@ -6,9 +6,10 @@
     <title>The Hub - Training</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Added Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/style.css">
     <style>
-        /* Custom styles for the training page */
         body {
             font-family: 'Inter', sans-serif;
         }
@@ -32,7 +33,12 @@
             margin-left: -30px;
             margin-top: -30px;
         }
-
+        .course-card-image {
+            background-color: #e5e7eb; /* gray-200 */
+        }
+        .dark .course-card-image {
+            background-color: #374151; /* gray-700 */
+        }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -62,7 +68,6 @@
                             <label for="category-filter" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
                             <select id="category-filter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
                                 <option value="all">All Categories</option>
-                                <!-- Categories will be populated by JS -->
                             </select>
                         </div>
                         <div>
@@ -101,12 +106,18 @@
     <!-- Footer will be loaded here by main.js -->
     <div id="footer-placeholder"></div>
 
-    <!-- Firebase -->
+    <!-- Firebase v8 SDKs (to match your existing project) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-    <!-- App Scripts -->
+    <!--
+      IMPORTANT: Your existing scripts must load in the correct order.
+      1. firebase-config.js (initializes app)
+      2. auth.js (signs in user, dispatches 'firebase-ready' event)
+      3. main.js (loads components like header/sidebar)
+      4. training-lms.js (waits for 'firebase-ready' then fetches courses)
+    -->
     <script src="../assets/js/firebase-config.js"></script>
     <script src="../assets/js/auth.js"></script>
     <script src="../assets/js/main.js"></script>

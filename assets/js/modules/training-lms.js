@@ -1,12 +1,8 @@
 // /assets/js/modules/training-lms.js
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Check if Firebase is initialized
-    if (typeof firebase === 'undefined' || typeof firebase.firestore === 'undefined') {
-        console.error("Firebase is not initialized. Make sure firebase-config.js is loaded correctly.");
-        return;
-    }
-
+// ** FIX **: Wait for the 'firebase-ready' event from auth.js before running.
+document.addEventListener('firebase-ready', () => {
+    
     const db = firebase.firestore();
     const courseGrid = document.getElementById('course-grid');
     const loadingIndicator = document.getElementById('loading-indicator');
@@ -18,6 +14,28 @@ document.addEventListener('DOMContentLoaded', () => {
     let allCourses = []; // Cache for all courses
 
     /**
+     * ** NEW **: Generates an SVG placeholder image as a data URL.
+     * @param {string} title - The course title to display in the SVG.
+     * @returns {string} - A data URL for the generated SVG.
+     */
+    function generateSvgPlaceholder(title) {
+        const words = title.split(' ');
+        const initials = words.length > 1 
+            ? (words[0][0] + words[1][0]).toUpperCase()
+            : title.substring(0, 2).toUpperCase();
+        
+        const svg = `
+            <svg width="600" height="400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400">
+                <rect width="100%" height="100%" fill="#4a5568"></rect>
+                <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Inter, sans-serif" font-size="90" fill="#ffffff" font-weight="bold">${initials}</text>
+                <text x="50%" y="70%" dominant-baseline="middle" text-anchor="middle" font-family="Inter, sans-serif" font-size="30" fill="#cbd5e0">${title}</text>
+            </svg>
+        `;
+        return `data:image/svg+xml;base64,${btoa(svg)}`;
+    }
+
+
+    /**
      * Fetches courses from Firestore and populates the page
      */
     async function loadCourses() {
@@ -27,18 +45,22 @@ document.addEventListener('DOMContentLoaded', () => {
         courseGrid.innerHTML = '';
 
         try {
-            const coursesCollection = await db.collection('courses').get();
+            const coursesCollection = await db.collection('courses').orderBy('title').get();
             allCourses = coursesCollection.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             
             if (allCourses.length > 0) {
                 populateFilters(allCourses);
                 displayCourses(allCourses);
             } else {
-                courseGrid.innerHTML = '<p class="text-center col-span-full">No courses available yet. Run the seed script to populate content.</p>';
+                noResults.classList.remove('hidden');
+                noResults.innerHTML = `
+                    <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-300">No Courses in Database</h2>
+                    <p class="text-gray-500 dark:text-gray-400 mt-2">Run the 'seed-courses.js' script from the console to populate content.</p>
+                `;
             }
         } catch (error) {
             console.error("Error fetching courses: ", error);
-            courseGrid.innerHTML = '<p class="text-center col-span-full text-red-500">Could not load courses. Please check the console for errors.</p>';
+            courseGrid.innerHTML = `<p class="text-center col-span-full text-red-500">Could not load courses. Ensure Firestore security rules allow reads on the 'courses' collection.</p>`;
         } finally {
             loadingIndicator.style.display = 'none';
         }
@@ -54,47 +76,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (courses.length === 0) {
             noResults.classList.remove('hidden');
+            noResults.innerHTML = `
+                <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-300">No Courses Found</h2>
+                <p class="text-gray-500 dark:text-gray-400 mt-2">Try adjusting your filters to find what you're looking for.</p>
+            `;
             return;
         }
 
         courses.forEach(course => {
             const card = document.createElement('div');
-            card.className = 'course-card bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden';
+            card.className = 'course-card bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col';
             
-            const audienceTagColor = course.audience === 'children' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800';
-            const typeTagColor = course.type === 'game' ? 'bg-yellow-100 text-yellow-800' : 'bg-indigo-100 text-indigo-800';
+            const audienceTagColor = course.audience === 'children' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+            const typeTagColor = course.type === 'game' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200';
+            
+            // ** FIX **: Use the SVG placeholder if no imageUrl is provided
+            const imageUrl = course.imageUrl || generateSvgPlaceholder(course.title);
 
             card.innerHTML = `
-                <img src="${course.imageUrl || 'https://placehold.co/600x400/3498db/ffffff?text=' + encodeURIComponent(course.title)}" alt="${course.title}" class="w-full h-48 object-cover">
-                <div class="p-6">
+                <div class="course-card-image">
+                    <img src="${imageUrl}" alt="${course.title}" class="w-full h-48 object-cover">
+                </div>
+                <div class="p-6 flex-grow flex flex-col">
                     <div class="flex justify-between items-center mb-2">
                         <p class="text-sm text-indigo-500 dark:text-indigo-400 font-semibold">${course.category || 'General'}</p>
-                        <div>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">${course.title}</h3>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm mb-4 flex-grow">${course.description || 'No description available.'}</p>
+                    <div class="flex justify-between items-center mt-auto pt-4">
+                         <div>
                            <span class="inline-block rounded-full px-3 py-1 text-xs font-semibold mr-2 ${audienceTagColor}">${course.audience || 'All'}</span>
                            <span class="inline-block rounded-full px-3 py-1 text-xs font-semibold ${typeTagColor}">${course.type || 'Course'}</span>
                         </div>
+                        <a href="${course.link || '#'}" class="text-center block bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
+                           <i class="fas fa-play mr-2"></i>Start
+                        </a>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">${course.title}</h3>
-                    <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">${course.description || 'No description available.'}</p>
-                    <a href="${course.link || '#'}" class="w-full text-center block bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
-                        Start Learning
-                    </a>
                 </div>
             `;
             courseGrid.appendChild(card);
         });
     }
 
-    /**
-     * Populates the category filter dropdown from the course data
-     * @param {Array<Object>} courses - The array of all courses
-     */
     function populateFilters(courses) {
         const categories = [...new Set(courses.map(course => course.category).filter(Boolean))];
-        
-        // Clear existing options except the first one
         categoryFilter.innerHTML = '<option value="all">All Categories</option>';
-
         categories.sort().forEach(category => {
             const option = document.createElement('option');
             option.value = category;
@@ -103,9 +129,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /**
-     * Filters the courses based on the selected filter values
-     */
     function applyFilters() {
         const category = categoryFilter.value;
         const audience = audienceFilter.value;
@@ -126,11 +149,9 @@ document.addEventListener('DOMContentLoaded', () => {
         displayCourses(filteredCourses);
     }
 
-    // Add event listeners to filters
     categoryFilter.addEventListener('change', applyFilters);
     audienceFilter.addEventListener('change', applyFilters);
     typeFilter.addEventListener('change', applyFilters);
 
-    // Initial load
     loadCourses();
 });

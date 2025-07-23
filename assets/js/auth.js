@@ -21,12 +21,14 @@ import { auth } from './firebase-config.js';
 
 // --- This function runs on every page that includes this script ---
 const handleAuthProtection = () => {
+    // ** NEW **: A flag to ensure we only send the ready signal once.
+    let firebaseReadyDispatched = false;
+
     onAuthStateChanged(auth, (user) => {
         const isProtectedPage = !!document.getElementById('app-container');
         
         if (user) {
             // User is logged in.
-            // If on a protected page, make it visible.
             if (isProtectedPage) {
                 const container = document.getElementById('app-container');
                 if(container) container.style.visibility = 'visible';
@@ -38,11 +40,17 @@ const handleAuthProtection = () => {
             }
         } else {
             // User is NOT logged in.
-            // If they are trying to access a protected page, redirect them.
             if (isProtectedPage) {
-                // Use a relative path that works from any module depth.
                 window.location.replace('../login.html'); 
             }
+        }
+
+        // ** NEW **: After the first auth check (whether user is logged in or not),
+        // we signal that Firebase auth is ready for other scripts to use.
+        if (!firebaseReadyDispatched) {
+            document.dispatchEvent(new CustomEvent('firebase-ready'));
+            firebaseReadyDispatched = true;
+            console.log('Auth state checked. "firebase-ready" event dispatched.');
         }
     });
 };

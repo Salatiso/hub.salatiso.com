@@ -2,11 +2,11 @@
 // IMPORTANT: This is a one-time use script.
 // Run this from your browser's console on any page of hub.salatiso.com
 // where firebase-config.js is loaded to populate the initial courses.
-// Make sure you are logged in as an admin if you have security rules set up.
 
 async function seedCoursesToFirestore() {
     if (typeof firebase === 'undefined' || typeof firebase.firestore === 'undefined') {
         console.error("Firebase is not initialized.");
+        alert("Firebase not ready. Make sure you are on a page where Firebase is loaded.");
         return;
     }
 
@@ -16,8 +16,7 @@ async function seedCoursesToFirestore() {
     console.log("Starting to seed courses...");
 
     // This is a sample of your courses from flamea.org/training.
-    // In a real scenario, you would have a more robust way to get this list,
-    // but for this one-time seed, we can define it here.
+    // You should expand this list to include ALL your courses and games.
     const coursesToSeed = [
         {
             title: "The Ancestors Within",
@@ -25,8 +24,8 @@ async function seedCoursesToFirestore() {
             category: "Culture & Heritage",
             audience: "adults",
             type: "course",
-            link: "/flamea.org/training/course-ancestors-within.html",
-            imageUrl: "/flamea.org/assets/images/know_yourself.jpg"
+            link: "../flamea.org/training/course-ancestors-within.html",
+            imageUrl: "../flamea.org/assets/images/know_yourself.jpg"
         },
         {
             title: "The Children's Act",
@@ -34,8 +33,8 @@ async function seedCoursesToFirestore() {
             category: "Legal & Rights",
             audience: "adults",
             type: "course",
-            link: "/flamea.org/training/course-childrens-act.html",
-            imageUrl: "https://placehold.co/600x400/e74c3c/ffffff?text=Children's+Act"
+            link: "../flamea.org/training/course-childrens-act.html",
+            imageUrl: "" // Will be auto-generated
         },
         {
             title: "Co-Parenting Essentials",
@@ -43,8 +42,8 @@ async function seedCoursesToFirestore() {
             category: "Family & Parenting",
             audience: "adults",
             type: "course",
-            link: "/flamea.org/training/course-coparenting.html",
-            imageUrl: "https://placehold.co/600x400/2ecc71/ffffff?text=Co-Parenting"
+            link: "../flamea.org/training/course-coparenting.html",
+            imageUrl: "" // Will be auto-generated
         },
         {
             title: "The Constitution",
@@ -52,8 +51,8 @@ async function seedCoursesToFirestore() {
             category: "Legal & Rights",
             audience: "adults",
             type: "course",
-            link: "/flamea.org/training/course-constitution.html",
-            imageUrl: "https://placehold.co/600x400/f1c40f/ffffff?text=The+Constitution"
+            link: "../flamea.org/training/course-constitution.html",
+            imageUrl: "" // Will be auto-generated
         },
         {
             title: "Kid's Rights Shield",
@@ -61,8 +60,8 @@ async function seedCoursesToFirestore() {
             category: "Legal & Rights",
             audience: "children",
             type: "course",
-            link: "/flamea.org/training/course_kids-rights_shield.html",
-            imageUrl: "https://placehold.co/600x400/1abc9c/ffffff?text=Kid's+Rights"
+            link: "../flamea.org/training/course_kids-rights_shield.html",
+            imageUrl: "" // Will be auto-generated
         },
         {
             title: "Constitution Champions",
@@ -70,8 +69,8 @@ async function seedCoursesToFirestore() {
             category: "Legal & Rights",
             audience: "children",
             type: "game",
-            link: "/flamea.org/games/constitution-champions.html",
-            imageUrl: "https://placehold.co/600x400/9b59b6/ffffff?text=Constitution+Champions"
+            link: "../flamea.org/games/constitution-champions.html",
+            imageUrl: "" // Will be auto-generated
         },
         {
             title: "Customs & Consequences",
@@ -79,25 +78,29 @@ async function seedCoursesToFirestore() {
             category: "Culture & Heritage",
             audience: "adults",
             type: "customs",
-            link: "/flamea.org/customs.html",
-            imageUrl: "https://placehold.co/600x400/34495e/ffffff?text=Customs"
+            link: "../flamea.org/customs.html",
+            imageUrl: "" // Will be auto-generated
         }
         // Add all other courses and games here in the same format
     ];
 
+    let count = 0;
     coursesToSeed.forEach(course => {
-        // We create a new document reference in the 'courses' collection
+        // Create a new document reference in the 'courses' collection
         const courseRef = db.collection("courses").doc();
         batch.set(courseRef, course);
+        count++;
     });
 
     try {
         await batch.commit();
-        console.log(`Successfully seeded ${coursesToSeed.length} courses to Firestore.`);
-        alert(`Successfully seeded ${coursesToSeed.length} courses to Firestore.`);
+        const message = `Successfully seeded ${count} courses to Firestore.`;
+        console.log(message);
+        alert(message);
     } catch (error) {
+        const errorMessage = "Error seeding courses. Check the console for details. This might be due to Firestore security rules not allowing writes.";
         console.error("Error seeding courses: ", error);
-        alert("Error seeding courses. Check the console for details.");
+        alert(errorMessage);
     }
 }
 

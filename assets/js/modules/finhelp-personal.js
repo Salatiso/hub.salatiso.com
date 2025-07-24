@@ -630,11 +630,63 @@ window.calculateAndDisplayCreditScore = async () => {
 
 
 // --- UTILITY FUNCTIONS ---
-function showNotification(message, type = 'info') { /* ... same as before ... */ }
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 transition-all duration-300 ${
+        type === 'success' ? 'bg-green-500 text-white' :
+        type === 'error' ? 'bg-red-500 text-white' :
+        type === 'warning' ? 'bg-yellow-500 text-white' :
+        'bg-blue-500 text-white'
+    }`;
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'} mr-2"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
 
-
-// --- HTML TEMPLATE ---
-function getPersonalWorkspaceHTML() { /* ... same as before ... */ }
+function getPersonalWorkspaceHTML() {
+    return `
+        <div class="bg-white rounded-lg shadow-sm mb-6">
+            <div class="border-b border-slate-200">
+                <nav class="flex space-x-8 px-6" aria-label="Tabs">
+                    <button class="tab-button active py-4 px-1 border-b-2 border-indigo-500 font-medium text-sm text-indigo-600" data-tab="dashboard">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                    </button>
+                    <button class="tab-button py-4 px-1 border-b-2 border-transparent font-medium text-sm text-slate-500 hover:text-slate-700 hover:border-slate-300" data-tab="budget">
+                        <i class="fas fa-wallet mr-2"></i>Budget
+                    </button>
+                    <button class="tab-button py-4 px-1 border-b-2 border-transparent font-medium text-sm text-slate-500 hover:text-slate-700 hover:border-slate-300" data-tab="assets-liabilities">
+                        <i class="fas fa-balance-scale mr-2"></i>Assets & Liabilities
+                    </button>
+                    <button class="tab-button py-4 px-1 border-b-2 border-transparent font-medium text-sm text-slate-500 hover:text-slate-700 hover:border-slate-300" data-tab="savings">
+                        <i class="fas fa-piggy-bank mr-2"></i>Savings Goals
+                    </button>
+                    <button class="tab-button py-4 px-1 border-b-2 border-transparent font-medium text-sm text-slate-500 hover:text-slate-700 hover:border-slate-300" data-tab="calculators">
+                        <i class="fas fa-calculator mr-2"></i>Calculators
+                    </button>
+                    <button class="tab-button py-4 px-1 border-b-2 border-transparent font-medium text-sm text-slate-500 hover:text-slate-700 hover:border-slate-300" data-tab="credit">
+                        <i class="fas fa-credit-card mr-2"></i>Credit Profile
+                    </button>
+                    <button class="tab-button py-4 px-1 border-b-2 border-transparent font-medium text-sm text-slate-500 hover:text-slate-700 hover:border-slate-300" data-tab="kids">
+                        <i class="fas fa-child mr-2"></i>Kids Dashboard
+                    </button>
+                </nav>
+            </div>
+        </div>
+        <div id="personal-tab-content" class="bg-white rounded-lg shadow-sm p-6">
+            <!-- Tab content will be rendered here -->
+        </div>
+    `;
+}
 
 // Initialize the FinHelp Personal module when Firebase is ready
 document.addEventListener('firebase-ready', () => {

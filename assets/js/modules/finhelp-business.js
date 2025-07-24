@@ -68,6 +68,9 @@ function attachBusinessEventListeners() {
                         await handleDeleteBill(id);
                     }
                     break;
+                case 'generate-report':
+                    generateProfitAndLossReport();
+                    break;
             }
         }
     });
@@ -87,7 +90,13 @@ async function renderBusinessTabContent(tabName) {
     let content = '';
     switch (tabName) {
         case 'dashboard':
-            content = await renderBusinessDashboard();
+            content = renderBusinessDashboard();
+            // Attach listeners to update dashboard in real-time
+            businessDataUnsubscribe = getCollectionRealtime(`users/${currentUser.uid}/business/main/invoices`, (invoices) => {
+                getCollectionRealtime(`users/${currentUser.uid}/business/main/bills`, (bills) => {
+                    updateDashboardMetrics(invoices, bills);
+                });
+            });
             break;
         case 'sales':
             content = renderSalesTab();
@@ -108,6 +117,9 @@ async function renderBusinessTabContent(tabName) {
                 renderContactsList(contacts);
             });
             break;
+        case 'reports':
+            content = renderReportsTab();
+            break;
         default:
             content = `<div class="text-center py-10">
                 <h3 class="font-semibold text-lg text-slate-600">${tabName.charAt(0).toUpperCase() + tabName.slice(1)} Coming Soon</h3>
@@ -119,30 +131,24 @@ async function renderBusinessTabContent(tabName) {
 
 // --- TAB RENDERING FUNCTIONS ---
 
-async function renderBusinessDashboard() {
-    // In a real app, you'd fetch and calculate these values.
-    const overdueInvoices = 1250.00;
-    const outstandingRevenue = 8750.00;
-    const openBills = 3200.00;
-    const netProfit30Days = 15300.00;
-
+function renderBusinessDashboard() {
     return `
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div class="bg-red-100 border-l-4 border-red-500 p-6 rounded-lg shadow">
                 <h4 class="font-semibold text-red-800">Overdue Invoices</h4>
-                <p class="text-3xl font-bold mt-1 text-red-900">R ${overdueInvoices.toLocaleString()}</p>
+                <p id="db-overdue-invoices" class="text-3xl font-bold mt-1 text-red-900">R 0.00</p>
             </div>
             <div class="bg-yellow-100 border-l-4 border-yellow-500 p-6 rounded-lg shadow">
                 <h4 class="font-semibold text-yellow-800">Outstanding Revenue</h4>
-                <p class="text-3xl font-bold mt-1 text-yellow-900">R ${outstandingRevenue.toLocaleString()}</p>
+                <p id="db-outstanding-revenue" class="text-3xl font-bold mt-1 text-yellow-900">R 0.00</p>
             </div>
             <div class="bg-blue-100 border-l-4 border-blue-500 p-6 rounded-lg shadow">
                 <h4 class="font-semibold text-blue-800">Open Bills</h4>
-                <p class="text-3xl font-bold mt-1 text-blue-900">R ${openBills.toLocaleString()}</p>
+                <p id="db-open-bills" class="text-3xl font-bold mt-1 text-blue-900">R 0.00</p>
             </div>
             <div class="bg-green-100 border-l-4 border-green-500 p-6 rounded-lg shadow">
                 <h4 class="font-semibold text-green-800">30-Day Net Profit</h4>
-                <p class="text-3xl font-bold mt-1 text-green-900">R ${netProfit30Days.toLocaleString()}</p>
+                <p id="db-net-profit" class="text-3xl font-bold mt-1 text-green-900">R 0.00</p>
             </div>
         </div>
         <div class="mt-8 bg-white p-6 rounded-xl shadow-md">
@@ -153,6 +159,46 @@ async function renderBusinessDashboard() {
             </div>
         </div>
     `;
+}
+
+function updateDashboardMetrics(invoices, bills) {
+    const today = new Date();
+    const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    const overdueInvoices = invoices.reduce((sum, inv) => {
+        const dueDate = new Date(inv.dueDate);
+        if (inv.status !== 'Paid' && dueDate < today) {
+            return sum + inv.total;
+        }
+        return sum;
+    }, 0);
+
+    const outstandingRevenue = invoices.reduce((sum, inv) => inv.status !== 'Paid' ? sum + inv.total : sum, 0);
+    
+    const openBills = bills.reduce((sum, bill) => bill.status !== 'Paid' ? sum + bill.total : sum, 0);
+
+    const income30Days = invoices.reduce((sum, inv) => {
+        const issueDate = new Date(inv.issueDate);
+        if (issueDate >= thirtyDaysAgo) {
+            return sum + inv.total;
+        }
+        return sum;
+    }, 0);
+
+    const expenses30Days = bills.reduce((sum, bill) => {
+        const billDate = new Date(bill.billDate);
+        if (billDate >= thirtyDaysAgo) {
+            return sum + bill.total;
+        }
+        return sum;
+    }, 0);
+
+    const netProfit30Days = income30Days - expenses30Days;
+
+    document.getElementById('db-overdue-invoices').textContent = `R ${overdueInvoices.toLocaleString()}`;
+    document.getElementById('db-outstanding-revenue').textContent = `R ${outstandingRevenue.toLocaleString()}`;
+    document.getElementById('db-open-bills').textContent = `R ${openBills.toLocaleString()}`;
+    document.getElementById('db-net-profit').textContent = `R ${netProfit30Days.toLocaleString()}`;
 }
 
 function renderSalesTab() {
@@ -261,7 +307,6 @@ function renderBillsList(bills) {
     }).join('');
 }
 
-
 function renderContactsTab() {
     return `
         <div class="flex justify-between items-center mb-6">
@@ -308,6 +353,77 @@ function renderContactsList(contacts) {
     `).join('');
 }
 
+function renderReportsTab() {
+    return `
+        <h2 class="text-2xl font-bold text-slate-800 mb-4">Reports</h2>
+        <div class="bg-white p-6 rounded-xl shadow-md">
+            <h3 class="font-semibold text-lg mb-4">Profit & Loss Statement</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                <div>
+                    <label for="report-start-date" class="block text-sm font-medium text-slate-700">Start Date</label>
+                    <input type="date" id="report-start-date" class="input">
+                </div>
+                <div>
+                    <label for="report-end-date" class="block text-sm font-medium text-slate-700">End Date</label>
+                    <input type="date" id="report-end-date" class="input">
+                </div>
+                <button data-action="generate-report" class="btn-primary h-10">Generate Report</button>
+            </div>
+            <div id="report-results" class="mt-8"></div>
+        </div>
+    `;
+}
+
+async function generateProfitAndLossReport() {
+    const startDate = document.getElementById('report-start-date').value;
+    const endDate = document.getElementById('report-end-date').value;
+    const resultsContainer = document.getElementById('report-results');
+
+    if (!startDate || !endDate) {
+        resultsContainer.innerHTML = `<p class="text-red-500">Please select a start and end date.</p>`;
+        return;
+    }
+
+    resultsContainer.innerHTML = `<p class="text-slate-500">Generating report...</p>`;
+
+    try {
+        // Get all invoices and bills
+        const invoicesDoc = await getDocument(`users/${currentUser.uid}/business/main`, 'invoices');
+        const billsDoc = await getDocument(`users/${currentUser.uid}/business/main`, 'bills');
+
+        const invoices = invoicesDoc ? Object.values(invoicesDoc) : [];
+        const bills = billsDoc ? Object.values(billsDoc) : [];
+
+        const filteredInvoices = invoices.filter(inv => inv.issueDate >= startDate && inv.issueDate <= endDate);
+        const filteredBills = bills.filter(bill => bill.billDate >= startDate && bill.billDate <= endDate);
+
+        const totalRevenue = filteredInvoices.reduce((sum, inv) => sum + inv.total, 0);
+        const totalExpenses = filteredBills.reduce((sum, bill) => sum + bill.total, 0);
+        const netProfit = totalRevenue - totalExpenses;
+
+        resultsContainer.innerHTML = `
+            <h4 class="font-bold text-xl mb-4">Profit & Loss from ${startDate} to ${endDate}</h4>
+            <div class="space-y-3">
+                <div class="flex justify-between items-center p-4 bg-green-50 rounded-lg">
+                    <span class="font-medium text-green-800">Total Revenue (from Invoices)</span>
+                    <span class="font-bold text-lg text-green-900">R ${totalRevenue.toLocaleString()}</span>
+                </div>
+                <div class="flex justify-between items-center p-4 bg-red-50 rounded-lg">
+                    <span class="font-medium text-red-800">Total Expenses (from Bills)</span>
+                    <span class="font-bold text-lg text-red-900">R ${totalExpenses.toLocaleString()}</span>
+                </div>
+                <div class="flex justify-between items-center p-4 bg-slate-100 rounded-lg border-t-2 border-slate-800">
+                    <span class="font-bold text-slate-900">Net Profit</span>
+                    <span class="font-bold text-2xl text-slate-900">R ${netProfit.toLocaleString()}</span>
+                </div>
+            </div>
+        `;
+    } catch (error) {
+        console.error('Error generating report:', error);
+        resultsContainer.innerHTML = `<p class="text-red-500">Error generating report. Please try again.</p>`;
+    }
+}
+
 // --- MODAL & FORM HANDLING ---
 
 function createModal(id, title, formHTML, size = 'max-w-md') {
@@ -332,10 +448,79 @@ function removeModal(id) {
     modalContainer?.remove();
 }
 
-window.openContactModal = async (contactId = null) => { /* ... same as before ... */ };
+window.openContactModal = async (contactId = null) => {
+    let contact = {};
+    if (contactId) {
+        contact = await getDocument(`users/${currentUser.uid}/business/main/contacts`, contactId) || {};
+    }
+
+    const formHTML = `
+        <form id="contact-form" data-id="${contact.id || ''}">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Name</label>
+                    <input type="text" id="contact-name" class="input" value="${contact.name || ''}" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Email</label>
+                    <input type="email" id="contact-email" class="input" value="${contact.email || ''}">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Phone</label>
+                    <input type="tel" id="contact-phone" class="input" value="${contact.phone || ''}">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Type</label>
+                    <select id="contact-type" class="input">
+                        <option value="Customer" ${contact.type === 'Customer' ? 'selected' : ''}>Customer</option>
+                        <option value="Supplier" ${contact.type === 'Supplier' ? 'selected' : ''}>Supplier</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button type="button" onclick="closeModal('contact-modal')" class="btn-secondary">Cancel</button>
+                <button type="submit" class="btn-primary">Save Contact</button>
+            </div>
+        </form>
+    `;
+    
+    createModal('contact-modal', contact.id ? 'Edit Contact' : 'Add New Contact', formHTML);
+    document.getElementById('contact-form').addEventListener('submit', handleContactFormSubmit);
+};
+
 window.closeModal = (id) => removeModal(id);
-async function handleContactFormSubmit(e) { /* ... same as before ... */ }
-async function handleDeleteContact(contactId) { /* ... same as before ... */ }
+
+async function handleContactFormSubmit(e) {
+    e.preventDefault();
+    const form = e.target;
+    const contactId = form.dataset.id;
+
+    const contactData = {
+        name: document.getElementById('contact-name').value,
+        email: document.getElementById('contact-email').value,
+        phone: document.getElementById('contact-phone').value,
+        type: document.getElementById('contact-type').value
+    };
+
+    try {
+        await saveDocument(`users/${currentUser.uid}/business/main/contacts`, contactData, contactId);
+        showNotification('Contact saved successfully.', 'success');
+        removeModal('contact-modal');
+    } catch (error) {
+        console.error("Error saving contact:", error);
+        showNotification('Failed to save contact.', 'error');
+    }
+}
+
+async function handleDeleteContact(contactId) {
+    try {
+        await deleteDocument(`users/${currentUser.uid}/business/main/contacts`, contactId);
+        showNotification('Contact deleted.', 'success');
+    } catch (error) {
+        console.error("Error deleting contact:", error);
+        showNotification('Failed to delete contact.', 'error');
+    }
+}
 
 window.openInvoiceModal = async (invoiceId = null) => {
     let invoice = { lineItems: [{ description: '', quantity: 1, price: 0 }] }; // Default with one line item
@@ -514,9 +699,22 @@ async function handleDeleteBill(billId) {
     }
 }
 
-
 // --- UTILITY FUNCTIONS ---
-function showNotification(message, type = 'info') { /* ... same as before ... */ }
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+        type === 'success' ? 'bg-green-500 text-white' :
+        type === 'error' ? 'bg-red-500 text-white' :
+        'bg-blue-500 text-white'
+    }`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
 
 // --- HTML TEMPLATE ---
 function getBusinessWorkspaceHTML() {

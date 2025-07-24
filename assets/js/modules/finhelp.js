@@ -1,65 +1,46 @@
 /* ================================================================================= */
-/* FILE: assets/js/modules/finhelp.js (CONTROLLER - COMPLETE IMPLEMENTATION)        */
+/* FILE: assets/js/modules/finhelp.js (CONTROLLER & PERSONAL MODULE)                 */
 /* PURPOSE: Complete Personal and Business finance modules with all features.        */
 /* ================================================================================= */
-
 import { auth } from '../firebase-config.js';
-import { saveDocument, getDocument, updateDocument, addDocument, deleteDocument } from '../database.js';
+import { getDocument, saveDocument } from '../database.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-let personalFinanceModule;
-let businessFinanceModule;
-let isPersonalModuleLoaded = false;
-let isBusinessModuleLoaded = false;
 let currentUser = null;
+let userFinancialData = {}; // Local cache for all financial data
 
-// Sample financial data structure - replace with Firebase data
-let userFinancialData = {
-    personal: {
-        income: [],
-        expenses: [],
-        assets: [],
-        liabilities: [],
-        savingsGoals: [],
-        creditProfile: {},
-        kidsFinance: [],
-        taxHistory: [],
-        insurance: [],
-        documents: []
-    },
-    business: {
-        income: [],
-        expenses: [],
-        assets: [],
-        liabilities: []
-    },
-    settings: {
-        currency: 'ZAR',
-        taxYear: 2024
-    }
-};
+// Constants
+const SA_MINIMUM_WAGE_HOURLY = 27.58; // As of March 2024
 
-export function init(user) {
-    if (!user || !user.uid) {
-        console.error("FinHelp Error: User not authenticated.");
+/**
+ * Main initializer for the entire FinHelp module (Personal & Business).
+ * @param {object} user - The authenticated Firebase user object.
+ */
+export async function init(user) {
+    if (!user) {
+        console.error("FinHelp: User not authenticated.");
         return;
     }
     currentUser = user;
     console.log("FinHelp main controller initialized for user:", user.uid);
 
-    // Get workspace elements
-    const personalWorkspace = document.getElementById('personal-workspace');
-    const businessWorkspace = document.getElementById('business-workspace');
+    await loadFinancialData();
+    setupWorkspaceSwitching();
+    
+    // Default to loading the personal module
+    await loadPersonalModule();
+}
+
+/**
+ * Sets up the event listeners for switching between Personal and Business workspaces.
+ */
+function setupWorkspaceSwitching() {
     const personalBtn = document.getElementById('workspace-personal-btn');
     const businessBtn = document.getElementById('workspace-business-btn');
+    const personalWorkspace = document.getElementById('personal-workspace');
+    const businessWorkspace = document.getElementById('business-workspace');
 
-    if (!personalWorkspace || !businessWorkspace || !personalBtn || !businessBtn) {
-        console.error("Required workspace elements not found");
-        return;
-    }
-
-    // Setup workspace switching
-    personalBtn.addEventListener('click', () => {
+    personalBtn?.addEventListener('click', () => {
         personalWorkspace.classList.remove('hidden');
         businessWorkspace.classList.add('hidden');
         personalBtn.classList.add('active');
@@ -67,501 +48,239 @@ export function init(user) {
         loadPersonalModule();
     });
 
-    businessBtn.addEventListener('click', () => {
+    businessBtn?.addEventListener('click', () => {
         personalWorkspace.classList.add('hidden');
         businessWorkspace.classList.remove('hidden');
         businessBtn.classList.add('active');
         personalBtn.classList.remove('active');
         loadBusinessModule();
     });
-
-    // Load default financial data and start with personal module
-    loadDefaultFinancialData();
-    loadPersonalModule();
 }
 
-function loadDefaultFinancialData() {
-    // Sample data for demonstration - replace with Firebase loading
-    userFinancialData.personal.income = [
-        { id: '1', source: 'Salary', monthlyAmount: 35000, type: 'salary' },
-        { id: '2', source: 'Freelance', monthlyAmount: 8000, type: 'freelance' }
-    ];
-    
-    userFinancialData.personal.expenses = [
-        { id: '1', category: 'Housing', monthlyAmount: 12000, type: 'rent' },
-        { id: '2', category: 'Food', monthlyAmount: 4500, type: 'groceries' },
-        { id: '3', category: 'Transport', monthlyAmount: 3200, type: 'fuel' }
-    ];
-    
-    userFinancialData.personal.liabilities = [
-        { id: '1', type: 'credit_card', name: 'FNB Credit Card', currentBalance: 15000, creditLimit: 25000, monthlyPayment: 1200 },
-        { id: '2', type: 'personal_loan', name: 'Car Loan', currentBalance: 180000, monthlyPayment: 4500 }
-    ];
-    
-    userFinancialData.personal.assets = [
-        { id: '1', type: 'savings', name: 'Emergency Fund', currentValue: 45000, liquid: true },
-        { id: '2', type: 'investment', name: 'Unit Trusts', currentValue: 85000, liquid: false }
-    ];
-
-    userFinancialData.business.income = [
-        { id: '1', source: 'Service Sales', monthlyAmount: 45000, type: 'revenue' },
-        { id: '2', source: 'Product Sales', monthlyAmount: 25000, type: 'revenue' }
-    ];
-    
-    userFinancialData.business.expenses = [
-        { id: '1', category: 'Office Rent', monthlyAmount: 8000, type: 'fixed' },
-        { id: '2', category: 'Marketing', monthlyAmount: 5000, type: 'variable' },
-        { id: '3', category: 'Utilities', monthlyAmount: 2500, type: 'fixed' }
-    ];
-}
-
+/**
+ * Loads and renders the personal finance module.
+ */
 async function loadPersonalModule() {
-    if (isPersonalModuleLoaded) {
-        return;
-    }
-    
-    try {
-        console.log('Loading personal finance module...');
-        await renderPersonalFinanceHub();
-        isPersonalModuleLoaded = true;
-        console.log('Personal finance module loaded successfully');
-    } catch (error) {
-        console.error("Failed to load personal finance module:", error);
-        const personalWorkspace = document.getElementById('personal-workspace');
-        if (personalWorkspace) {
-            personalWorkspace.innerHTML = `<p class="text-red-500 text-center">Error loading personal finance tools: ${error.message}</p>`;
-        }
-    }
-}
-
-async function loadBusinessModule() {
-    if (isBusinessModuleLoaded) {
-        return;
-    }
-    
-    try {
-        console.log('Loading business finance module...');
-        await renderBusinessFinanceHub();
-        isBusinessModuleLoaded = true;
-        console.log('Business finance module loaded successfully');
-    } catch (error) {
-        console.error("Failed to load business finance module:", error);
-        const businessWorkspace = document.getElementById('business-workspace');
-        if (businessWorkspace) {
-            businessWorkspace.innerHTML = `<p class="text-red-500 text-center">Error loading business finance tools: ${error.message}</p>`;
-        }
-    }
-}
-
-async function renderPersonalFinanceHub() {
     const container = document.getElementById('personal-workspace');
-    
-    if (!container) {
-        throw new Error('Personal workspace container not found');
-    }
-    
-    container.innerHTML = `
-        <!-- Personal Finance Hub -->
-        <div class="space-y-6">
-            <!-- Overview Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 text-white">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-green-100 text-sm">Monthly Income</p>
-                            <p class="text-2xl font-bold">R${calculateTotalIncome().toLocaleString()}</p>
-                        </div>
-                        <i class="fas fa-wallet text-3xl text-green-200"></i>
-                    </div>
-                </div>
-                
-                <div class="bg-gradient-to-r from-red-500 to-red-600 rounded-lg p-6 text-white">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-red-100 text-sm">Monthly Expenses</p>
-                            <p class="text-2xl font-bold">R${calculateTotalExpenses().toLocaleString()}</p>
-                        </div>
-                        <i class="fas fa-credit-card text-3xl text-red-200"></i>
-                    </div>
-                </div>
-                
-                <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-white">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-blue-100 text-sm">Net Worth</p>
-                            <p class="text-2xl font-bold">R${calculateNetWorth().toLocaleString()}</p>
-                        </div>
-                        <i class="fas fa-chart-line text-3xl text-blue-200"></i>
-                    </div>
-                </div>
-                
-                <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-6 text-white">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-purple-100 text-sm">Savings Rate</p>
-                            <p class="text-2xl font-bold">${calculateSavingsRate()}%</p>
-                        </div>
-                        <i class="fas fa-piggy-bank text-3xl text-purple-200"></i>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Navigation Tabs -->
-            <div class="bg-white rounded-lg border border-slate-200">
-                <div class="border-b border-slate-200">
-                    <nav class="flex space-x-8 px-6" aria-label="Tabs">
-                        <button onclick="renderTabContent('overview')" class="tab-button active" data-tab="overview">
-                            <i class="fas fa-chart-pie mr-2"></i>Overview
-                        </button>
-                        <button onclick="renderTabContent('savings')" class="tab-button" data-tab="savings">
-                            <i class="fas fa-bullseye mr-2"></i>Savings Goals
-                        </button>
-                        <button onclick="renderTabContent('credit')" class="tab-button" data-tab="credit">
-                            <i class="fas fa-credit-card mr-2"></i>Credit Profile
-                        </button>
-                        <button onclick="renderTabContent('tax')" class="tab-button" data-tab="tax">
-                            <i class="fas fa-file-invoice-dollar mr-2"></i>Tax Management
-                        </button>
-                        <button onclick="renderTabContent('calculators')" class="tab-button" data-tab="calculators">
-                            <i class="fas fa-calculator mr-2"></i>Calculators
-                        </button>
-                        <button onclick="renderTabContent('kids')" class="tab-button" data-tab="kids">
-                            <i class="fas fa-child mr-2"></i>Kids Dashboard
-                        </button>
-                        <button onclick="renderTabContent('insurance')" class="tab-button" data-tab="insurance">
-                            <i class="fas fa-shield-alt mr-2"></i>Insurance
-                        </button>
-                    </nav>
-                </div>
-                
-                <!-- Tab Content -->
-                <div id="tab-content" class="p-6">
-                    ${renderOverviewTab()}
-                </div>
-            </div>
-        </div>
-    `;
-    
-    setupTabStyles();
+    if (!container) return;
+    container.innerHTML = getPersonalWorkspaceHTML();
+    attachTabListeners();
+    await renderTabContent('dashboard');
 }
 
-function setupTabStyles() {
-    // Add CSS for tabs if not already present
-    if (!document.getElementById('finhelp-tab-styles')) {
-        const style = document.createElement('style'); // THIS WAS THE MISSING LINE!
-        style.id = 'finhelp-tab-styles';
-        style.textContent = `
-            .tab-button {
-                padding: 1rem 1.5rem;
-                border-bottom: 2px solid transparent;
-                color: #64748b;
-                font-weight: 500;
-                transition: all 0.2s;
-            }
-            .tab-button:hover {
-                color: #334155;
-                border-bottom-color: #e2e8f0;
-            }
-            .tab-button.active {
-                color: #3b82f6;
-                border-bottom-color: #3b82f6;
-            }
-            .input {
-                width: 100%;
-                padding: 0.75rem;
-                border: 1px solid #d1d5db;
-                border-radius: 0.375rem;
-                font-size: 0.875rem;
-            }
-            .input:focus {
-                outline: none;
-                border-color: #3b82f6;
-                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-            }
-            .btn-primary {
-                background: linear-gradient(to right, #3b82f6, #1d4ed8);
-                color: white;
-                padding: 0.75rem 1.5rem;
-                border-radius: 0.375rem;
-                font-weight: 600;
-                border: none;
-                cursor: pointer;
-                transition: all 0.2s;
-            }
-            .btn-primary:hover {
-                background: linear-gradient(to right, #1d4ed8, #1e3a8a);
-            }
-            .btn-secondary {
-                background: #f8fafc;
-                color: #64748b;
-                padding: 0.75rem 1.5rem;
-                border: 1px solid #e2e8f0;
-                border-radius: 0.375rem;
-                font-weight: 500;
-                cursor: pointer;
-                transition: all 0.2s;
-            }
-            .btn-secondary:hover {
-                background: #f1f5f9;
-                color: #334155;
-            }
-        `;
-        document.head.appendChild(style);
-    }
+/**
+ * Loads and renders the business finance module (placeholder).
+ */
+async function loadBusinessModule() {
+    const container = document.getElementById('business-workspace');
+    if (!container) return;
+    container.innerHTML = `<div class="bg-white p-8 rounded-xl shadow-md text-center">
+        <i class="fas fa-building text-4xl text-slate-300 mb-4"></i>
+        <h3 class="font-semibold text-lg">Business Finance Hub Coming Soon</h3>
+        <p class="text-sm text-slate-500">Track invoices, business expenses, and generate reports.</p>
+    </div>`;
 }
 
-// Calculation functions
-function calculateTotalIncome() {
-    return userFinancialData.personal.income.reduce((sum, item) => sum + (item.monthlyAmount || 0), 0);
-}
 
-function calculateTotalExpenses() {
-    return userFinancialData.personal.expenses.reduce((sum, item) => sum + (item.monthlyAmount || 0), 0);
-}
-
-function calculateNetWorth() {
-    const assets = userFinancialData.personal.assets.reduce((sum, item) => sum + (item.currentValue || 0), 0);
-    const liabilities = userFinancialData.personal.liabilities.reduce((sum, item) => sum + (item.currentBalance || 0), 0);
-    return assets - liabilities;
-}
-
-function calculateSavingsRate() {
-    const income = calculateTotalIncome();
-    const expenses = calculateTotalExpenses();
-    return income > 0 ? Math.round(((income - expenses) / income) * 100) : 0;
-}
-
-function calculateDebtToIncomeRatio() {
-    const totalIncome = calculateTotalIncome();
-    const totalDebtPayments = userFinancialData.personal.liabilities.reduce((sum, item) => sum + (item.monthlyPayment || 0), 0);
-    return totalIncome > 0 ? Math.round((totalDebtPayments / totalIncome) * 100) : 0;
-}
-
-function calculateEmergencyFundMonths() {
-    const emergencyFund = userFinancialData.personal.assets.find(asset => asset.name.toLowerCase().includes('emergency'));
-    const monthlyExpenses = calculateTotalExpenses();
-    return emergencyFund && monthlyExpenses > 0 ? Math.round(emergencyFund.currentValue / monthlyExpenses) : 0;
-}
-
-function calculateCreditUtilization() {
-    const creditCards = userFinancialData.personal.liabilities.filter(item => item.type === 'credit_card');
-    if (creditCards.length === 0) return 0;
-    
-    const totalUsed = creditCards.reduce((sum, card) => sum + (card.currentBalance || 0), 0);
-    const totalLimit = creditCards.reduce((sum, card) => sum + (card.creditLimit || 0), 0);
-    
-    return totalLimit > 0 ? Math.round((totalUsed / totalLimit) * 100) : 0;
-}
-
-function calculateTotalDebtPayments() {
-    return userFinancialData.personal.liabilities.reduce((sum, item) => sum + (item.monthlyPayment || 0), 0);
-}
-
-// Business calculation functions
-function calculateBusinessRevenue() {
-    return userFinancialData.business.income.reduce((sum, item) => sum + (item.monthlyAmount || 0), 0);
-}
-
-function calculateBusinessExpenses() {
-    return userFinancialData.business.expenses.reduce((sum, item) => sum + (item.monthlyAmount || 0), 0);
-}
-
-function calculateBusinessTax() {
-    const monthlyProfit = calculateBusinessRevenue() - calculateBusinessExpenses();
-    const annualProfit = monthlyProfit * 12;
-    return annualProfit > 0 ? annualProfit * 0.27 : 0; // SA company tax rate
-}
-
-// Tab rendering functions
-window.renderTabContent = async function(tabName) {
-    const tabContent = document.getElementById('tab-content');
-    const tabButtons = document.querySelectorAll('.tab-button');
-    
-    if (!tabContent) {
-        console.error('Tab content container not found');
-        return;
-    }
-    
-    // Update active tab
-    tabButtons.forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.tab === tabName) {
-            btn.classList.add('active');
-        }
-    });
-    
-    // Render content based on tab
+/**
+ * Loads financial data from Firestore or initializes default data.
+ */
+async function loadFinancialData() {
     try {
-        switch(tabName) {
-            case 'overview':
-                tabContent.innerHTML = renderOverviewTab();
-                break;
-            case 'savings':
-                tabContent.innerHTML = renderSavingsGoalsTab();
-                break;
-            case 'credit':
-                tabContent.innerHTML = renderCreditProfileTab();
-                break;
-            case 'tax':
-                tabContent.innerHTML = renderTaxManagementTab();
-                break;
-            case 'calculators':
-                tabContent.innerHTML = renderCalculatorsTab();
-                break;
-            case 'kids':
-                tabContent.innerHTML = renderKidsDashboardTab();
-                break;
-            case 'insurance':
-                tabContent.innerHTML = renderInsuranceTab();
-                break;
-            default:
-                tabContent.innerHTML = renderOverviewTab();
-        }
+        const data = await getDocument('userFinances', currentUser.uid);
+        userFinancialData = data || initializeDefaultData();
+        // Ensure all nested objects exist to prevent errors
+        userFinancialData.personal = userFinancialData.personal || {};
+        userFinancialData.personal.savingsGoals = userFinancialData.personal.savingsGoals || [];
+        userFinancialData.personal.assets = userFinancialData.personal.assets || [];
+        userFinancialData.personal.liabilities = userFinancialData.personal.liabilities || [];
+        userFinancialData.personal.kidsFinance = userFinancialData.personal.kidsFinance || [];
+        userFinancialData.personal.budgets = userFinancialData.personal.budgets || { individual: {}, family: { contributions: { financial: [], nonFinancial: [] } } };
+        console.log("Financial data loaded:", userFinancialData);
     } catch (error) {
-        console.error('Error rendering tab content:', error);
-        tabContent.innerHTML = `<p class="text-red-500">Error loading ${tabName} content: ${error.message}</p>`;
+        console.error("Error loading financial data:", error);
+        userFinancialData = initializeDefaultData();
     }
-};
+}
 
-function renderOverviewTab() {
-    return `
-        <div class="space-y-6">
-            <h3 class="text-lg font-semibold text-slate-900">Financial Overview</h3>
-            
-            <!-- Quick Stats -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-slate-50 rounded-lg p-4">
-                    <h4 class="font-medium text-slate-900 mb-3">Income Breakdown</h4>
-                    <div class="space-y-2">
-                        ${userFinancialData.personal.income.map(item => `
-                            <div class="flex justify-between text-sm">
-                                <span>${item.source}</span>
-                                <span class="font-semibold">R${item.monthlyAmount.toLocaleString()}</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
+/**
+ * Saves the current state of financial data to Firestore.
+ */
+async function saveFinancialData() {
+    try {
+        await saveDocument('userFinances', currentUser.uid, userFinancialData);
+        showNotification('Your financial data has been saved.', 'success');
+    } catch (error) {
+        console.error("Error saving financial data:", error);
+        showNotification('Could not save your data. Please try again.', 'error');
+    }
+}
+
+/**
+ * Initializes a default data structure for new users.
+ */
+function initializeDefaultData() {
+    return {
+        personal: {
+            income: [{ id: Date.now(), source: 'Sample Salary', amount: 35000, frequency: 'monthly', date: '2025-07' }],
+            expenses: [{ id: Date.now(), category: 'Housing', description: 'Rent', amount: 12000, frequency: 'monthly', date: '2025-07' }],
+            assets: [],
+            liabilities: [],
+            insurance: [],
+            savingsGoals: [],
+            taxHistory: [],
+            creditProfile: { score: null },
+            kidsFinance: [],
+            budgets: {
+                individual: { categories: [] },
+                family: { members: [], categories: [], contributions: { financial: [], nonFinancial: [] } }
+            },
+            documents: []
+        },
+        settings: {
+            currency: 'ZAR',
+            taxYear: new Date().getFullYear()
+        }
+    };
+}
+
+/**
+ * Attaches click event listeners to the navigation tabs.
+ */
+function attachTabListeners() {
+    const tabsContainer = document.getElementById('personal-tabs');
+    if (tabsContainer) {
+        tabsContainer.addEventListener('click', async (e) => {
+            const button = e.target.closest('.tab-button');
+            if (button) {
+                const tabName = button.dataset.tab;
                 
-                <div class="bg-slate-50 rounded-lg p-4">
-                    <h4 class="font-medium text-slate-900 mb-3">Top Expenses</h4>
-                    <div class="space-y-2">
-                        ${userFinancialData.personal.expenses.slice(0, 3).map(item => `
-                            <div class="flex justify-between text-sm">
-                                <span>${item.category}</span>
-                                <span class="font-semibold">R${item.monthlyAmount.toLocaleString()}</span>
-                            </div>
-                        `).join('')}
-                    </div>
+                tabsContainer.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+
+                await renderTabContent(tabName);
+            }
+        });
+    }
+}
+
+/**
+ * Renders the content for the selected tab.
+ * @param {string} tabName - The name of the tab to render.
+ */
+async function renderTabContent(tabName) {
+    const container = document.getElementById('personal-tab-content');
+    if (!container) return;
+
+    container.innerHTML = `<p class="text-center text-slate-500 py-10">Loading ${tabName}...</p>`;
+
+    try {
+        let content = '';
+        switch (tabName) {
+            case 'dashboard': content = renderDashboardTab(); break;
+            case 'documents': content = renderDocumentsTab(); break;
+            case 'budget': content = renderBudgetingTab(); break;
+            case 'assets-liabilities': content = renderAssetsLiabilitiesTab(); break;
+            case 'insurance': content = renderInsuranceTab(); break;
+            case 'savings': content = renderSavingsGoalsTab(); break;
+            case 'tax': content = renderTaxManagementTab(); break;
+            case 'calculators': content = renderCalculatorsTab(); break;
+            case 'credit': content = renderCreditProfileTab(); break;
+            case 'kids': content = renderKidsDashboardTab(); break;
+            default: content = `<p>Coming soon: ${tabName}</p>`;
+        }
+        container.innerHTML = content;
+    } catch (error) {
+        console.error(`Error rendering ${tabName} tab:`, error);
+        container.innerHTML = `<p class="text-red-500 text-center py-10">Error loading content. Please try again.</p>`;
+    }
+}
+
+
+// --- TAB RENDERING FUNCTIONS ---
+
+function renderDashboardTab() {
+    const totalIncome = (userFinancialData.personal?.income || []).reduce((sum, item) => sum + item.amount, 0);
+    const totalExpenses = (userFinancialData.personal?.expenses || []).reduce((sum, item) => sum + item.amount, 0);
+    const netWorth = calculateNetWorth();
+    const savingsRate = calculateSavingsRate();
+
+    return `
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <div class="bg-gradient-to-br from-green-400 to-green-600 text-white p-6 rounded-xl shadow-lg">
+                <h4 class="font-semibold text-green-100">Monthly Income</h4>
+                <p class="text-3xl font-bold mt-1">R ${totalIncome.toLocaleString()}</p>
+            </div>
+            <div class="bg-gradient-to-br from-red-400 to-red-600 text-white p-6 rounded-xl shadow-lg">
+                <h4 class="font-semibold text-red-100">Monthly Expenses</h4>
+                <p class="text-3xl font-bold mt-1">R ${totalExpenses.toLocaleString()}</p>
+            </div>
+            <div class="bg-gradient-to-br from-blue-400 to-blue-600 text-white p-6 rounded-xl shadow-lg">
+                <h4 class="font-semibold text-blue-100">Net Worth</h4>
+                <p class="text-3xl font-bold mt-1">R ${netWorth.toLocaleString()}</p>
+            </div>
+            <div class="bg-gradient-to-br from-purple-400 to-purple-600 text-white p-6 rounded-xl shadow-lg">
+                <h4 class="font-semibold text-purple-100">Savings Rate</h4>
+                <p class="text-3xl font-bold mt-1">${savingsRate}%</p>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-md">
+            <h3 class="text-xl font-bold text-slate-800 mb-4">Quick Actions</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <button onclick="document.querySelector('[data-tab=documents]').click()" class="p-4 bg-slate-100 rounded-lg text-center hover:bg-slate-200 transition">
+                    <i class="fas fa-file-upload text-2xl text-indigo-500"></i>
+                    <p class="mt-2 font-semibold text-sm">Upload Docs</p>
+                </button>
+                <button onclick="document.querySelector('[data-tab=budget]').click()" class="p-4 bg-slate-100 rounded-lg text-center hover:bg-slate-200 transition">
+                    <i class="fas fa-wallet text-2xl text-green-500"></i>
+                    <p class="mt-2 font-semibold text-sm">View Budget</p>
+                </button>
+                <button onclick="document.querySelector('[data-tab=savings]').click()" class="p-4 bg-slate-100 rounded-lg text-center hover:bg-slate-200 transition">
+                    <i class="fas fa-piggy-bank text-2xl text-pink-500"></i>
+                    <p class="mt-2 font-semibold text-sm">Savings Goals</p>
+                </button>
+                 <button onclick="document.querySelector('[data-tab=credit]').click()" class="p-4 bg-slate-100 rounded-lg text-center hover:bg-slate-200 transition">
+                    <i class="fas fa-credit-card text-2xl text-blue-500"></i>
+                    <p class="mt-2 font-semibold text-sm">Credit Score</p>
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function renderDocumentsTab() {
+    return `
+        <h2 class="text-2xl font-bold text-slate-800 mb-4">Document Center</h2>
+        <p class="text-slate-600 mb-6">Upload bank statements, payslips, or paste bank SMS messages to automatically track your finances.</p>
+        <div class="bg-white p-6 rounded-xl shadow-md">
+            <h3 class="font-semibold text-lg mb-4">Upload & Parse</h3>
+            <div class="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center">
+                <i class="fas fa-cloud-upload-alt text-4xl text-slate-400 mb-4"></i>
+                <h4 class="font-semibold">Document upload feature coming soon</h4>
+                <p class="text-sm text-slate-500">This will allow you to upload PDFs and images for automatic data extraction.</p>
+            </div>
+        </div>
+    `;
+}
+
+function renderBudgetingTab() {
+     return `
+        <h2 class="text-2xl font-bold text-slate-800 mb-4">Family & Co-Parenting Budget</h2>
+        <p class="text-slate-600 mb-6">Track shared responsibilities, including both financial and non-financial contributions, to get a complete picture of your family's value creation.</p>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <h3 class="font-semibold text-lg mb-2 flex items-center"><i class="fas fa-money-bill-wave text-green-500 mr-3"></i>Financial Contributions</h3>
+                <div class="bg-slate-50 p-4 rounded-lg space-y-2">
+                    <p class="text-sm text-slate-500">Feature coming soon.</p>
+                    <button class="btn-primary w-full mt-2 opacity-50 cursor-not-allowed">Log Financial Contribution</button>
                 </div>
-                
-                <div class="bg-slate-50 rounded-lg p-4">
-                    <h4 class="font-medium text-slate-900 mb-3">Financial Health</h4>
-                    <div class="space-y-2 text-sm">
-                        <div class="flex justify-between">
-                            <span>Debt-to-Income</span>
-                            <span class="font-semibold">${calculateDebtToIncomeRatio()}%</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Emergency Fund</span>
-                            <span class="font-semibold">${calculateEmergencyFundMonths()} months</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Credit Utilization</span>
-                            <span class="font-semibold">${calculateCreditUtilization()}%</span>
-                        </div>
-                    </div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <h3 class="font-semibold text-lg mb-2 flex items-center"><i class="fas fa-hands-helping text-blue-500 mr-3"></i>Non-Financial Contributions</h3>
+                <div class="bg-slate-50 p-4 rounded-lg space-y-2">
+                    <p class="text-sm text-slate-500">Value non-monetary tasks based on the South African minimum wage (R${SA_MINIMUM_WAGE_HOURLY}/hr).</p>
+                    <button class="btn-primary w-full mt-2 opacity-50 cursor-not-allowed">Log Non-Financial Task</button>
                 </div>
-            </div>
-            
-            <!-- Quick Actions -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <button onclick="renderTabContent('savings')" class="btn-primary">
-                    <i class="fas fa-plus mr-2"></i>Add Savings Goal
-                </button>
-                <button onclick="renderTabContent('calculators')" class="btn-secondary">
-                    <i class="fas fa-calculator mr-2"></i>Home Loan Calculator
-                </button>
-                <button onclick="renderTabContent('credit')" class="btn-secondary">
-                    <i class="fas fa-chart-line mr-2"></i>Check Credit Score
-                </button>
-                <button onclick="renderTabContent('tax')" class="btn-secondary">
-                    <i class="fas fa-file-invoice mr-2"></i>Tax Calculator
-                </button>
-            </div>
-        </div>
-    `;
-}
-
-function renderSavingsGoalsTab() {
-    return `
-        <div class="space-y-6">
-            <h3 class="text-lg font-semibold text-slate-900">Savings Goals</h3>
-            <p class="text-slate-600">Track and manage your financial goals.</p>
-            
-            <div class="bg-white rounded-lg p-8 text-center border border-slate-200">
-                <i class="fas fa-piggy-bank text-4xl text-slate-300 mb-4"></i>
-                <p class="text-slate-500">Savings Goals feature coming soon!</p>
-                <p class="text-sm text-slate-400">Set and track your financial goals</p>
-            </div>
-        </div>
-    `;
-}
-
-function renderCreditProfileTab() {
-    return `
-        <div class="space-y-6">
-            <h3 class="text-lg font-semibold text-slate-900">Credit Profile</h3>
-            <p class="text-slate-600">Monitor and improve your credit score.</p>
-            
-            <div class="bg-white rounded-lg p-8 text-center border border-slate-200">
-                <i class="fas fa-chart-line text-4xl text-slate-300 mb-4"></i>
-                <p class="text-slate-500">Credit Profile feature coming soon!</p>
-                <p class="text-sm text-slate-400">Track your credit score and history</p>
-            </div>
-        </div>
-    `;
-}
-
-function renderTaxManagementTab() {
-    return `
-        <div class="space-y-6">
-            <h3 class="text-lg font-semibold text-slate-900">Tax Management</h3>
-            <p class="text-slate-600">Calculate taxes and manage tax documents.</p>
-            
-            <div class="bg-white rounded-lg p-8 text-center border border-slate-200">
-                <i class="fas fa-file-invoice-dollar text-4xl text-slate-300 mb-4"></i>
-                <p class="text-slate-500">Tax Management feature coming soon!</p>
-                <p class="text-sm text-slate-400">Calculate and manage your taxes</p>
-            </div>
-        </div>
-    `;
-}
-
-function renderCalculatorsTab() {
-    return `
-        <div class="space-y-6">
-            <h3 class="text-lg font-semibold text-slate-900">Financial Calculators</h3>
-            <p class="text-slate-600">Use our financial calculators for planning.</p>
-            
-            <div class="bg-white rounded-lg p-8 text-center border border-slate-200">
-                <i class="fas fa-calculator text-4xl text-slate-300 mb-4"></i>
-                <p class="text-slate-500">Financial Calculators coming soon!</p>
-                <p class="text-sm text-slate-400">Home loans, retirement, and more</p>
-            </div>
-        </div>
-    `;
-}
-
-function renderKidsDashboardTab() {
-    return `
-        <div class="space-y-6">
-            <h3 class="text-lg font-semibold text-slate-900">Kids Dashboard</h3>
-            <p class="text-slate-600">Teach financial literacy to your children.</p>
-            
-            <div class="bg-white rounded-lg p-8 text-center border border-slate-200">
-                <i class="fas fa-child text-4xl text-slate-300 mb-4"></i>
-                <p class="text-slate-500">Kids Dashboard feature coming soon!</p>
-                <p class="text-sm text-slate-400">Financial education for children</p>
             </div>
         </div>
     `;
@@ -569,147 +288,335 @@ function renderKidsDashboardTab() {
 
 function renderInsuranceTab() {
     return `
-        <div class="space-y-6">
-            <h3 class="text-lg font-semibold text-slate-900">Insurance Management</h3>
-            <p class="text-slate-600">Track and manage your insurance policies.</p>
-            
-            <div class="bg-white rounded-lg p-8 text-center border border-slate-200">
-                <i class="fas fa-shield-alt text-4xl text-slate-300 mb-4"></i>
-                <p class="text-slate-500">Insurance Management feature coming soon!</p>
-                <p class="text-sm text-slate-400">Manage all your insurance policies</p>
+        <h2 class="text-2xl font-bold text-slate-800 mb-4">Insurance Hub</h2>
+        <p class="text-slate-600 mb-6">Manage all your insurance policies in one place and get smart advice.</p>
+        <div class="bg-white p-6 rounded-xl shadow-md text-center">
+             <i class="fas fa-shield-alt text-4xl text-slate-300 mb-4"></i>
+             <h3 class="font-semibold text-lg">Insurance Management Coming Soon</h3>
+             <p class="text-sm text-slate-500">Track policies, get renewal alerts, and optimize your coverage.</p>
+        </div>
+    `;
+}
+
+function renderSavingsGoalsTab() {
+    const goals = userFinancialData.personal.savingsGoals || [];
+    const goalsHTML = goals.length > 0 ? goals.map(goal => {
+        const progress = goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0;
+        return `
+            <div class="bg-white p-4 rounded-lg shadow-md border-l-4 border-indigo-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h4 class="font-bold text-slate-800">${goal.name}</h4>
+                        <p class="text-sm text-slate-500">Target: R ${goal.targetAmount.toLocaleString()}</p>
+                    </div>
+                    <div class="text-sm font-semibold">R ${goal.currentAmount.toLocaleString()}</div>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-2.5 mt-2">
+                    <div class="bg-indigo-600 h-2.5 rounded-full" style="width: ${progress}%"></div>
+                </div>
+                <p class="text-xs text-right text-slate-500 mt-1">${Math.round(progress)}% Complete</p>
+                <button data-action="open-goal-modal" data-id="${goal.id}" class="text-xs text-indigo-600 hover:underline mt-2">Edit</button>
+            </div>
+        `;
+    }).join('') : `<p class="text-center text-slate-500 col-span-full py-8">No savings goals yet. Add one to get started!</p>`;
+
+    return `
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-bold text-slate-800">Savings Goals</h2>
+            <button data-action="open-goal-modal" class="btn-primary">Add New Goal</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            ${goalsHTML}
+        </div>
+    `;
+}
+
+function renderAssetsLiabilitiesTab() {
+    const assets = userFinancialData.personal.assets || [];
+    const liabilities = userFinancialData.personal.liabilities || [];
+
+    const assetsHTML = assets.length > 0 ? assets.map(asset => `
+        <div class="flex justify-between items-center p-3 bg-slate-100 rounded-md">
+            <span>${asset.name} (${asset.type})</span>
+            <span class="font-semibold">R ${asset.value.toLocaleString()}</span>
+        </div>
+    `).join('') : `<p class="text-sm text-slate-500">No assets logged.</p>`;
+
+    const liabilitiesHTML = liabilities.length > 0 ? liabilities.map(liability => `
+        <div class="flex justify-between items-center p-3 bg-slate-100 rounded-md">
+            <span>${liability.name} (${liability.type})</span>
+            <span class="font-semibold">R ${liability.balance.toLocaleString()}</span>
+        </div>
+    `).join('') : `<p class="text-sm text-slate-500">No liabilities logged.</p>`;
+
+    return `
+        <h2 class="text-2xl font-bold text-slate-800 mb-4">Assets & Liabilities</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-semibold text-lg">Assets</h3>
+                    <button data-action="open-asset-modal" class="btn-primary text-sm">Add Asset</button>
+                </div>
+                <div class="space-y-2">${assetsHTML}</div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-semibold text-lg">Liabilities</h3>
+                    <button data-action="open-liability-modal" class="btn-primary text-sm">Add Liability</button>
+                </div>
+                <div class="space-y-2">${liabilitiesHTML}</div>
             </div>
         </div>
     `;
 }
 
-async function renderBusinessFinanceHub() {
-    const container = document.getElementById('business-workspace');
-    
-    if (!container) {
-        throw new Error('Business workspace container not found');
-    }
-    
-    container.innerHTML = `
-        <!-- Business Finance Hub -->
-        <div class="space-y-6">
-            <!-- Business Overview Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 text-white">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-green-100 text-sm">Monthly Revenue</p>
-                            <p class="text-2xl font-bold">R${calculateBusinessRevenue().toLocaleString()}</p>
-                        </div>
-                        <i class="fas fa-chart-line text-3xl text-green-200"></i>
-                    </div>
-                </div>
-                
-                <div class="bg-gradient-to-r from-red-500 to-red-600 rounded-lg p-6 text-white">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-red-100 text-sm">Monthly Expenses</p>
-                            <p class="text-2xl font-bold">R${calculateBusinessExpenses().toLocaleString()}</p>
-                        </div>
-                        <i class="fas fa-money-bill-wave text-3xl text-red-200"></i>
-                    </div>
-                </div>
-                
-                <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-white">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-blue-100 text-sm">Net Profit</p>
-                            <p class="text-2xl font-bold">R${(calculateBusinessRevenue() - calculateBusinessExpenses()).toLocaleString()}</p>
-                        </div>
-                        <i class="fas fa-chart-pie text-3xl text-blue-200"></i>
-                    </div>
-                </div>
-                
-                <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-6 text-white">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-purple-100 text-sm">Tax Liability</p>
-                            <p class="text-2xl font-bold">R${calculateBusinessTax().toLocaleString()}</p>
-                        </div>
-                        <i class="fas fa-file-invoice-dollar text-3xl text-purple-200"></i>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Business Features Coming Soon -->
-            <div class="bg-white rounded-lg p-8 text-center border border-slate-200">
-                <i class="fas fa-building text-4xl text-slate-300 mb-4"></i>
-                <p class="text-slate-500">Business Finance features coming soon!</p>
-                <p class="text-sm text-slate-400">Invoicing, expense tracking, and financial reports</p>
+function renderTaxManagementTab() {
+    return `<h2 class="text-2xl font-bold text-slate-800 mb-4">Tax Management</h2>
+            <p class="text-slate-600 mb-6">Feature coming soon.</p>`;
+}
+
+function renderCalculatorsTab() {
+    return `<h2 class="text-2xl font-bold text-slate-800 mb-4">Financial Calculators</h2>
+            <p class="text-slate-600 mb-6">Feature coming soon.</p>`;
+}
+
+function renderCreditProfileTab() {
+    return `<h2 class="text-2xl font-bold text-slate-800 mb-4">Credit Profile</h2>
+            <p class="text-slate-600 mb-6">Feature coming soon.</p>`;
+}
+
+function renderKidsDashboardTab() {
+     return `<h2 class="text-2xl font-bold text-slate-800 mb-4">Kids Dashboard</h2>
+             <p class="text-slate-600 mb-6">Feature coming soon.</p>`;
+}
+
+
+// --- CALCULATION HELPER FUNCTIONS ---
+
+function calculateNetWorth() {
+    const totalAssets = (userFinancialData.personal?.assets || []).reduce((sum, item) => sum + (item.value || 0), 0);
+    const totalLiabilities = (userFinancialData.personal?.liabilities || []).reduce((sum, item) => sum + (item.balance || 0), 0);
+    return totalAssets - totalLiabilities;
+}
+
+function calculateSavingsRate() {
+    const totalIncome = (userFinancialData.personal?.income || []).reduce((sum, item) => sum + (item.amount || 0), 0);
+    const totalExpenses = (userFinancialData.personal?.expenses || []).reduce((sum, item) => sum + (item.amount || 0), 0);
+    if (totalIncome === 0) return 0;
+    const rate = ((totalIncome - totalExpenses) / totalIncome) * 100;
+    return Math.round(rate);
+}
+
+// --- MODAL & FORM HANDLING ---
+
+function createModal(id, title, formHTML) {
+    const modalContainer = document.createElement('div');
+    modalContainer.id = `${id}-container`;
+    modalContainer.innerHTML = `
+        <div id="${id}" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg p-8 w-full max-w-md">
+                <h3 class="text-xl font-bold mb-4">${title}</h3>
+                ${formHTML}
             </div>
         </div>
     `;
+    document.body.appendChild(modalContainer);
 }
 
-// Save user financial data helper function
-async function saveUserFinancialData() {
-    if (!currentUser) {
-        console.error('No current user to save data for');
-        return;
-    }
-    
-    try {
-        await saveDocument('userFinances', currentUser.uid, userFinancialData);
-        console.log('Financial data saved successfully');
-    } catch (error) {
-        console.error('Error saving financial data:', error);
-        throw error;
-    }
+function removeModal(id) {
+    const modalContainer = document.getElementById(`${id}-container`);
+    modalContainer?.remove();
 }
 
-// Show notification helper function
+// Savings Goal Modal
+window.openGoalModal = (goalId = null) => {
+    let goal = {};
+    if (goalId) {
+        goal = userFinancialData.personal.savingsGoals.find(g => g.id === goalId) || {};
+    }
+    const formHTML = `
+        <form id="goal-form" data-id="${goal.id || ''}">
+            <div class="space-y-4">
+                <div><label class="block text-sm font-medium">Goal Name</label><input type="text" id="goal-name" class="input" value="${goal.name || ''}" required></div>
+                <div><label class="block text-sm font-medium">Target Amount (R)</label><input type="number" id="goal-target" class="input" value="${goal.targetAmount || ''}" required></div>
+                <div><label class="block text-sm font-medium">Current Amount (R)</label><input type="number" id="goal-current" class="input" value="${goal.currentAmount || 0}" required></div>
+                <div><label class="block text-sm font-medium">Target Date</label><input type="date" id="goal-date" class="input" value="${goal.targetDate || ''}" required></div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button type="button" onclick="closeModal('goal-modal')" class="btn-secondary">Cancel</button>
+                <button type="submit" class="btn-primary">Save Goal</button>
+            </div>
+        </form>
+    `;
+    createModal('goal-modal', goal.id ? 'Edit Savings Goal' : 'Add Savings Goal', formHTML);
+    document.getElementById('goal-form').addEventListener('submit', handleGoalFormSubmit);
+};
+
+// Asset Modal
+window.openAssetModal = (assetId = null) => {
+    let asset = {};
+    if (assetId) {
+        asset = userFinancialData.personal.assets.find(a => a.id === assetId) || {};
+    }
+    const formHTML = `
+        <form id="asset-form" data-id="${asset.id || ''}">
+            <div class="space-y-4">
+                <div><label class="block text-sm font-medium">Asset Name</label><input type="text" id="asset-name" class="input" value="${asset.name || ''}" required></div>
+                <div><label class="block text-sm font-medium">Asset Type</label><input type="text" id="asset-type" class="input" value="${asset.type || ''}" placeholder="e.g., Property, Vehicle" required></div>
+                <div><label class="block text-sm font-medium">Current Value (R)</label><input type="number" id="asset-value" class="input" value="${asset.value || ''}" required></div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button type="button" onclick="closeModal('asset-modal')" class="btn-secondary">Cancel</button>
+                <button type="submit" class="btn-primary">Save Asset</button>
+            </div>
+        </form>
+    `;
+    createModal('asset-modal', asset.id ? 'Edit Asset' : 'Add Asset', formHTML);
+    document.getElementById('asset-form').addEventListener('submit', handleAssetFormSubmit);
+};
+
+// Liability Modal
+window.openLiabilityModal = (liabilityId = null) => {
+    let liability = {};
+    if (liabilityId) {
+        liability = userFinancialData.personal.liabilities.find(l => l.id === liabilityId) || {};
+    }
+    const formHTML = `
+        <form id="liability-form" data-id="${liability.id || ''}">
+            <div class="space-y-4">
+                <div><label class="block text-sm font-medium">Liability Name</label><input type="text" id="liability-name" class="input" value="${liability.name || ''}" required></div>
+                <div><label class="block text-sm font-medium">Liability Type</label><input type="text" id="liability-type" class="input" value="${liability.type || ''}" placeholder="e.g., Home Loan, Credit Card" required></div>
+                <div><label class="block text-sm font-medium">Outstanding Balance (R)</label><input type="number" id="liability-balance" class="input" value="${liability.balance || ''}" required></div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button type="button" onclick="closeModal('liability-modal')" class="btn-secondary">Cancel</button>
+                <button type="submit" class="btn-primary">Save Liability</button>
+            </div>
+        </form>
+    `;
+    createModal('liability-modal', liability.id ? 'Edit Liability' : 'Add Liability', formHTML);
+    document.getElementById('liability-form').addEventListener('submit', handleLiabilityFormSubmit);
+};
+
+
+window.closeModal = (id) => removeModal(id);
+
+async function handleGoalFormSubmit(e) { 
+    e.preventDefault();
+    const form = e.target;
+    const goalId = form.dataset.id;
+
+    const goalData = {
+        id: goalId || Date.now().toString(),
+        name: document.getElementById('goal-name').value,
+        targetAmount: parseFloat(document.getElementById('goal-target').value),
+        currentAmount: parseFloat(document.getElementById('goal-current').value),
+        targetDate: document.getElementById('goal-date').value,
+    };
+
+    if (goalId) {
+        const index = userFinancialData.personal.savingsGoals.findIndex(g => g.id.toString() === goalId);
+        userFinancialData.personal.savingsGoals[index] = goalData;
+    } else {
+        userFinancialData.personal.savingsGoals.push(goalData);
+    }
+
+    await saveFinancialData();
+    removeModal('goal-modal');
+    await renderTabContent('savings');
+}
+
+async function handleAssetFormSubmit(e) {
+    e.preventDefault();
+    const form = e.target;
+    const assetId = form.dataset.id;
+    const assetData = {
+        id: assetId || Date.now().toString(),
+        name: document.getElementById('asset-name').value,
+        type: document.getElementById('asset-type').value,
+        value: parseFloat(document.getElementById('asset-value').value),
+    };
+    if (assetId) {
+        const index = userFinancialData.personal.assets.findIndex(a => a.id.toString() === assetId);
+        userFinancialData.personal.assets[index] = assetData;
+    } else {
+        userFinancialData.personal.assets.push(assetData);
+    }
+    await saveFinancialData();
+    removeModal('asset-modal');
+    await renderTabContent('assets-liabilities');
+}
+
+async function handleLiabilityFormSubmit(e) {
+    e.preventDefault();
+    const form = e.target;
+    const liabilityId = form.dataset.id;
+    const liabilityData = {
+        id: liabilityId || Date.now().toString(),
+        name: document.getElementById('liability-name').value,
+        type: document.getElementById('liability-type').value,
+        balance: parseFloat(document.getElementById('liability-balance').value),
+    };
+    if (liabilityId) {
+        const index = userFinancialData.personal.liabilities.findIndex(l => l.id.toString() === liabilityId);
+        userFinancialData.personal.liabilities[index] = liabilityData;
+    } else {
+        userFinancialData.personal.liabilities.push(liabilityData);
+    }
+    await saveFinancialData();
+    removeModal('liability-modal');
+    await renderTabContent('assets-liabilities');
+}
+
+// --- UTILITY FUNCTIONS ---
 function showNotification(message, type = 'info') {
-    console.log(`${type.toUpperCase()}: ${message}`);
-    // Create notification element
     const notification = document.createElement('div');
-    notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg transition-all duration-300 ${
-        type === 'success' ? 'bg-green-500 text-white' :
-        type === 'error' ? 'bg-red-500 text-white' :
-        'bg-blue-500 text-white'
-    }`;
-    notification.innerHTML = `
-        <div class="flex items-center">
-            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} mr-2"></i>
-            ${message}
-        </div>
-    `;
-    
-    // Add to page
+    notification.className = `fixed top-5 right-5 p-4 rounded-lg shadow-lg text-white z-50 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'}`;
+    notification.textContent = message;
     document.body.appendChild(notification);
-    
-    // Remove after 3 seconds
     setTimeout(() => {
-        notification.style.opacity = '0';
-        notification.style.transform = 'translateX(100%)';
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.parentNode.removeChild(notification);
-            }
-        }, 300);
+        notification.remove();
     }, 3000);
 }
 
-// Initialize when Firebase is ready
+
+// --- HTML TEMPLATE ---
+function getPersonalWorkspaceHTML() {
+    return `
+        <style>
+            .tab-button { padding: 1rem 0.5rem; border-bottom: 3px solid transparent; color: #475569; font-weight: 600; transition: all 0.2s; cursor: pointer; }
+            .tab-button:hover { color: #1e293b; }
+            .tab-button.active { color: #4f46e5; border-bottom-color: #4f46e5; }
+            .btn-primary { background-color: #4f46e5; color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600; transition: background-color 0.2s; }
+            .btn-primary:hover { background-color: #4338ca; }
+            .btn-secondary { background-color: #e2e8f0; color: #1e293b; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600; transition: background-color 0.2s; }
+            .btn-secondary:hover { background-color: #cbd5e1; }
+            .input { width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; margin-top: 0.25rem; }
+        </style>
+        <div class="border-b border-slate-200">
+            <nav class="-mb-px flex flex-wrap space-x-6" id="personal-tabs">
+                <button data-tab="dashboard" class="tab-button active">Dashboard</button>
+                <button data-tab="documents" class="tab-button">Documents</button>
+                <button data-tab="budget" class="tab-button">Budgeting</button>
+                <button data-tab="assets-liabilities" class="tab-button">Assets & Liabilities</button>
+                <button data-tab="savings" class="tab-button">Savings</button>
+                <button data-tab="insurance" class="tab-button">Insurance</button>
+                <button data-tab="tax" class="tab-button">Tax Pack</button>
+                <button data-tab="calculators" class="tab-button">Calculators</button>
+                <button data-tab="credit" class="tab-button">Credit</button>
+                <button data-tab="kids" class="tab-button">Kids</button>
+            </nav>
+        </div>
+        <div id="personal-tab-content" class="py-6"></div>
+    `;
+}
+
+// Initialize the FinHelp Personal module when Firebase is ready
 document.addEventListener('firebase-ready', () => {
-    console.log('Firebase ready event received, initializing FinHelp...');
     onAuthStateChanged(auth, (user) => {
-        if (user) {
-            console.log('User authenticated, initializing FinHelp for:', user.email);
+        if (user && !currentUser) { // Initialize only once
             init(user);
-        } else {
-            console.log('No user authenticated');
         }
     });
-});
-
-// Also listen for auth state changes directly
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        console.log('Auth state changed, user authenticated:', user.email);
-        init(user);
-    }
 });

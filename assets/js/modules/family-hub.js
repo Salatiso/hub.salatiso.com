@@ -8,6 +8,7 @@ import { auth, db } from '../firebase-config.js';
 import { getDocument, updateDocument, addDocument } from '../database.js';
 import { uploadFile } from '../storage.js';
 import { collection, query, where, onSnapshot, doc, writeBatch, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
 let currentUser = null;
 let currentFamily = null;
@@ -305,3 +306,24 @@ async function handleAssignRole(e) {
         alert("Failed to assign role.");
     }
 }
+
+// Initialize the Family Hub when Firebase is ready
+document.addEventListener('firebase-ready', () => {
+    console.log('Firebase ready event received, initializing Family Hub...');
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            console.log('User authenticated, initializing Family Hub for:', user.email);
+            init(user);
+        } else {
+            console.log('No user authenticated');
+        }
+    });
+});
+
+// Also listen for auth state changes directly
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        console.log('Auth state changed, user authenticated:', user.email);
+        init(user);
+    }
+});

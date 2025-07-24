@@ -6,6 +6,7 @@
 import { auth, db } from '../firebase-config.js';
 import { getDocument, updateDocument, addDocument } from '../database.js';
 import { doc, onSnapshot, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
 let currentUser = null;
 let businessId = null; // Assuming one business per user for now
@@ -92,3 +93,24 @@ function getBusinessWorkspaceHTML() {
         <div id="business-tab-content" class="py-6"></div>
     `;
 }
+
+// Initialize the HR Business module when Firebase is ready
+document.addEventListener('firebase-ready', () => {
+    console.log('Firebase ready event received, initializing HR Business...');
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            console.log('User authenticated, initializing HR Business for:', user.email);
+            init(user);
+        } else {
+            console.log('No user authenticated');
+        }
+    });
+});
+
+// Also listen for auth state changes directly
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        console.log('Auth state changed, user authenticated:', user.email);
+        init(user);
+    }
+});

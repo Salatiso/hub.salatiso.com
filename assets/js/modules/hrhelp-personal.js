@@ -6,6 +6,7 @@
 import { auth, db } from '../firebase-config.js';
 import { getDocument, updateDocument, addDocument, deleteDocument } from '../database.js';
 import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
 let currentUser = null;
 let hrData = {}; // Local cache for all personal HR data
@@ -157,3 +158,24 @@ function getPersonalWorkspaceHTML() {
         <div id="personal-tab-content" class="py-6"></div>
     `;
 }
+
+// Initialize the HR Personal module when Firebase is ready
+document.addEventListener('firebase-ready', () => {
+    console.log('Firebase ready event received, initializing HR Personal...');
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            console.log('User authenticated, initializing HR Personal for:', user.email);
+            init(user);
+        } else {
+            console.log('No user authenticated');
+        }
+    });
+});
+
+// Also listen for auth state changes directly
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        console.log('Auth state changed, user authenticated:', user.email);
+        init(user);
+    }
+});

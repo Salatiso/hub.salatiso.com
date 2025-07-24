@@ -864,5 +864,996 @@ function populateActualFinancialData() {
     document.getElementById('deposit-amount').readOnly = true;
 }
 
-// Continue with Credit Profile Tab and Kids Dashboard...
-// [This is getting quite long - should I continue with the remaining features in the next response?]
+async function renderCreditProfileTab(container) {
+    const creditProfile = userFinancialData.personal.creditProfile || {};
+    
+    container.innerHTML = `
+        <div class="space-y-6">
+            <!-- Credit Score Overview -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-blue-100 text-sm">Credit Score</p>
+                            <p class="text-3xl font-bold">${creditProfile.score || 'N/A'}</p>
+                            <p class="text-blue-200 text-xs">${getCreditRating(creditProfile.score)}</p>
+                        </div>
+                        <i class="fas fa-chart-line text-3xl text-blue-200"></i>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-green-100 text-sm">Credit Utilization</p>
+                            <p class="text-2xl font-bold">${calculateCreditUtilization()}%</p>
+                        </div>
+                        <i class="fas fa-percentage text-3xl text-green-200"></i>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-purple-100 text-sm">Active Accounts</p>
+                            <p class="text-2xl font-bold">${(creditProfile.accounts || []).length}</p>
+                        </div>
+                        <i class="fas fa-credit-card text-3xl text-purple-200"></i>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-lg p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-yellow-100 text-sm">Payment History</p>
+                            <p class="text-2xl font-bold">${creditProfile.paymentHistoryScore || 0}%</p>
+                        </div>
+                        <i class="fas fa-clock text-3xl text-yellow-200"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Credit Score Calculator -->
+            <div class="bg-white rounded-lg p-6 border border-slate-200">
+                <h3 class="text-lg font-semibold text-slate-900 mb-4">
+                    <i class="fas fa-calculator mr-2 text-indigo-600"></i>
+                    South African Credit Score Calculator
+                </h3>
+                <p class="text-slate-600 mb-6">Calculate your estimated credit score based on TransUnion's South African scoring model</p>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Input Section -->
+                    <div class="bg-slate-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-slate-900 mb-4">Credit Information</h4>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Payment History (35%)</label>
+                                <select id="payment-history" class="input">
+                                    <option value="100">Perfect - Never missed a payment</option>
+                                    <option value="90">Excellent - 1-2 late payments ever</option>
+                                    <option value="80">Good - Occasional late payments</option>
+                                    <option value="70">Fair - Several late payments</option>
+                                    <option value="50">Poor - Many missed payments</option>
+                                    <option value="30">Very Poor - Defaults/judgments</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Total Credit Limit (R)</label>
+                                <input type="number" id="total-credit-limit" class="input" placeholder="Total available credit">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Total Credit Used (R)</label>
+                                <input type="number" id="total-credit-used" class="input" placeholder="Currently owed">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Credit History Length</label>
+                                <select id="credit-history-length" class="input">
+                                    <option value="100">More than 10 years</option>
+                                    <option value="90">7-10 years</option>
+                                    <option value="80">5-7 years</option>
+                                    <option value="70">3-5 years</option>
+                                    <option value="60">1-3 years</option>
+                                    <option value="40">Less than 1 year</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Number of Credit Accounts</label>
+                                <input type="number" id="credit-accounts" class="input" min="0" max="20">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Recent Credit Inquiries (last 6 months)</label>
+                                <input type="number" id="credit-inquiries" class="input" min="0" max="10">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Monthly Income (R)</label>
+                                <input type="number" id="monthly-income-credit" class="input" placeholder="Gross monthly income">
+                            </div>
+                            
+                            <button onclick="calculateCreditScore()" class="btn-primary w-full">
+                                <i class="fas fa-calculator mr-2"></i>Calculate Credit Score
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Results Section -->
+                    <div>
+                        <h4 class="font-semibold text-slate-900 mb-4">Credit Score Results</h4>
+                        <div id="credit-score-results" class="space-y-4">
+                            <p class="text-slate-500">Enter your credit information to calculate your estimated score</p>
+                        </div>
+                        
+                        <!-- Credit Improvement Tips -->
+                        <div class="mt-6 bg-blue-50 rounded-lg p-4">
+                            <h5 class="font-semibold text-blue-900 mb-2">Credit Improvement Tips</h5>
+                            <ul class="text-sm text-blue-800 space-y-1">
+                                <li>• Pay all bills on time</li>
+                                <li>• Keep credit utilization below 30%</li>
+                                <li>• Don't close old credit accounts</li>
+                                <li>• Limit new credit applications</li>
+                                <li>• Monitor your credit report regularly</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Credit Monitoring -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white rounded-lg p-6 border border-slate-200">
+                    <h3 class="text-lg font-semibold text-slate-900 mb-4">Credit Monitoring</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                            <div>
+                                <p class="font-medium text-green-900">TransUnion Report</p>
+                                <p class="text-sm text-green-600">Last checked: ${creditProfile.lastTransUnionCheck || 'Never'}</p>
+                            </div>
+                            <button onclick="checkTransUnion()" class="btn-secondary text-sm">Check Now</button>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                            <div>
+                                <p class="font-medium text-blue-900">Experian Report</p>
+                                <p class="text-sm text-blue-600">Last checked: ${creditProfile.lastExperianCheck || 'Never'}</p>
+                            </div>
+                            <button onclick="checkExperian()" class="btn-secondary text-sm">Check Now</button>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+                            <div>
+                                <p class="font-medium text-purple-900">Compuscan Report</p>
+                                <p class="text-sm text-purple-600">Last checked: ${creditProfile.lastCompuscanCheck || 'Never'}</p>
+                            </div>
+                            <button onclick="checkCompuscan()" class="btn-secondary text-sm">Check Now</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg p-6 border border-slate-200">
+                    <h3 class="text-lg font-semibold text-slate-900 mb-4">Credit Alerts</h3>
+                    <div class="space-y-3">
+                        ${renderCreditAlerts(creditProfile)}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function getCreditRating(score) {
+    if (!score) return 'Unknown';
+    if (score >= 767) return 'Excellent';
+    if (score >= 681) return 'Good';
+    if (score >= 614) return 'Fair';
+    if (score >= 487) return 'Poor';
+    return 'Very Poor';
+}
+
+function calculateCreditUtilization() {
+    const liabilities = userFinancialData.personal.liabilities || [];
+    const creditCards = liabilities.filter(l => l.type === 'credit_card');
+    
+    if (creditCards.length === 0) return 0;
+    
+    const totalUsed = creditCards.reduce((sum, card) => sum + (card.currentBalance || 0), 0);
+    const totalLimit = creditCards.reduce((sum, card) => sum + (card.creditLimit || 0), 0);
+    
+    return totalLimit > 0 ? Math.round((totalUsed / totalLimit) * 100) : 0;
+}
+
+function calculateCreditScore() {
+    const paymentHistory = parseInt(document.getElementById('payment-history').value);
+    const totalLimit = parseFloat(document.getElementById('total-credit-limit').value) || 0;
+    const totalUsed = parseFloat(document.getElementById('total-credit-used').value) || 0;
+    const historyLength = parseInt(document.getElementById('credit-history-length').value);
+    const accounts = parseInt(document.getElementById('credit-accounts').value) || 0;
+    const inquiries = parseInt(document.getElementById('credit-inquiries').value) || 0;
+    const income = parseFloat(document.getElementById('monthly-income-credit').value) || 0;
+    
+    // South African credit scoring (300-850 scale similar to TransUnion)
+    let score = 300;
+    
+    // Payment History (35% weight)
+    score += (paymentHistory / 100) * 192.5; // Max 192.5 points
+    
+    // Credit Utilization (30% weight)
+    const utilization = totalLimit > 0 ? (totalUsed / totalLimit) * 100 : 0;
+    let utilizationScore = 0;
+    if (utilization === 0) utilizationScore = 165; // Perfect score
+    else if (utilization <= 10) utilizationScore = 150;
+    else if (utilization <= 30) utilizationScore = 120;
+    else if (utilization <= 50) utilizationScore = 90;
+    else if (utilization <= 75) utilizationScore = 60;
+    else utilizationScore = 30;
+    score += utilizationScore;
+    
+    // Credit History Length (15% weight)
+    score += (historyLength / 100) * 82.5; // Max 82.5 points
+    
+    // Credit Mix and New Credit (10% each)
+    const mixScore = Math.min(accounts * 8, 55); // Up to 55 points for good mix
+    score += mixScore;
+    
+    const inquiryPenalty = Math.min(inquiries * 5, 25); // Penalty for inquiries
+    score += (55 - inquiryPenalty);
+    
+    // Income factor (bonus points)
+    if (income > 50000) score += 15;
+    else if (income > 25000) score += 10;
+    else if (income > 15000) score += 5;
+    
+    score = Math.round(Math.max(300, Math.min(850, score)));
+    
+    const rating = getCreditRating(score);
+    const resultContainer = document.getElementById('credit-score-results');
+    
+    resultContainer.innerHTML = `
+        <div class="text-center">
+            <div class="w-32 h-32 mx-auto mb-4 relative">
+                <div class="w-32 h-32 rounded-full border-8 border-slate-200 relative">
+                    <div class="absolute inset-0 rounded-full border-8 border-transparent ${getScoreColor(score)}" 
+                         style="border-right-color: transparent; border-bottom-color: transparent; transform: rotate(${(score - 300) / 550 * 180}deg);"></div>
+                    <div class="absolute inset-4 rounded-full bg-white flex items-center justify-center">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-slate-900">${score}</div>
+                            <div class="text-xs text-slate-500">${rating}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="space-y-3">
+            <div class="bg-slate-50 rounded-lg p-3">
+                <div class="flex justify-between text-sm">
+                    <span>Payment History (35%)</span>
+                    <span class="font-semibold">${Math.round((paymentHistory / 100) * 35)}%</span>
+                </div>
+            </div>
+            
+            <div class="bg-slate-50 rounded-lg p-3">
+                <div class="flex justify-between text-sm">
+                    <span>Credit Utilization (30%)</span>
+                    <span class="font-semibold">${utilization.toFixed(1)}%</span>
+                </div>
+            </div>
+            
+            <div class="bg-slate-50 rounded-lg p-3">
+                <div class="flex justify-between text-sm">
+                    <span>Credit History Length</span>
+                    <span class="font-semibold">${getHistoryLengthText(historyLength)}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-4 p-4 rounded-lg ${score >= 650 ? 'bg-green-50 border border-green-200' : 'bg-yellow-50 border border-yellow-200'}">
+            <p class="text-sm font-medium ${score >= 650 ? 'text-green-800' : 'text-yellow-800'}">
+                ${score >= 650 ? 
+                    'Good credit score! You should qualify for competitive interest rates.' : 
+                    'Your credit score could be improved. Focus on payment history and reducing credit utilization.'}
+            </p>
+        </div>
+    `;
+    
+    // Save the calculated score
+    if (!userFinancialData.personal.creditProfile) {
+        userFinancialData.personal.creditProfile = {};
+    }
+    userFinancialData.personal.creditProfile.score = score;
+    userFinancialData.personal.creditProfile.lastCalculated = new Date().toISOString();
+    saveUserFinancialData();
+}
+
+function getScoreColor(score) {
+    if (score >= 767) return 'border-green-500';
+    if (score >= 681) return 'border-blue-500';
+    if (score >= 614) return 'border-yellow-500';
+    if (score >= 487) return 'border-orange-500';
+    return 'border-red-500';
+}
+
+function getHistoryLengthText(value) {
+    const options = {
+        100: '10+ years',
+        90: '7-10 years',
+        80: '5-7 years',
+        70: '3-5 years',
+        60: '1-3 years',
+        40: '< 1 year'
+    };
+    return options[value] || 'Unknown';
+}
+
+function renderCreditAlerts(creditProfile) {
+    const alerts = creditProfile.alerts || [];
+    
+    if (alerts.length === 0) {
+        return `
+            <div class="text-center py-4">
+                <i class="fas fa-shield-check text-2xl text-green-500 mb-2"></i>
+                <p class="text-sm text-slate-500">No credit alerts</p>
+            </div>
+        `;
+    }
+    
+    return alerts.map(alert => `
+        <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+            <div>
+                <p class="font-medium text-red-900">${alert.title}</p>
+                <p class="text-sm text-red-600">${alert.message}</p>
+            </div>
+            <button onclick="dismissAlert('${alert.id}')" class="text-red-400 hover:text-red-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `).join('');
+}
+
+async function renderKidsDashboardTab(container) {
+    const kidsData = userFinancialData.personal.kidsFinance || [];
+    
+    container.innerHTML = `
+        <div class="space-y-6">
+            <!-- Kids Overview -->
+            <div class="bg-gradient-to-r from-purple-400 via-pink-400 to-red-400 rounded-lg p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold mb-2">Kids Money Learning Dashboard</h2>
+                        <p class="text-purple-100">Teaching financial literacy through fun and interactive experiences</p>
+                    </div>
+                    <div class="text-6xl">🎯</div>
+                </div>
+            </div>
+
+            <!-- Add Child Button -->
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-slate-900">Your Children's Financial Journey</h3>
+                <button onclick="openAddChildModal()" class="btn-primary">
+                    <i class="fas fa-plus mr-2"></i>Add Child
+                </button>
+            </div>
+
+            <!-- Kids Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                ${renderKidsGrid(kidsData)}
+            </div>
+
+            <!-- Family Finance Goals -->
+            <div class="bg-white rounded-lg p-6 border border-slate-200">
+                <h3 class="text-lg font-semibold text-slate-900 mb-4">
+                    <i class="fas fa-family mr-2 text-green-600"></i>
+                    Family Financial Goals
+                </h3>
+                ${renderFamilyGoals()}
+            </div>
+
+            <!-- Age-Appropriate Learning -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-blue-50 rounded-lg p-6">
+                    <h4 class="font-semibold text-blue-900 mb-4">Ages 3-6: Money Basics 🐣</h4>
+                    <ul class="space-y-2 text-blue-800 text-sm">
+                        <li>• Identify coins and notes</li>
+                        <li>• Understand "buying" things</li>
+                        <li>• Learn to count money</li>
+                        <li>• Simple piggy bank savings</li>
+                    </ul>
+                </div>
+                
+                <div class="bg-green-50 rounded-lg p-6">
+                    <h4 class="font-semibold text-green-900 mb-4">Ages 7-12: Smart Spending 🌱</h4>
+                    <ul class="space-y-2 text-green-800 text-sm">
+                        <li>• Allowance management</li>
+                        <li>• Saving for goals</li>
+                        <li>• Understanding wants vs needs</li>
+                        <li>• Basic budgeting skills</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Child Modal -->
+        <div id="add-child-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+            <div class="bg-white rounded-lg p-6 w-full max-w-md">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold">Add Child to Finance Dashboard</h3>
+                    <button onclick="closeAddChildModal()" class="text-slate-400 hover:text-slate-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <form id="child-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Child's Name</label>
+                        <input type="text" id="child-name" class="input" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Age</label>
+                        <select id="child-age" class="input" required>
+                            <option value="">Select age...</option>
+                            ${[...Array(10)].map((_, i) => `<option value="${i + 3}">${i + 3} years old</option>`).join('')}
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Weekly Allowance (R)</label>
+                        <input type="number" id="child-allowance" class="input" min="0" step="5">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Savings Goal</label>
+                        <input type="text" id="child-goal" class="input" placeholder="e.g., New toy, bicycle">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Goal Amount (R)</label>
+                        <input type="number" id="child-goal-amount" class="input" min="0">
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button type="button" onclick="closeAddChildModal()" class="btn-secondary">Cancel</button>
+                        <button type="submit" class="btn-primary">Add Child</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+
+    // Setup form submission
+    document.getElementById('child-form').addEventListener('submit', handleAddChild);
+}
+
+function renderKidsGrid(kidsData) {
+    if (kidsData.length === 0) {
+        return `
+            <div class="col-span-full bg-white rounded-lg p-8 text-center border border-slate-200">
+                <div class="text-6xl mb-4">👶</div>
+                <p class="text-slate-500">No children added yet</p>
+                <p class="text-sm text-slate-400">Add your first child to start their financial journey</p>
+            </div>
+        `;
+    }
+
+    return kidsData.map(child => `
+        <div class="bg-white rounded-lg p-6 border border-slate-200 hover:shadow-lg transition-shadow">
+            <div class="text-center mb-4">
+                <div class="w-16 h-16 bg-gradient-to-r from-pink-400 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
+                    ${getChildEmoji(child.age)}
+                </div>
+                <h4 class="text-lg font-semibold text-slate-900">${child.name}</h4>
+                <p class="text-sm text-slate-600">${child.age} years old</p>
+            </div>
+            
+            <!-- Savings Progress -->
+            <div class="mb-4">
+                <div class="flex justify-between text-sm text-slate-600 mb-1">
+                    <span>Saving for: ${child.savingsGoal || 'No goal set'}</span>
+                    <span>R${child.currentSavings || 0} / R${child.goalAmount || 0}</span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-2">
+                    <div class="bg-pink-500 h-2 rounded-full" style="width: ${calculateChildProgress(child)}%"></div>
+                </div>
+            </div>
+            
+            <!-- Weekly Allowance -->
+            <div class="bg-green-50 rounded-lg p-3 mb-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium text-green-800">Weekly Allowance</span>
+                    <span class="font-bold text-green-900">R${child.weeklyAllowance || 0}</span>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="addChildSavings('${child.id}')" class="btn-primary text-xs">
+                    <i class="fas fa-piggy-bank mr-1"></i>Add Savings
+                </button>
+                <button onclick="viewChildDetails('${child.id}')" class="btn-secondary text-xs">
+                    <i class="fas fa-eye mr-1"></i>View Details
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function getChildEmoji(age) {
+    if (age <= 4) return '👶';
+    if (age <= 7) return '🧒';
+    if (age <= 10) return '👦';
+    return '👧';
+}
+
+function calculateChildProgress(child) {
+    if (!child.goalAmount || child.goalAmount === 0) return 0;
+    return Math.min(100, ((child.currentSavings || 0) / child.goalAmount) * 100);
+}
+
+function renderFamilyGoals() {
+    const familyGoals = [
+        { name: 'Family Vacation', target: 25000, current: 8500, icon: '✈️' },
+        { name: 'Kids Education Fund', target: 100000, current: 35000, icon: '🎓' },
+        { name: 'New Family Car', target: 300000, current: 45000, icon: '🚗' }
+    ];
+
+    return `
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            ${familyGoals.map(goal => `
+                <div class="bg-slate-50 rounded-lg p-4">
+                    <div class="flex items-center mb-2">
+                        <span class="text-2xl mr-2">${goal.icon}</span>
+                        <h5 class="font-semibold text-slate-900">${goal.name}</h5>
+                    </div>
+                    <div class="mb-2">
+                        <div class="flex justify-between text-sm text-slate-600 mb-1">
+                            <span>Progress</span>
+                            <span>R${goal.current.toLocaleString()} / R${goal.target.toLocaleString()}</span>
+                        </div>
+                        <div class="w-full bg-slate-200 rounded-full h-2">
+                            <div class="bg-indigo-500 h-2 rounded-full" style="width: ${(goal.current / goal.target) * 100}%"></div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500">${Math.round((goal.current / goal.target) * 100)}% complete</p>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+async function renderBusinessFinanceHub() {
+    const container = document.getElementById('business-workspace');
+    
+    container.innerHTML = `
+        <!-- Business Finance Hub -->
+        <div class="space-y-6">
+            <!-- Business Overview Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-green-100 text-sm">Monthly Revenue</p>
+                            <p class="text-2xl font-bold">R${calculateBusinessRevenue().toLocaleString()}</p>
+                        </div>
+                        <i class="fas fa-chart-line text-3xl text-green-200"></i>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-red-500 to-red-600 rounded-lg p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-red-100 text-sm">Monthly Expenses</p>
+                            <p class="text-2xl font-bold">R${calculateBusinessExpenses().toLocaleString()}</p>
+                        </div>
+                        <i class="fas fa-money-bill-wave text-3xl text-red-200"></i>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-blue-100 text-sm">Net Profit</p>
+                            <p class="text-2xl font-bold">R${(calculateBusinessRevenue() - calculateBusinessExpenses()).toLocaleString()}</p>
+                        </div>
+                        <i class="fas fa-chart-pie text-3xl text-blue-200"></i>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-purple-100 text-sm">Tax Liability</p>
+                            <p class="text-2xl font-bold">R${calculateBusinessTax().toLocaleString()}</p>
+                        </div>
+                        <i class="fas fa-file-invoice-dollar text-3xl text-purple-200"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Business Quick Actions -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-lg p-6 border border-slate-200">
+                    <h3 class="text-lg font-semibold text-slate-900 mb-4">
+                        <i class="fas fa-file-invoice mr-2 text-indigo-600"></i>Invoicing & Billing
+                    </h3>
+                    <p class="text-slate-600 mb-4">Create professional invoices and track payments</p>
+                    <button onclick="openInvoiceManager()" class="btn-primary w-full">
+                        <i class="fas fa-plus mr-2"></i>Create Invoice
+                    </button>
+                </div>
+                
+                <div class="bg-white rounded-lg p-6 border border-slate-200">
+                    <h3 class="text-lg font-semibold text-slate-900 mb-4">
+                        <i class="fas fa-receipt mr-2 text-green-600"></i>Expense Tracking
+                    </h3>
+                    <p class="text-slate-600 mb-4">Track business expenses for tax deductions</p>
+                    <button onclick="openExpenseTracker()" class="btn-primary w-full">
+                        <i class="fas fa-camera mr-2"></i>Scan Receipt
+                    </button>
+                </div>
+                
+                <div class="bg-white rounded-lg p-6 border border-slate-200">
+                    <h3 class="text-lg font-semibold text-slate-900 mb-4">
+                        <i class="fas fa-chart-bar mr-2 text-yellow-600"></i>Financial Reports
+                    </h3>
+                    <p class="text-slate-600 mb-4">Generate P&L, balance sheets, and more</p>
+                    <button onclick="generateReports()" class="btn-primary w-full">
+                        <i class="fas fa-download mr-2"></i>Generate Reports
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recent Business Activity -->
+            <div class="bg-white rounded-lg p-6 border border-slate-200">
+                <h3 class="text-lg font-semibold text-slate-900 mb-4">Recent Business Activity</h3>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-file-invoice text-green-600"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-slate-900">Invoice #001 Paid</p>
+                                <p class="text-xs text-slate-500">Client ABC Ltd - 2 days ago</p>
+                            </div>
+                        </div>
+                        <span class="text-green-600 font-semibold">+R5,500</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-receipt text-red-600"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-slate-900">Office Supplies</p>
+                                <p class="text-xs text-slate-500">Staples - 3 days ago</p>
+                            </div>
+                        </div>
+                        <span class="text-red-600 font-semibold">-R450</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function calculateBusinessRevenue() {
+    const businessIncome = userFinancialData.business?.income || [];
+    return businessIncome.reduce((sum, item) => sum + (item.monthlyAmount || 0), 0);
+}
+
+function calculateBusinessExpenses() {
+    const businessExpenses = userFinancialData.business?.expenses || [];
+    return businessExpenses.reduce((sum, item) => sum + (item.monthlyAmount || 0), 0);
+}
+
+function calculateBusinessTax() {
+    const profit = calculateBusinessRevenue() - calculateBusinessExpenses();
+    return profit > 0 ? profit * 0.28 : 0; // South African company tax rate
+}
+
+// Family/Co-parenting Budget Features
+async function renderFamilyBudgetTab(container) {
+    container.innerHTML = `
+        <div class="space-y-6">
+            <!-- Family Budget Overview -->
+            <div class="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg p-6 text-white">
+                <h2 class="text-2xl font-bold mb-2">Family & Co-Parenting Budget</h2>
+                <p class="text-indigo-100">Track shared responsibilities, financial and non-financial contributions</p>
+            </div>
+
+            <!-- Contribution Types -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Financial Contributions -->
+                <div class="bg-white rounded-lg p-6 border border-slate-200">
+                    <h3 class="text-lg font-semibold text-slate-900 mb-4">
+                        <i class="fas fa-money-bill-wave mr-2 text-green-600"></i>
+                        Financial Contributions
+                    </h3>
+                    ${renderFinancialContributions()}
+                </div>
+                
+                <!-- Non-Financial Contributions -->
+                <div class="bg-white rounded-lg p-6 border border-slate-200">
+                    <h3 class="text-lg font-semibold text-slate-900 mb-4">
+                        <i class="fas fa-hands-helping mr-2 text-blue-600"></i>
+                        Non-Financial Contributions
+                    </h3>
+                    ${renderNonFinancialContributions()}
+                </div>
+            </div>
+
+            <!-- Contribution Tracking -->
+            <div class="bg-white rounded-lg p-6 border border-slate-200">
+                <h3 class="text-lg font-semibold text-slate-900 mb-4">Monthly Contribution Summary</h3>
+                ${renderContributionSummary()}
+            </div>
+        </div>
+    `;
+}
+
+function renderFinancialContributions() {
+    return `
+        <div class="space-y-3">
+            <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                <span class="text-sm font-medium">School Fees</span>
+                <div class="text-right">
+                    <div class="text-lg font-bold text-green-900">R2,500</div>
+                    <div class="text-xs text-green-600">You: 60% | Partner: 40%</div>
+                </div>
+            </div>
+            
+            <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                <span class="text-sm font-medium">Medical Expenses</span>
+                <div class="text-right">
+                    <div class="text-lg font-bold text-blue-900">R800</div>
+                    <div class="text-xs text-blue-600">You: 50% | Partner: 50%</div>
+                </div>
+            </div>
+            
+            <button onclick="addFinancialContribution()" class="btn-primary w-full text-sm">
+                <i class="fas fa-plus mr-2"></i>Add Contribution
+            </button>
+        </div>
+    `;
+}
+
+function renderNonFinancialContributions() {
+    return `
+        <div class="space-y-3">
+            <div class="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
+                <span class="text-sm font-medium">School Pickup/Drop-off</span>
+                <div class="text-right">
+                    <div class="text-lg font-bold text-purple-900">20 hrs/month</div>
+                    <div class="text-xs text-purple-600">Value: R400</div>
+                </div>
+            </div>
+            
+            <div class="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
+                <span class="text-sm font-medium">Homework Help</span>
+                <div class="text-right">
+                    <div class="text-lg font-bold text-yellow-900">15 hrs/month</div>
+                    <div class="text-xs text-yellow-600">Value: R750</div>
+                </div>
+            </div>
+            
+            <button onclick="addNonFinancialContribution()" class="btn-primary w-full text-sm">
+                <i class="fas fa-plus mr-2"></i>Add Contribution
+            </button>
+        </div>
+    `;
+}
+
+function renderContributionSummary() {
+    return `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="text-center">
+                <h4 class="font-semibold text-slate-900 mb-4">Your Total Contribution</h4>
+                <div class="space-y-2">
+                    <div class="bg-green-50 rounded-lg p-4">
+                        <div class="text-2xl font-bold text-green-900">R4,150</div>
+                        <div class="text-sm text-green-600">Financial (65%)</div>
+                    </div>
+                    <div class="bg-purple-50 rounded-lg p-4">
+                        <div class="text-2xl font-bold text-purple-900">R1,150</div>
+                        <div class="text-sm text-purple-600">Non-Financial Value (35%)</div>
+                    </div>
+                </div>
+                <div class="mt-4 p-4 bg-indigo-50 rounded-lg">
+                    <div class="text-xl font-bold text-indigo-900">R5,300</div>
+                    <div class="text-sm text-indigo-600">Total Monthly Value</div>
+                </div>
+            </div>
+            
+            <div class="text-center">
+                <h4 class="font-semibold text-slate-900 mb-4">Partner's Total Contribution</h4>
+                <div class="space-y-2">
+                    <div class="bg-green-50 rounded-lg p-4">
+                        <div class="text-2xl font-bold text-green-900">R2,200</div>
+                        <div class="text-sm text-green-600">Financial (45%)</div>
+                    </div>
+                    <div class="bg-purple-50 rounded-lg p-4">
+                        <div class="text-2xl font-bold text-purple-900">R2,700</div>
+                        <div class="text-sm text-purple-600">Non-Financial Value (55%)</div>
+                    </div>
+                </div>
+                <div class="mt-4 p-4 bg-indigo-50 rounded-lg">
+                    <div class="text-xl font-bold text-indigo-900">R4,900</div>
+                    <div class="text-sm text-indigo-600">Total Monthly Value</div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Global functions for modal and button interactions
+window.openAddGoalModal = function() {
+    document.getElementById('add-goal-modal').classList.remove('hidden');
+};
+
+window.closeAddGoalModal = function() {
+    document.getElementById('add-goal-modal').classList.add('hidden');
+    document.getElementById('goal-form').reset();
+};
+
+window.handleAddGoal = async function(event) {
+    event.preventDefault();
+    
+    const goalData = {
+        id: Date.now().toString(),
+        name: document.getElementById('goal-name').value,
+        targetAmount: parseFloat(document.getElementById('target-amount').value),
+        targetDate: document.getElementById('target-date').value,
+        currentAmount: parseFloat(document.getElementById('current-amount').value) || 0,
+        monthlyContribution: parseFloat(document.getElementById('monthly-contribution').value) || 0,
+        priority: document.getElementById('priority-level').value,
+        category: document.getElementById('goal-category').value,
+        description: document.getElementById('goal-description').value,
+        autoSave: document.getElementById('auto-save').checked,
+        startDate: new Date().toISOString(),
+        status: 'active'
+    };
+    
+    try {
+        if (!userFinancialData.personal.savingsGoals) {
+            userFinancialData.personal.savingsGoals = [];
+        }
+        
+        userFinancialData.personal.savingsGoals.push(goalData);
+        await saveUserFinancialData();
+        
+        closeAddGoalModal();
+        await renderTabContent('savings');
+        
+        showNotification('Savings goal created successfully!', 'success');
+    } catch (error) {
+        console.error('Error adding goal:', error);
+        showNotification('Error creating savings goal', 'error');
+    }
+};
+
+window.openAddChildModal = function() {
+    document.getElementById('add-child-modal').classList.remove('hidden');
+};
+
+window.closeAddChildModal = function() {
+    document.getElementById('add-child-modal').classList.add('hidden');
+    document.getElementById('child-form').reset();
+};
+
+window.handleAddChild = async function(event) {
+    event.preventDefault();
+    
+    const childData = {
+        id: Date.now().toString(),
+        name: document.getElementById('child-name').value,
+        age: parseInt(document.getElementById('child-age').value),
+        weeklyAllowance: parseFloat(document.getElementById('child-allowance').value) || 0,
+        savingsGoal: document.getElementById('child-goal').value,
+        goalAmount: parseFloat(document.getElementById('child-goal-amount').value) || 0,
+        currentSavings: 0,
+        transactions: [],
+        addedDate: new Date().toISOString()
+    };
+    
+    try {
+        if (!userFinancialData.personal.kidsFinance) {
+            userFinancialData.personal.kidsFinance = [];
+        }
+        
+        userFinancialData.personal.kidsFinance.push(childData);
+        await saveUserFinancialData();
+        
+        closeAddChildModal();
+        await renderTabContent('kids');
+        
+        showNotification(`${childData.name} added to kids dashboard!`, 'success');
+    } catch (error) {
+        console.error('Error adding child:', error);
+        showNotification('Error adding child to dashboard', 'error');
+    }
+};
+
+window.openHomeLoanCalculator = function() {
+    document.getElementById('home-loan-modal').classList.remove('hidden');
+};
+
+window.closeHomeLoanCalculator = function() {
+    document.getElementById('home-loan-modal').classList.add('hidden');
+};
+
+window.calculateHomeLoan = function() {
+    const monthlyIncome = parseFloat(document.getElementById('monthly-income').value) || 0;
+    const monthlyExpenses = parseFloat(document.getElementById('monthly-expenses').value) || 0;
+    const existingDebt = parseFloat(document.getElementById('existing-debt').value) || 0;
+    const deposit = parseFloat(document.getElementById('deposit-amount').value) || 0;
+    const interestRate = parseFloat(document.getElementById('interest-rate').value) || 11.5;
+    const loanTerm = parseInt(document.getElementById('loan-term').value) || 25;
+    
+    // Calculate affordability (banks typically use 30-32% of gross income for bond payments)
+    const maxBondPayment = monthlyIncome * 0.30;
+    const availableForBond = monthlyIncome - monthlyExpenses - existingDebt;
+    const affordableBondPayment = Math.min(maxBondPayment, availableForBond);
+    
+    // Calculate loan amount based on payment
+    const monthlyRate = (interestRate / 100) / 12;
+    const numberOfPayments = loanTerm * 12;
+    const loanAmount = affordableBondPayment * ((Math.pow(1 + monthlyRate, numberOfPayments) - 1) / (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)));
+    
+    // Total property value including deposit
+    const propertyValue = loanAmount + deposit;
+    
+    const resultContainer = document.getElementById('home-loan-results');
+    resultContainer.innerHTML = `
+        <div class="space-y-4">
+            <div class="bg-green-50 rounded-lg p-4">
+                <h5 class="font-semibold text-green-900 mb-2">Property Affordability</h5>
+                <div class="text-2xl font-bold text-green-800">R${propertyValue.toLocaleString()}</div>
+                <p class="text-sm text-green-600">Maximum property value you can afford</p>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-blue-50 rounded-lg p-3">
+                    <p class="text-sm text-blue-600">Loan Amount</p>
+                    <p class="font-bold text-blue-900">R${loanAmount.toLocaleString()}</p>
+                </div>
+                <div class="bg-purple-50 rounded-lg p-3">
+                    <p class="text-sm text-purple-600">Monthly Payment</p>
+                    <p class="font-bold text-purple-900">R${affordableBondPayment.toLocaleString()}</p>
+                </div>
+            </div>
+            
+            <div class="bg-yellow-50 rounded-lg p-4">
+                <h6 class="font-medium text-yellow-800 mb-2">Important Notes:</h6>
+                <ul class="text-sm text-yellow-700 space-y-1">
+                    <li>• This is an estimate - banks have additional criteria</li>
+                    <li>• Consider transfer costs, bond registration fees</li>
+                    <li>• Factor in property insurance and rates</li>
+                    <li>• Interest rates may change</li>
+                </ul>
+            </div>
+        </div>
+    `;
+};
+
+window.openTaxCalculator = function() {
+    document.getElementById('tax-calculator-modal').classList.remove('hidden');
+};
+
+window.closeTaxCalculator = function() {
+    document.getElementById('tax-calculator-modal').classList.add('hidden');
+};
+
+// Export the main functions for external access
+export { 
+    init, 
+    renderPersonalFinanceHub, 
+    renderBusinessFinanceHub,
+    saveUserFinancialData,
+    showNotification 
+};

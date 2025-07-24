@@ -5,6 +5,7 @@
 /* ================================================================================= */
 import { auth, db } from '../firebase-config.js';
 import { addDocument, getDocumentsRealtime, saveDocument } from '../database.js';
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
 let currentUser = null;
 let unsubscribeListeners = []; // Array to hold all active listeners

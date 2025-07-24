@@ -5,6 +5,7 @@
 /* ================================================================================= */
 import { auth } from '../firebase-config.js';
 import { saveDocument, getDocument, deleteDocument, getDocumentsRealtime, addDocument } from '../database.js';
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
 let currentUserId = null;
 let contactsCache = [];

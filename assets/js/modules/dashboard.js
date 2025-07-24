@@ -6,6 +6,7 @@ import { auth, db } from '../firebase-config.js';
 import { getDocument } from '../database.js';
 // CORRECTED: This line now uses a valid module specifier for the Firestore library.
 import { collection, query, where, onSnapshot, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { onAuthStateChanged as authStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
 let currentUser = null;
 
@@ -173,3 +174,24 @@ function listenForNotifications() {
         notificationsList.innerHTML = `<p class="text-red-500 text-sm">Could not load notifications.</p>`;
     });
 }
+
+// Initialize the dashboard when Firebase is ready
+document.addEventListener('firebase-ready', () => {
+    console.log('Firebase ready event received, initializing dashboard...');
+    authStateChanged(auth, (user) => {
+        if (user) {
+            console.log('User authenticated, initializing dashboard for:', user.email);
+            init(user);
+        } else {
+            console.log('No user authenticated');
+        }
+    });
+});
+
+// Also listen for auth state changes directly
+authStateChanged(auth, (user) => {
+    if (user) {
+        console.log('Auth state changed, user authenticated:', user.email);
+        init(user);
+    }
+});

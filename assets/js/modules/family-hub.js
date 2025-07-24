@@ -104,6 +104,139 @@ function renderFamilyDashboard() {
     renderTabContent('members'); // Default tab
 }
 
+
+// --- INDIVIDUAL VIEW (NO FAMILY) ---
+
+function renderIndividualView() {
+    mainContainer.innerHTML = `
+        <div class="text-center py-12">
+            <div class="max-w-md mx-auto">
+                <div class="w-24 h-24 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-users text-3xl text-indigo-600"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-900 mb-4">Welcome to Family Hub</h2>
+                <p class="text-slate-600 mb-8">You're not part of a family yet. Create your own family or wait for an invitation from an existing family.</p>
+                
+                <div class="space-y-4">
+                    <button id="create-family-btn" class="w-full btn-primary">
+                        <i class="fas fa-plus mr-2"></i>Create New Family
+                    </button>
+                    <p class="text-sm text-slate-500">Or ask a family admin to invite you using your email: <strong>${currentUser.email}</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create Family Modal -->
+        <div id="create-family-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+            <div class="flex items-center justify-center min-h-screen p-4">
+                <div class="bg-white rounded-lg p-6 w-full max-w-md">
+                    <h3 class="text-lg font-semibold mb-4">Create New Family</h3>
+                    <form id="create-family-form">
+                        <div class="mb-4">
+                            <label for="family-name" class="block text-sm font-medium mb-1">Family Name</label>
+                            <input type="text" id="family-name" class="input w-full" placeholder="e.g., The Smiths" required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="your-role" class="block text-sm font-medium mb-1">Your Role in the Family</label>
+                            <select id="your-role" class="input w-full" required>
+                                <option value="">Select your role...</option>
+                                ${suggestedRoles.map(role => `<option value="${role}">${role}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="flex justify-end space-x-3">
+                            <button type="button" id="close-create-modal" class="btn-secondary">Cancel</button>
+                            <button type="submit" class="btn-primary">Create Family</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Event listeners
+    document.getElementById('create-family-btn').addEventListener('click', () => {
+        document.getElementById('create-family-modal').classList.remove('hidden');
+    });
+    
+    document.getElementById('close-create-modal').addEventListener('click', () => {
+        document.getElementById('create-family-modal').classList.add('hidden');
+    });
+    
+    document.getElementById('create-family-form').addEventListener('submit', handleCreateFamily);
+}
+
+
+// --- FAMILY TREE HELPER FUNCTIONS ---
+
+function buildFamilyTreeData() {
+    // Organize family members by relationships to create a tree structure
+    const tree = {
+        generations: {},
+        relationships: {}
+    };
+
+    familyMembers.forEach(member => {
+        const memberDetails = currentFamily.memberDetails?.[member.id] || {};
+        const relationship = memberDetails.relationship || 'Family Member';
+        
+        // Determine generation level based on relationship
+        let generation = 0;
+        if (['Grandfather', 'Grandmother'].includes(relationship)) generation = -2;
+        else if (['Father', 'Mother', 'Uncle', 'Aunt'].includes(relationship)) generation = -1;
+        else if (['Son', 'Daughter', 'Nephew', 'Niece'].includes(relationship)) generation = 1;
+        else if (['Grandson', 'Granddaughter'].includes(relationship)) generation = 2;
+        
+        if (!tree.generations[generation]) tree.generations[generation] = [];
+        tree.generations[generation].push({
+            ...member,
+            relationship,
+            role: memberDetails.role
+        });
+    });
+
+    return tree;
+}
+
+function renderFamilyTreeHTML(treeData) {
+    const generations = Object.keys(treeData.generations).sort((a, b) => parseInt(a) - parseInt(b));
+    
+    if (generations.length === 0) {
+        return '<p class="text-center text-slate-500 py-8">No family members to display in tree view.</p>';
+    }
+
+    return generations.map(gen => {
+        const members = treeData.generations[gen];
+        const generationLabel = getGenerationLabel(parseInt(gen));
+        
+        return `
+            <div class="generation-row mb-8">
+                <h4 class="text-sm font-medium text-slate-600 mb-3">${generationLabel}</h4>
+                <div class="flex flex-wrap gap-4 justify-center">
+                    ${members.map(member => `
+                        <div class="family-member-card bg-slate-50 p-4 rounded-lg border-2 border-slate-200 text-center min-w-[120px]">
+                            <img src="${member.photoURL || 'https://placehold.co/60x60/E2E8F0/475569?text=' + (member.displayName?.charAt(0) || 'U')}" class="w-12 h-12 rounded-full object-cover mx-auto mb-2">
+                            <p class="font-semibold text-slate-800 text-sm">${member.displayName || member.email}</p>
+                            <p class="text-xs text-slate-500">${member.relationship}</p>
+                            ${member.role ? `<p class="text-xs text-indigo-600 font-medium mt-1">${member.role}</p>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function getGenerationLabel(generation) {
+    switch (generation) {
+        case -2: return 'Grandparents Generation';
+        case -1: return 'Parents Generation';
+        case 0: return 'Current Generation';
+        case 1: return 'Children Generation';
+        case 2: return 'Grandchildren Generation';
+        default: return `Generation ${generation > 0 ? '+' : ''}${generation}`;
+    }
+}
+
 function renderTabContent(tabName) {
     const contentContainer = document.getElementById('tab-content');
     const isAdmin = currentFamily.admin === currentUser.uid;
@@ -333,11 +466,119 @@ function renderGovernanceTab(container, isAdmin) {
 // --- EVENT HANDLERS & LOGIC ---
 
 async function handleCreateFamily(e) {
-    // ... (This function remains unchanged)
+    e.preventDefault();
+    const form = e.target;
+    const familyName = form.querySelector('#family-name').value;
+    const userRole = form.querySelector('#your-role').value;
+    
+    try {
+        // Create family document
+        const familyData = {
+            name: familyName,
+            admin: currentUser.uid,
+            members: [currentUser.uid],
+            memberDetails: {
+                [currentUser.uid]: {
+                    relationship: 'Head of Family',
+                    role: userRole,
+                    joinedDate: new Date().toISOString()
+                }
+            },
+            profile: {
+                summary: '',
+                mission: '',
+                values: [],
+                formalEntities: []
+            },
+            governance: {
+                assignments: [{
+                    roleTitle: userRole,
+                    memberId: currentUser.uid,
+                    startDate: new Date().toISOString(),
+                    duties: suggestedDuties[userRole]?.join(', ') || ''
+                }]
+            },
+            createdAt: new Date().toISOString()
+        };
+        
+        const familyDoc = await addDocument('families', familyData);
+        
+        // Update user document with family ID
+        await updateDocument('users', currentUser.uid, { 
+            familyId: familyDoc.id 
+        });
+        
+        // Close modal
+        document.getElementById('create-family-modal').classList.add('hidden');
+        
+        alert('Family created successfully!');
+    } catch (error) {
+        console.error('Error creating family:', error);
+        alert('Failed to create family. Please try again.');
+    }
 }
 
 async function handleInviteMember(e) {
-    // ... (This function remains unchanged)
+    e.preventDefault();
+    const form = e.target;
+    const email = form.querySelector('#member-email').value;
+    const relationship = form.querySelector('#member-relationship').value;
+    const role = form.querySelector('#member-role').value;
+    
+    try {
+        // For now, we'll create an invitation record
+        // In a real app, you'd send an email invitation
+        const invitationData = {
+            familyId: currentFamily.id,
+            familyName: currentFamily.name,
+            invitedEmail: email,
+            relationship: relationship,
+            role: role,
+            invitedBy: currentUser.uid,
+            invitedByName: currentUser.displayName || currentUser.email,
+            status: 'pending',
+            createdAt: new Date().toISOString()
+        };
+        
+        await addDocument('familyInvitations', invitationData);
+        
+        // Close modal and reset form
+        document.getElementById('invite-modal').classList.add('hidden');
+        form.reset();
+        
+        alert(`Invitation sent to ${email}! They will be notified to join the family.`);
+    } catch (error) {
+        console.error('Error sending invitation:', error);
+        alert('Failed to send invitation. Please try again.');
+    }
+}
+
+async function handleRemoveMember(e) {
+    const memberId = e.target.closest('.remove-member-btn').dataset.memberId;
+    
+    if (!confirm('Are you sure you want to remove this member from the family?')) {
+        return;
+    }
+    
+    try {
+        // Remove member from family
+        const updatedMembers = currentFamily.members.filter(id => id !== memberId);
+        const updatedMemberDetails = { ...currentFamily.memberDetails };
+        delete updatedMemberDetails[memberId];
+        
+        await updateDocument('families', currentFamily.id, {
+            members: updatedMembers,
+            memberDetails: updatedMemberDetails
+        });
+        
+        // Remove family ID from user
+        await updateDocument('users', memberId, { familyId: null });
+        
+        alert('Member removed from family.');
+    } catch (error) {
+        console.error('Error removing member:', error);
+        alert('Failed to remove member. Please try again.');
+    }
 }
 
 async function handleProfileUpdate(e) {

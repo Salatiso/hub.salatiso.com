@@ -4,6 +4,10 @@
 /* handles auth, themes, and translations without using conflicting modules.         */
 /* ================================================================================= */
 
+// Import Firebase services
+import { auth } from './firebase-config.js';
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- 1. DEFINE SHARED UI COMPONENTS ---
@@ -111,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Logout
         const logoutButton = document.getElementById('logout-button');
         if (logoutButton) {
-            logoutButton.addEventListener('click', () => firebase.auth().signOut());
+            logoutButton.addEventListener('click', () => signOut(auth));
         }
 
         // Theme switching
@@ -137,17 +141,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- MAIN EXECUTION ---
     loadComponents(); // Build the page structure first
 
-    // Check if Firebase is loaded
-    if (typeof firebase === 'undefined') {
-        console.error("CRITICAL ERROR: Firebase SDK is not loaded. Check the script tags in your HTML.");
-        return;
-    }
-    
-    // Now that components are on the page, set up listeners and auth
+    // Initialize Firebase authentication
     setupEventListeners();
 
     // The auth state listener is the gatekeeper
-    firebase.auth().onAuthStateChanged(user => {
+    onAuthStateChanged(auth, user => {
         const appContainer = document.getElementById('app-container');
         if (user) {
             // User is signed in.

@@ -4,6 +4,7 @@
 /* FIX: Ensures modules load correctly and handles potential errors gracefully.      */
 /* ================================================================================= */
 import { auth } from '../firebase-config.js';
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
 let personalFinanceModule;
 let businessFinanceModule;

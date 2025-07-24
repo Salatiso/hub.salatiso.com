@@ -4,6 +4,7 @@
 /* business HR modules based on the user's selection.                                */
 /* ================================================================================= */
 import { auth } from '../firebase-config.js';
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
 let personalModule, businessModule;
 let isPersonalLoaded = false, isBusinessLoaded = false;
@@ -62,3 +63,24 @@ async function loadBusinessModule() {
         document.getElementById('business-workspace').innerHTML = `<p class="text-red-500 text-center">Error loading Business HR Hub.</p>`;
     }
 }
+
+// Initialize the HRHelp when Firebase is ready
+document.addEventListener('firebase-ready', () => {
+    console.log('Firebase ready event received, initializing HRHelp...');
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            console.log('User authenticated, initializing HRHelp for:', user.email);
+            init(user);
+        } else {
+            console.log('No user authenticated');
+        }
+    });
+});
+
+// Also listen for auth state changes directly
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        console.log('Auth state changed, user authenticated:', user.email);
+        init(user);
+    }
+});

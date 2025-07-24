@@ -298,6 +298,107 @@ function calculateSavingsRate() {
     return income > 0 ? Math.round(((income - expenses) / income) * 100) : 0;
 }
 
+function calculateDebtToIncomeRatio() {
+    const totalIncome = calculateTotalIncome();
+    const totalDebtPayments = userFinancialData.personal.liabilities.reduce((sum, item) => sum + (item.monthlyPayment || 0), 0);
+    return totalIncome > 0 ? Math.round((totalDebtPayments / totalIncome) * 100) : 0;
+}
+
+function calculateEmergencyFundMonths() {
+    const emergencyFund = userFinancialData.personal.assets.find(asset => asset.name.toLowerCase().includes('emergency'));
+    const monthlyExpenses = calculateTotalExpenses();
+    return emergencyFund && monthlyExpenses > 0 ? Math.round(emergencyFund.currentValue / monthlyExpenses) : 0;
+}
+
+function calculateCreditUtilization() {
+    const creditCards = userFinancialData.personal.liabilities.filter(item => item.type === 'credit_card');
+    if (creditCards.length === 0) return 0;
+    
+    const totalUsed = creditCards.reduce((sum, card) => sum + (card.currentBalance || 0), 0);
+    const totalLimit = creditCards.reduce((sum, card) => sum + (card.creditLimit || 0), 0);
+    
+    return totalLimit > 0 ? Math.round((totalUsed / totalLimit) * 100) : 0;
+}
+
+function calculateTotalDebtPayments() {
+    return userFinancialData.personal.liabilities.reduce((sum, item) => sum + (item.monthlyPayment || 0), 0);
+}
+
+function calculateEstimatedTax() {
+    const annualIncome = calculateTotalIncome() * 12;
+    return calculateSouthAfricanTax(annualIncome);
+}
+
+function getCurrentTaxBracket() {
+    const annualIncome = calculateTotalIncome() * 12;
+    if (annualIncome <= 95750) return 18;
+    if (annualIncome <= 237100) return 26;
+    if (annualIncome <= 370500) return 31;
+    if (annualIncome <= 512800) return 36;
+    if (annualIncome <= 673000) return 39;
+    if (annualIncome <= 857900) return 41;
+    return 45;
+}
+
+function calculateTaxEfficiency() {
+    const grossIncome = calculateTotalIncome() * 12;
+    const estimatedTax = calculateEstimatedTax();
+    return grossIncome > 0 ? Math.round(((grossIncome - estimatedTax) / grossIncome) * 100) : 0;
+}
+
+function calculateSouthAfricanTax(annualIncome) {
+    // 2024 South African tax brackets
+    let tax = 0;
+    
+    if (annualIncome > 95750) tax += (Math.min(annualIncome, 237100) - 95750) * 0.26;
+    if (annualIncome > 237100) tax += (Math.min(annualIncome, 370500) - 237100) * 0.31;
+    if (annualIncome > 370500) tax += (Math.min(annualIncome, 512800) - 370500) * 0.36;
+    if (annualIncome > 512800) tax += (Math.min(annualIncome, 673000) - 512800) * 0.39;
+    if (annualIncome > 673000) tax += (Math.min(annualIncome, 857900) - 673000) * 0.41;
+    if (annualIncome > 857900) tax += (annualIncome - 857900) * 0.45;
+    
+    // Apply rebates (simplified)
+    const primaryRebate = 17235;
+    return Math.max(0, tax - primaryRebate);
+}
+
+// Business calculation functions
+function calculateBusinessRevenue() {
+    return userFinancialData.business.income.reduce((sum, item) => sum + (item.monthlyAmount || 0), 0);
+}
+
+function calculateBusinessExpenses() {
+    return userFinancialData.business.expenses.reduce((sum, item) => sum + (item.monthlyAmount || 0), 0);
+}
+
+function calculateBusinessTax() {
+    const monthlyProfit = calculateBusinessRevenue() - calculateBusinessExpenses();
+    const annualProfit = monthlyProfit * 12;
+    return annualProfit > 0 ? annualProfit * 0.27 : 0; // SA company tax rate
+}
+
+// Credit and child helper functions
+function getCreditRating(score) {
+    if (!score) return 'Unknown';
+    if (score >= 767) return 'Excellent';
+    if (score >= 681) return 'Good';
+    if (score >= 614) return 'Fair';
+    if (score >= 560) return 'Poor';
+    return 'Very Poor';
+}
+
+function getChildEmoji(age) {
+    if (age <= 5) return '👶';
+    if (age <= 8) return '🧒';
+    if (age <= 12) return '👦';
+    return '👨‍🎓';
+}
+
+function calculateChildProgress(child) {
+    if (!child.goalAmount || child.goalAmount === 0) return 0;
+    return Math.min(100, (child.currentSavings / child.goalAmount) * 100);
+}
+
 // Tab rendering functions
 window.renderTabContent = async function(tabName) {
     const tabContent = document.getElementById('tab-content');
@@ -1201,4 +1302,254 @@ async function renderBusinessFinanceHub() {
                 <h3 class="text-lg font-semibold text-slate-900 mb-4">Recent Business Activity</h3>
                 <div class="space-y-3">
                     <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                        <div class="flex items-center">// filepath: e:\Google Drive\@Work\Web Development\GitHub\hub.salatiso.com\assets\js\modules\finhelp.js
+                        <div class="flex items-center">
+                            <i class="fas fa-arrow-up text-green-500 mr-3"></i>
+                            <div>
+                                <p class="text-sm text-slate-500">Increased monthly revenue target</p>
+                                <p class="text-sm font-semibold text-slate-900">New target: R50,000</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-slate-400">2 mins ago</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                        <div class="flex items-center">
+                            <i class="fas fa-arrow-down text-red-500 mr-3"></i>
+                            <div>
+                                <p class="text-sm text-slate-500">Decreased marketing budget</p>
+                                <p class="text-sm font-semibold text-slate-900">New budget: R10,000</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-slate-400">10 mins ago</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                        <div class="flex items-center">
+                            <i class="fas fa-plus-circle text-blue-500 mr-3"></i>
+                            <div>
+                                <p class="text-sm text-slate-500">Added new business expense</p>
+                                <p class="text-sm font-semibold text-slate-900">Office Supplies: R1,200</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-slate-400">30 mins ago</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Modal functions - Add these as global window functions
+window.openAddGoalModal = function() {
+    document.getElementById('add-goal-modal').classList.remove('hidden');
+};
+
+window.closeAddGoalModal = function() {
+    document.getElementById('add-goal-modal').classList.add('hidden');
+};
+
+window.openAddChildModal = function() {
+    document.getElementById('add-child-modal').classList.remove('hidden');
+};
+
+window.closeAddChildModal = function() {
+    document.getElementById('add-child-modal').classList.add('hidden');
+};
+
+window.openHomeLoanCalculator = function() {
+    document.getElementById('home-loan-modal').classList.remove('hidden');
+};
+
+window.closeHomeLoanCalculator = function() {
+    document.getElementById('home-loan-modal').classList.add('hidden');
+};
+
+window.calculateHomeLoan = function() {
+    const monthlyIncome = parseFloat(document.getElementById('monthly-income').value) || 0;
+    const monthlyExpenses = parseFloat(document.getElementById('monthly-expenses').value) || 0;
+    const existingDebt = parseFloat(document.getElementById('existing-debt').value) || 0;
+    const deposit = parseFloat(document.getElementById('deposit-amount').value) || 0;
+    const interestRate = parseFloat(document.getElementById('interest-rate').value) / 100 / 12;
+    
+    const availableIncome = monthlyIncome - monthlyExpenses - existingDebt;
+    const maxLoanPayment = availableIncome * 0.3; // 30% of available income
+    
+    // Calculate loan amount using PMT formula
+    const loanTerm = 240; // 20 years in months
+    const maxLoanAmount = maxLoanPayment * ((1 - Math.pow(1 + interestRate, -loanTerm)) / interestRate);
+    const maxPropertyPrice = maxLoanAmount + deposit;
+    
+    document.getElementById('home-loan-results').innerHTML = `
+        <div class="space-y-4">
+            <div class="bg-green-50 rounded-lg p-4">
+                <h5 class="font-semibold text-green-800 mb-3">Maximum Property Price</h5>
+                <p class="text-2xl font-bold text-green-900">R${maxPropertyPrice.toLocaleString()}</p>
+            </div>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                    <span class="text-slate-600">Max Loan Amount:</span>
+                    <span class="font-semibold">R${maxLoanAmount.toLocaleString()}</span>
+                </div>
+                <div>
+                    <span class="text-slate-600">Monthly Payment:</span>
+                    <span class="font-semibold">R${maxLoanPayment.toLocaleString()}</span>
+                </div>
+                <div>
+                    <span class="text-slate-600">Your Deposit:</span>
+                    <span class="font-semibold">R${deposit.toLocaleString()}</span>
+                </div>
+                <div>
+                    <span class="text-slate-600">Loan-to-Value:</span>
+                    <span class="font-semibold">${((maxLoanAmount / maxPropertyPrice) * 100).toFixed(1)}%</span>
+                </div>
+            </div>
+        </div>
+    `;
+};
+
+window.calculateCreditScore = function() {
+    const paymentHistory = parseInt(document.getElementById('payment-history').value);
+    const totalLimit = parseFloat(document.getElementById('total-credit-limit').value) || 1;
+    const totalUsed = parseFloat(document.getElementById('total-credit-used').value) || 0;
+    const historyLength = parseInt(document.getElementById('credit-history-length').value);
+    
+    const utilization = (totalUsed / totalLimit) * 100;
+    let utilizationScore = 100;
+    if (utilization > 30) utilizationScore = 70;
+    if (utilization > 50) utilizationScore = 50;
+    if (utilization > 75) utilizationScore = 30;
+    
+    // Simple credit score calculation
+    const estimatedScore = Math.round(
+        (paymentHistory * 0.35) + 
+        (utilizationScore * 0.30) + 
+        (historyLength * 0.15) + 
+        (85 * 0.20) // Other factors
+    );
+    
+    const finalScore = Math.min(850, Math.max(300, estimatedScore));
+    
+    document.getElementById('credit-score-results').innerHTML = `
+        <div class="space-y-4">
+            <div class="text-center">
+                <div class="text-6xl font-bold ${finalScore >= 700 ? 'text-green-600' : finalScore >= 600 ? 'text-yellow-600' : 'text-red-600'} mb-2">
+                    ${finalScore}
+                </div>
+                <p class="text-lg font-semibold">${getCreditRating(finalScore)}</p>
+            </div>
+            
+            <div class="space-y-2">
+                <div class="flex justify-between text-sm">
+                    <span>Payment History (35%)</span>
+                    <span class="font-semibold">${paymentHistory}/100</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span>Credit Utilization (30%)</span>
+                    <span class="font-semibold">${utilization.toFixed(1)}%</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span>Credit History Length (15%)</span>
+                    <span class="font-semibold">${historyLength}/100</span>
+                </div>
+            </div>
+            
+            <div class="bg-blue-50 rounded-lg p-3">
+                <h6 class="font-semibold text-blue-800">Improvement Tips:</h6>
+                <ul class="text-sm text-blue-700 mt-1">
+                    ${utilization > 30 ? '<li>• Keep credit utilization below 30%</li>' : ''}
+                    ${paymentHistory < 90 ? '<li>• Always pay on time</li>' : ''}
+                    <li>• Avoid closing old credit accounts</li>
+                    <li>• Check your credit report regularly</li>
+                </ul>
+            </div>
+        </div>
+    `;
+};
+
+window.calculateTax = function() {
+    const annualSalary = parseFloat(document.getElementById('annual-salary').value) || 0;
+    const medicalAid = parseFloat(document.getElementById('medical-aid').value) || 0;
+    const retirement = parseFloat(document.getElementById('retirement-contributions').value) || 0;
+    
+    const taxableIncome = annualSalary - retirement;
+    const incomeTax = calculateSouthAfricanTax(taxableIncome);
+    const uif = Math.min(annualSalary * 0.01, 177.12 * 12);
+    const medicalTaxCredit = medicalAid * 0.25;
+    
+    const totalTax = Math.max(0, incomeTax + uif - medicalTaxCredit);
+    const netIncome = annualSalary - totalTax;
+    const effectiveRate = annualSalary > 0 ? (totalTax / annualSalary) * 100 : 0;
+    
+    document.getElementById('tax-results').innerHTML = `
+        <div class="space-y-4">
+            <div class="bg-slate-50 rounded-lg p-4">
+                <h5 class="font-semibold text-slate-800 mb-3">Tax Calculation Summary</h5>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span>Gross Annual Income:</span>
+                        <span class="font-semibold">R${annualSalary.toLocaleString()}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Retirement Deduction:</span>
+                        <span class="font-semibold">R${retirement.toLocaleString()}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Taxable Income:</span>
+                        <span class="font-semibold">R${taxableIncome.toLocaleString()}</span>
+                    </div>
+                    <hr class="my-2">
+                    <div class="flex justify-between">
+                        <span>Income Tax:</span>
+                        <span class="font-semibold">R${incomeTax.toLocaleString()}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>UIF:</span>
+                        <span class="font-semibold">R${uif.toLocaleString()}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Medical Tax Credit:</span>
+                        <span class="font-semibold text-green-600">-R${medicalTaxCredit.toLocaleString()}</span>
+                    </div>
+                    <hr class="my-2">
+                    <div class="flex justify-between font-bold">
+                        <span>Total Tax:</span>
+                        <span>R${totalTax.toLocaleString()}</span>
+                    </div>
+                    <div class="flex justify-between font-bold text-green-600">
+                        <span>Net Annual Income:</span>
+                        <span>R${netIncome.toLocaleString()}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Effective Tax Rate:</span>
+                        <span class="font-semibold">${effectiveRate.toFixed(1)}%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+};
+
+// Add placeholder functions for the remaining modals
+window.openRetirementCalculator = function() {
+    alert('Retirement calculator coming soon!');
+};
+
+window.openInvestmentCalculator = function() {
+    alert('Investment calculator coming soon!');
+};
+
+window.editGoal = function(goalId) {
+    alert('Edit goal functionality coming soon!');
+};
+
+window.addProgress = function(goalId) {
+    alert('Add progress functionality coming soon!');
+};
+
+window.addChildSavings = function(childId) {
+    alert('Add child savings functionality coming soon!');
+};
+
+window.viewChildDetails = function(childId) {
+    alert('View child details functionality coming soon!');
+};

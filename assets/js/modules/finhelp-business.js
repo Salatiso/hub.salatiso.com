@@ -4,7 +4,7 @@
 /* and purchases, providing a lightweight accounting solution.                       */
 /* ================================================================================= */
 import { auth } from '../firebase-config.js';
-import { saveDocument, getDocument, deleteDocument, getAllDocuments } from '../database.js';
+import { saveDocument, getDocument, deleteDocument } from '../database.js';
 
 let currentUser = null;
 let businessDataUnsubscribe = null; // To detach listeners
@@ -126,41 +126,54 @@ async function renderBusinessTabContent(tabName) {
 
 async function loadDashboardData() {
     try {
-        const invoices = await getAllDocuments(`users/${currentUser.uid}/business/main/invoices`) || [];
-        const bills = await getAllDocuments(`users/${currentUser.uid}/business/main/bills`) || [];
+        const invoicesCollection = await getDocument(`users/${currentUser.uid}/business/main`, 'invoices') || {};
+        const billsCollection = await getDocument(`users/${currentUser.uid}/business/main`, 'bills') || {};
+        
+        // Convert object to array if needed
+        const invoices = Array.isArray(invoicesCollection) ? invoicesCollection : Object.values(invoicesCollection);
+        const bills = Array.isArray(billsCollection) ? billsCollection : Object.values(billsCollection);
+        
         updateDashboardMetrics(invoices, bills);
     } catch (error) {
         console.error('Error loading dashboard data:', error);
+        updateDashboardMetrics([], []); // Show zero values on error
     }
 }
 
 async function loadInvoicesData() {
     try {
-        const invoices = await getAllDocuments(`users/${currentUser.uid}/business/main/invoices`) || [];
+        const invoicesCollection = await getDocument(`users/${currentUser.uid}/business/main`, 'invoices') || {};
+        const invoices = Array.isArray(invoicesCollection) ? invoicesCollection : Object.values(invoicesCollection);
         renderInvoicesList(invoices);
     } catch (error) {
         console.error('Error loading invoices:', error);
+        renderInvoicesList([]);
         showNotification('Error loading invoices', 'error');
     }
 }
 
 async function loadBillsData() {
     try {
-        const bills = await getAllDocuments(`users/${currentUser.uid}/business/main/bills`) || [];
+        const billsCollection = await getDocument(`users/${currentUser.uid}/business/main`, 'bills') || {};
+        const bills = Array.isArray(billsCollection) ? billsCollection : Object.values(billsCollection);
         renderBillsList(bills);
     } catch (error) {
         console.error('Error loading bills:', error);
+        renderBillsList([]);
         showNotification('Error loading bills', 'error');
     }
 }
 
 async function loadContactsData() {
     try {
-        const contacts = await getAllDocuments(`users/${currentUser.uid}/business/main/contacts`) || [];
+        const contactsCollection = await getDocument(`users/${currentUser.uid}/business/main`, 'contacts') || {};
+        const contacts = Array.isArray(contactsCollection) ? contactsCollection : Object.values(contactsCollection);
         contactsCache = contacts; // Update cache
         renderContactsList(contacts);
     } catch (error) {
         console.error('Error loading contacts:', error);
+        contactsCache = [];
+        renderContactsList([]);
         showNotification('Error loading contacts', 'error');
     }
 }
@@ -202,29 +215,38 @@ function updateDashboardMetrics(invoices, bills) {
     const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     const overdueInvoices = invoices.reduce((sum, inv) => {
+        if (!inv.dueDate || !inv.status || !inv.total) return sum;
         const dueDate = new Date(inv.dueDate);
         if (inv.status !== 'Paid' && dueDate < today) {
-            return sum + (inv.total || 0);
+            return sum + (parseFloat(inv.total) || 0);
         }
         return sum;
     }, 0);
 
-    const outstandingRevenue = invoices.reduce((sum, inv) => inv.status !== 'Paid' ? sum + (inv.total || 0) : sum, 0);
+    const outstandingRevenue = invoices.reduce((sum, inv) => {
+        if (!inv.status || !inv.total) return sum;
+        return inv.status !== 'Paid' ? sum + (parseFloat(inv.total) || 0) : sum;
+    }, 0);
     
-    const openBills = bills.reduce((sum, bill) => bill.status !== 'Paid' ? sum + (bill.total || 0) : sum, 0);
+    const openBills = bills.reduce((sum, bill) => {
+        if (!bill.status || !bill.total) return sum;
+        return bill.status !== 'Paid' ? sum + (parseFloat(bill.total) || 0) : sum;
+    }, 0);
 
     const income30Days = invoices.reduce((sum, inv) => {
+        if (!inv.issueDate || !inv.total) return sum;
         const issueDate = new Date(inv.issueDate);
         if (issueDate >= thirtyDaysAgo) {
-            return sum + (inv.total || 0);
+            return sum + (parseFloat(inv.total) || 0);
         }
         return sum;
     }, 0);
 
     const expenses30Days = bills.reduce((sum, bill) => {
+        if (!bill.billDate || !bill.total) return sum;
         const billDate = new Date(bill.billDate);
         if (billDate >= thirtyDaysAgo) {
-            return sum + (bill.total || 0);
+            return sum + (parseFloat(bill.total) || 0);
         }
         return sum;
     }, 0);
@@ -274,7 +296,7 @@ function renderInvoicesList(invoices) {
     const listBody = document.getElementById('invoices-list-body');
     if (!listBody) return;
     
-    if (invoices.length === 0) {
+    if (!invoices || invoices.length === 0) {
         listBody.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-slate-500">No invoices created yet.</td></tr>`;
         return;
     }
@@ -291,7 +313,7 @@ function renderInvoicesList(invoices) {
                 <td class="p-4"><span class="px-2 py-1 text-xs font-semibold rounded-full ${statusColors[invoice.status] || statusColors.Draft}">${invoice.status || 'Draft'}</span></td>
                 <td class="p-4 text-slate-600">${invoice.dueDate || 'N/A'}</td>
                 <td class="p-4 font-medium text-slate-800">${invoice.customerName || 'Unknown'}</td>
-                <td class="p-4 text-right font-semibold">R ${(invoice.total || 0).toLocaleString()}</td>
+                <td class="p-4 text-right font-semibold">R ${(parseFloat(invoice.total) || 0).toLocaleString()}</td>
                 <td class="p-4 text-right">
                     <button data-action="open-invoice-modal" data-id="${invoice.id}" class="text-indigo-600 hover:text-indigo-800"><i class="fas fa-edit"></i></button>
                 </td>
@@ -331,7 +353,7 @@ function renderBillsList(bills) {
     const listBody = document.getElementById('bills-list-body');
     if (!listBody) return;
     
-    if (bills.length === 0) {
+    if (!bills || bills.length === 0) {
         listBody.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-slate-500">No bills or expenses logged yet.</td></tr>`;
         return;
     }
@@ -347,7 +369,7 @@ function renderBillsList(bills) {
                 <td class="p-4"><span class="px-2 py-1 text-xs font-semibold rounded-full ${statusColors[bill.status] || statusColors.Unpaid}">${bill.status || 'Unpaid'}</span></td>
                 <td class="p-4 text-slate-600">${bill.dueDate || 'N/A'}</td>
                 <td class="p-4 font-medium text-slate-800">${bill.supplierName || 'Unknown'}</td>
-                <td class="p-4 text-right font-semibold">R ${(bill.total || 0).toLocaleString()}</td>
+                <td class="p-4 text-right font-semibold">R ${(parseFloat(bill.total) || 0).toLocaleString()}</td>
                 <td class="p-4 text-right">
                     <button data-action="open-bill-modal" data-id="${bill.id}" class="text-indigo-600 hover:text-indigo-800 mr-4"><i class="fas fa-edit"></i></button>
                     <button data-action="delete-bill" data-id="${bill.id}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash-alt"></i></button>
@@ -387,7 +409,7 @@ function renderContactsList(contacts) {
     const listBody = document.getElementById('contacts-list-body');
     if (!listBody) return;
 
-    if (contacts.length === 0) {
+    if (!contacts || contacts.length === 0) {
         listBody.innerHTML = `<tr><td colspan="4" class="text-center p-8 text-slate-500">No contacts added yet.</td></tr>`;
         return;
     }
@@ -439,14 +461,17 @@ async function generateProfitAndLossReport() {
     resultsContainer.innerHTML = `<p class="text-slate-500">Generating report...</p>`;
 
     try {
-        const invoices = await getAllDocuments(`users/${currentUser.uid}/business/main/invoices`) || [];
-        const bills = await getAllDocuments(`users/${currentUser.uid}/business/main/bills`) || [];
+        const invoicesCollection = await getDocument(`users/${currentUser.uid}/business/main`, 'invoices') || {};
+        const billsCollection = await getDocument(`users/${currentUser.uid}/business/main`, 'bills') || {};
+        
+        const invoices = Array.isArray(invoicesCollection) ? invoicesCollection : Object.values(invoicesCollection);
+        const bills = Array.isArray(billsCollection) ? billsCollection : Object.values(billsCollection);
 
         const filteredInvoices = invoices.filter(inv => inv.issueDate >= startDate && inv.issueDate <= endDate);
         const filteredBills = bills.filter(bill => bill.billDate >= startDate && bill.billDate <= endDate);
 
-        const totalRevenue = filteredInvoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
-        const totalExpenses = filteredBills.reduce((sum, bill) => sum + (bill.total || 0), 0);
+        const totalRevenue = filteredInvoices.reduce((sum, inv) => sum + (parseFloat(inv.total) || 0), 0);
+        const totalExpenses = filteredBills.reduce((sum, bill) => sum + (parseFloat(bill.total) || 0), 0);
         const netProfit = totalRevenue - totalExpenses;
 
         resultsContainer.innerHTML = `
@@ -648,7 +673,10 @@ function setupInvoiceModal(invoice) {
         invoice.lineItems.forEach(item => {
             total += (parseFloat(item.quantity) || 0) * (parseFloat(item.price) || 0);
         });
-        document.getElementById('invoice-total').textContent = total.toLocaleString('en-ZA', { minimumFractionDigits: 2 });
+        const totalElement = document.getElementById('invoice-total');
+        if (totalElement) {
+            totalElement.textContent = total.toLocaleString('en-ZA', { minimumFractionDigits: 2 });
+        }
     };
 
     lineItemsContainer.addEventListener('input', (e) => {

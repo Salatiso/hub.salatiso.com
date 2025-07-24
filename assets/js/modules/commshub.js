@@ -6,6 +6,7 @@
 import { auth, db } from '../firebase-config.js';
 import { addDocument, getDocumentsRealtime, updateDocument, getDocument } from '../database.js';
 import { doc, onSnapshot, serverTimestamp, collection, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
 let currentUser = null;
 let quill = null;
@@ -269,3 +270,24 @@ async function handlePublish(e) {
         alert("Could not publish content.");
     }
 }
+
+// Initialize the CommsHub when Firebase is ready
+document.addEventListener('firebase-ready', () => {
+    console.log('Firebase ready event received, initializing CommsHub...');
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            console.log('User authenticated, initializing CommsHub for:', user.email);
+            init(user);
+        } else {
+            console.log('No user authenticated');
+        }
+    });
+});
+
+// Also listen for auth state changes directly
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        console.log('Auth state changed, user authenticated:', user.email);
+        init(user);
+    }
+});

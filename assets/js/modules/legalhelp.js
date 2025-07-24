@@ -233,3 +233,24 @@ async function handleSaveProject(e) {
         alert("Could not save the project.");
     }
 }
+
+// Initialize the LegalHelp when Firebase is ready
+document.addEventListener('firebase-ready', () => {
+    console.log('Firebase ready event received, initializing LegalHelp...');
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            console.log('User authenticated, initializing LegalHelp for:', user.email);
+            init(user);
+        } else {
+            console.log('No user authenticated');
+        }
+    });
+});
+
+// Also listen for auth state changes directly
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        console.log('Auth state changed, user authenticated:', user.email);
+        init(user);
+    }
+});

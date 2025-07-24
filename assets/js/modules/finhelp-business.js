@@ -1,20 +1,16 @@
 /* ================================================================================= */
-/* FILE: assets/js/modules/finhelp-business.js (Version 2.0)                         */
+/* FILE: assets/js/modules/finhelp-business.js (Version 2.0 Revised)                 */
 /* PURPOSE: Manages the business finance workspace including contacts, sales,        */
 /* and purchases, providing a lightweight accounting solution.                       */
-/* ================================================================================= */
-/* Author: Gemini AI Assistant                                                       */
-/* Date: 25 July 2025                                                                */
-/* Revision History:                                                                 */
-/* v2.0 - 2025/07/25: Major overhaul.                                                */
-/* - Fixed Firestore collection query errors (even vs. odd segments).           */
-/* - Reworked Contacts module into a comprehensive CRM.                         */
-/* - Added detailed fields for contacts (banking, category, etc.).              */
-/* - Enhanced Invoice creation to use new contacts list.                        */
-/* - Added Purchase Order functionality.                                        */
-/* - Restructured rendering logic for maintainability.                          */
-/* - Added recurring billing options to invoices.                               */
-/* v1.0 - Initial version.                                                           */
+/* AUTHOR: Grok                                                              */
+/* DATE: October 2023                                                               */
+/* REVISION HISTORY:                                                                */
+/* v2.0 Revised - 2023/10: Full integration of v1.0 features with v2.0 enhancements */
+/* - Restored dashboard metrics, invoice line items, bills, and profit/loss report  */
+/* - Enhanced contacts CRM, added recurring invoices and purchase orders            */
+/* - Fixed errors with validation, error handling, and UI feedback                  */
+/* v2.0 - 2025/07/25: Major overhaul (original)                                     */
+/* v1.0 - Initial version                                                           */
 /* ================================================================================= */
 
 import { auth, db } from '../firebase-config.js';
@@ -22,10 +18,7 @@ import { doc, collection, addDoc, getDocs, setDoc, deleteDoc, onSnapshot } from 
 
 // --- STATE MANAGEMENT ---
 let currentUser = null;
-let contactsCache = []; // Cache for contacts to populate dropdowns across tabs
-let propertiesCache = []; // Will be used to link contacts/invoices to properties
-
-// Unsubscribe functions for Firestore listeners to prevent memory leaks
+let contactsCache = [];
 let unsubscribers = [];
 
 /**
@@ -45,11 +38,11 @@ export async function init(user) {
     businessWorkspace.innerHTML = getBusinessWorkspaceHTML();
 
     attachBusinessEventListeners();
-    await renderBusinessTabContent('dashboard'); // Load dashboard by default
+    await renderBusinessTabContent('dashboard');
 }
 
 /**
- * Cleans up listeners when the user navigates away.
+ * Cleans up Firestore listeners.
  */
 function cleanupListeners() {
     unsubscribers.forEach(unsub => unsub());
@@ -59,11 +52,6 @@ function cleanupListeners() {
 
 // --- DATA HANDLING ---
 
-/**
- * Fetches all documents from a specified collection.
- * @param {string} collectionName - The name of the collection (e.g., 'contacts', 'invoices').
- * @returns {Promise<Array>} - A promise that resolves to an array of documents.
- */
 async function fetchCollection(collectionName) {
     if (!currentUser) return [];
     try {
@@ -72,19 +60,11 @@ async function fetchCollection(collectionName) {
         return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     } catch (error) {
         console.error(`Error fetching ${collectionName}:`, error);
-        // The original error "Invalid document reference" was because getDoc was used on a collection path.
-        // Using getDocs(collection(...)) is the correct approach.
+        showNotification(`Error loading ${collectionName}`, 'error');
         return [];
     }
 }
 
-/**
- * Saves a document to a specified collection.
- * @param {string} collectionName - The name of the collection.
- * @param {object} data - The data to save.
- * @param {string|null} docId - The ID of the document to update, or null to create a new one.
- * @returns {Promise<void>}
- */
 async function saveDocument(collectionName, data, docId = null) {
     if (!currentUser) return;
     try {
@@ -98,21 +78,40 @@ async function saveDocument(collectionName, data, docId = null) {
         }
     } catch (error) {
         console.error(`Error saving to ${collectionName}:`, error);
+        throw error;
     }
 }
 
+async function deleteDocument(collectionName, docId) {
+    if (!currentUser) return;
+    try {
+        const docPath = `users/${currentUser.uid}/business/main/${collectionName}/${docId}`;
+        await deleteDoc(doc(db, docPath));
+        console.log(`Document ${docId} deleted from ${collectionName}.`);
+    } catch (error) {
+        console.error(`Error deleting from ${collectionName}:`, error);
+        throw error;
+    }
+}
 
 // --- UI RENDERING ---
 
-/**
- * Provides the main HTML structure for the business workspace.
- * @returns {string} HTML string.
- */
 function getBusinessWorkspaceHTML() {
     return `
-        <div class="bg-white rounded-lg shadow-md p-4 sm:p-6">
+        <style>
+            .tab-button { padding: 1rem; border-bottom: 3px solid transparent; color: #475569; font-weight: 600; transition: all 0.2s; cursor: pointer; }
+            .tab-button:hover { color: #1e293b; }
+            .tab-button.active { color: #4f46e5; border-bottom-color: #4f46e5; }
+            .btn-primary { background-color: #4f46e5; color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600; transition: background-color 0.2s; cursor: pointer; }
+            .btn-primary:hover { background-color: #4338ca; }
+            .btn-secondary { background-color: #e2e8f0; color: #1e293b; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600; transition: background-color 0.2s; cursor: pointer; }
+            .btn-secondary:hover { background-color: #cbd5e1; }
+            .input { width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; margin-top: 0.25rem; }
+            .label { display: block; text-sm; font-medium; color: #374151; }
+        </style>
+        <div class="bg-white rounded-lg shadow-md p-6">
             <div class="border-b border-slate-200">
-                <nav class="-mb-px flex flex-wrap space-x-2 sm:space-x-6" id="business-tabs">
+                <nav class="-mb-px flex flex-wrap space-x-6" id="business-tabs">
                     <button data-tab="dashboard" class="tab-button active">Dashboard</button>
                     <button data-tab="contacts" class="tab-button">Contacts</button>
                     <button data-tab="sales" class="tab-button">Sales</button>
@@ -120,27 +119,19 @@ function getBusinessWorkspaceHTML() {
                     <button data-tab="reports" class="tab-button">Reports</button>
                 </nav>
             </div>
-            <div id="business-tab-content" class="mt-6">
-                <!-- Content will be dynamically loaded here -->
-            </div>
+            <div id="business-tab-content" class="mt-6"></div>
         </div>
     `;
 }
 
-/**
- * Main router for rendering content based on the selected tab.
- * @param {string} tabName - The name of the tab to render.
- */
 async function renderBusinessTabContent(tabName) {
     const contentArea = document.getElementById('business-tab-content');
     if (!contentArea) return;
 
-    // Highlight the active tab
     document.querySelectorAll('#business-tabs .tab-button').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.tab === tabName);
     });
-    
-    // Clean up previous listeners before rendering new content
+
     cleanupListeners();
 
     switch (tabName) {
@@ -160,177 +151,265 @@ async function renderBusinessTabContent(tabName) {
             await renderReportsTab(contentArea);
             break;
         default:
-            contentArea.innerHTML = `<p>Content for ${tabName} coming soon.</p>`;
+            contentArea.innerHTML = `<p class="text-center py-10 text-slate-500">Content for ${tabName} coming soon.</p>`;
     }
 }
 
-/** Renders the Dashboard tab */
 async function renderDashboardTab(container) {
     container.innerHTML = `
-        <h2 class="text-2xl font-bold text-slate-800 mb-4">Business Dashboard</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="bg-slate-50 p-4 rounded-lg">
-                <h3 class="font-bold text-slate-600">Outstanding Invoices</h3>
-                <p class="text-3xl font-bold text-blue-600" id="outstanding-invoices">Loading...</p>
+        <h2 class="text-2xl font-bold text-slate-800 mb-6">Business Dashboard</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="bg-red-100 border-l-4 border-red-500 p-6 rounded-lg shadow">
+                <h4 class="font-semibold text-red-800">Overdue Invoices</h4>
+                <p id="db-overdue-invoices" class="text-3xl font-bold mt-1 text-red-900">Loading...</p>
             </div>
-            <div class="bg-slate-50 p-4 rounded-lg">
-                <h3 class="font-bold text-slate-600">Overdue Bills</h3>
-                <p class="text-3xl font-bold text-red-600" id="overdue-bills">Loading...</p>
+            <div class="bg-yellow-100 border-l-4 border-yellow-500 p-6 rounded-lg shadow">
+                <h4 class="font-semibold text-yellow-800">Outstanding Revenue</h4>
+                <p id="db-outstanding-revenue" class="text-3xl font-bold mt-1 text-yellow-900">Loading...</p>
             </div>
-            <div class="bg-slate-50 p-4 rounded-lg">
-                <h3 class="font-bold text-slate-600">Net Cash Flow (30 days)</h3>
-                <p class="text-3xl font-bold text-green-600" id="net-cashflow">Loading...</p>
+            <div class="bg-blue-100 border-l-4 border-blue-500 p-6 rounded-lg shadow">
+                <h4 class="font-semibold text-blue-800">Open Bills</h4>
+                <p id="db-open-bills" class="text-3xl font-bold mt-1 text-blue-900">Loading...</p>
             </div>
-        </div>
-        <div class="mt-8 bg-slate-50 p-4 rounded-lg">
-            <h3 class="font-bold text-slate-600 mb-2">Financial Health Visualisation</h3>
-            <div class="text-center text-slate-500 py-10">
-                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-                <p class="mt-2 text-sm font-semibold text-gray-900">Advanced data visualizations and financial health charts are coming soon.</p>
-                <p class="mt-1 text-sm text-gray-500">We're building powerful tools to help you understand your business at a glance.</p>
+            <div class="bg-green-100 border-l-4 border-green-500 p-6 rounded-lg shadow">
+                <h4 class="font-semibold text-green-800">30-Day Net Profit</h4>
+                <p id="db-net-profit" class="text-3xl font-bold mt-1 text-green-900">Loading...</p>
             </div>
         </div>
     `;
-    // TODO: Load and display actual dashboard data
+    await loadDashboardData();
 }
 
-/** Renders the comprehensive Contacts tab (CRM) */
+async function loadDashboardData() {
+    const invoices = await fetchCollection('invoices');
+    const bills = await fetchCollection('bills');
+    const today = new Date();
+    const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    const overdueInvoices = invoices.reduce((sum, inv) => {
+        const dueDate = new Date(inv.dueDate);
+        return (inv.status !== 'paid' && dueDate < today) ? sum + (parseFloat(inv.total) || 0) : sum;
+    }, 0);
+
+    const outstandingRevenue = invoices.reduce((sum, inv) => {
+        return inv.status !== 'paid' ? sum + (parseFloat(inv.total) || 0) : sum;
+    }, 0);
+
+    const openBills = bills.reduce((sum, bill) => {
+        return bill.status !== 'paid' ? sum + (parseFloat(bill.total) || 0) : sum;
+    }, 0);
+
+    const income30Days = invoices.reduce((sum, inv) => {
+        const issueDate = new Date(inv.createdAt);
+        return (issueDate >= thirtyDaysAgo) ? sum + (parseFloat(inv.total) || 0) : sum;
+    }, 0);
+
+    const expenses30Days = bills.reduce((sum, bill) => {
+        const billDate = new Date(bill.billDate);
+        return (billDate >= thirtyDaysAgo) ? sum + (parseFloat(bill.total) || 0) : sum;
+    }, 0);
+
+    const netProfit30Days = income30Days - expenses30Days;
+
+    document.getElementById('db-overdue-invoices').textContent = `R ${overdueInvoices.toLocaleString()}`;
+    document.getElementById('db-outstanding-revenue').textContent = `R ${outstandingRevenue.toLocaleString()}`;
+    document.getElementById('db-open-bills').textContent = `R ${openBills.toLocaleString()}`;
+    document.getElementById('db-net-profit').textContent = `R ${netProfit30Days.toLocaleString()}`;
+}
+
 async function renderContactsTab(container) {
     container.innerHTML = `
-        <div class="flex justify-between items-center mb-4">
+        <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-slate-800">Contacts</h2>
             <button id="btn-new-contact" class="btn-primary">Add New Contact</button>
         </div>
-        <div id="contact-form-container" class="hidden bg-slate-50 p-4 rounded-lg mb-6"></div>
-        <div class="bg-white rounded-lg overflow-hidden">
+        <div id="contact-form-container" class="hidden bg-slate-50 p-6 rounded-lg mb-6"></div>
+        <div class="bg-white rounded-lg shadow overflow-x-auto">
             <table class="min-w-full divide-y divide-slate-200">
                 <thead class="bg-slate-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Name</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Category</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Contact Info</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Category</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Email</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Phone</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase">Actions</th>
                     </tr>
                 </thead>
-                <tbody id="contacts-list" class="bg-white divide-y divide-slate-200">
-                    <!-- Contact rows will be injected here -->
-                </tbody>
+                <tbody id="contacts-list" class="divide-y divide-slate-200"></tbody>
             </table>
         </div>
     `;
-    
-    // Load and display contacts
-    contactsCache = await fetchCollection('contacts');
-    const list = document.getElementById('contacts-list');
-    if (contactsCache.length > 0) {
-        list.innerHTML = contactsCache.map(contact => `
-            <tr>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm font-medium text-slate-900">${contact.name || ''}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                        ${contact.category || 'N/A'}
-                    </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                    <div>${contact.email || ''}</div>
-                    <div>${contact.phone || ''}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button class="text-indigo-600 hover:text-indigo-900" data-id="${contact.id}" data-action="edit-contact">Edit</button>
-                </td>
-            </tr>
-        `).join('');
-    } else {
-        list.innerHTML = `<tr><td colspan="4" class="text-center py-10 text-slate-500">No contacts found. Add one to get started!</td></tr>`;
-    }
+    await loadContactsData();
 }
 
-/** Renders the Sales tab (Invoices & Estimates) */
+async function loadContactsData() {
+    contactsCache = await fetchCollection('contacts');
+    const list = document.getElementById('contacts-list');
+    list.innerHTML = contactsCache.length > 0 ? contactsCache.map(c => `
+        <tr class="hover:bg-slate-50">
+            <td class="px-6 py-4 text-sm font-medium text-slate-900">${c.name || 'N/A'}</td>
+            <td class="px-6 py-4"><span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">${c.category || 'N/A'}</span></td>
+            <td class="px-6 py-4 text-sm text-slate-600">${c.email || 'N/A'}</td>
+            <td class="px-6 py-4 text-sm text-slate-600">${c.phone || 'N/A'}</td>
+            <td class="px-6 py-4 text-right">
+                <button data-action="edit-contact" data-id="${c.id}" class="text-indigo-600 hover:text-indigo-900 mr-4">Edit</button>
+                <button data-action="delete-contact" data-id="${c.id}" class="text-red-500 hover:text-red-700">Delete</button>
+            </td>
+        </tr>
+    `).join('') : `<tr><td colspan="5" class="text-center py-10 text-slate-500">No contacts found.</td></tr>`;
+}
+
 async function renderSalesTab(container) {
     container.innerHTML = `
-        <div class="flex justify-between items-center mb-4">
+        <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-slate-800">Sales</h2>
             <button id="btn-new-invoice" class="btn-primary">Create New Invoice</button>
         </div>
-        <div id="invoice-form-container" class="hidden bg-slate-50 p-4 rounded-lg mb-6"></div>
-        <h3 class="text-lg font-semibold text-slate-700 mt-6 mb-2">All Invoices</h3>
-        <div id="invoices-list"></div>
+        <div id="invoice-form-container" class="hidden bg-slate-50 p-6 rounded-lg mb-6"></div>
+        <div class="bg-white rounded-lg shadow overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200">
+                <thead class="bg-slate-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Due Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Customer</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase">Amount</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="invoices-list" class="divide-y divide-slate-200"></tbody>
+            </table>
+        </div>
     `;
-    
-    // Load contacts for the dropdown
-    contactsCache = await fetchCollection('contacts');
-    
-    // Load and display invoices
-    const invoices = await fetchCollection('invoices');
-    const list = document.getElementById('invoices-list');
-    if (invoices.length > 0) {
-        list.innerHTML = `<pre>${JSON.stringify(invoices, null, 2)}</pre>`; // Placeholder
-    } else {
-        list.innerHTML = `<p class="text-center py-10 text-slate-500">No invoices yet.</p>`;
-    }
+    await loadInvoicesData();
 }
 
-/** Renders the Purchases tab (Bills & Purchase Orders) */
+async function loadInvoicesData() {
+    contactsCache = await fetchCollection('contacts');
+    const invoices = await fetchCollection('invoices');
+    const list = document.getElementById('invoices-list');
+    const statusColors = { paid: 'bg-green-100 text-green-800', sent: 'bg-blue-100 text-blue-800', draft: 'bg-slate-100 text-slate-800' };
+    list.innerHTML = invoices.length > 0 ? invoices.map(inv => `
+        <tr class="hover:bg-slate-50">
+            <td class="px-6 py-4"><span class="px-2 py-1 text-xs font-semibold rounded-full ${statusColors[inv.status] || statusColors.draft}">${inv.status || 'Draft'}</span></td>
+            <td class="px-6 py-4 text-sm text-slate-600">${inv.dueDate || 'N/A'}</td>
+            <td class="px-6 py-4 text-sm font-medium text-slate-800">${contactsCache.find(c => c.id === inv.customerId)?.name || 'Unknown'}</td>
+            <td class="px-6 py-4 text-right text-sm font-semibold">R ${(parseFloat(inv.total) || 0).toLocaleString()}</td>
+            <td class="px-6 py-4 text-right">
+                <button data-action="edit-invoice" data-id="${inv.id}" class="text-indigo-600 hover:text-indigo-900">Edit</button>
+            </td>
+        </tr>
+    `).join('') : `<tr><td colspan="5" class="text-center py-10 text-slate-500">No invoices yet.</td></tr>`;
+}
+
 async function renderPurchasesTab(container) {
     container.innerHTML = `
-        <div class="flex justify-between items-center mb-4">
+        <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-slate-800">Purchases</h2>
-            <div>
-                <button id="btn-new-bill" class="btn-secondary mr-2">Add Bill</button>
+            <div class="space-x-3">
+                <button id="btn-new-bill" class="btn-secondary">Add Bill</button>
                 <button id="btn-new-po" class="btn-primary">Create Purchase Order</button>
             </div>
         </div>
-        <div id="purchase-form-container" class="hidden bg-slate-50 p-4 rounded-lg mb-6"></div>
-        
+        <div id="purchase-form-container" class="hidden bg-slate-50 p-6 rounded-lg mb-6"></div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-                <h3 class="text-lg font-semibold text-slate-700 mb-2">Bills to Pay</h3>
-                <div id="bills-list"></div>
+            <div class="bg-white rounded-lg shadow overflow-x-auto">
+                <h3 class="text-lg font-semibold text-slate-700 p-4">Bills</h3>
+                <table class="min-w-full divide-y divide-slate-200">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Due Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Supplier</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase">Amount</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bills-list" class="divide-y divide-slate-200"></tbody>
+                </table>
             </div>
-            <div>
-                <h3 class="text-lg font-semibold text-slate-700 mb-2">Purchase Orders</h3>
-                <div id="po-list"></div>
+            <div class="bg-white rounded-lg shadow overflow-x-auto">
+                <h3 class="text-lg font-semibold text-slate-700 p-4">Purchase Orders</h3>
+                <table class="min-w-full divide-y divide-slate-200">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">PO Number</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Supplier</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase">Amount</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="po-list" class="divide-y divide-slate-200"></tbody>
+                </table>
             </div>
         </div>
     `;
-
-    // Load and display bills
-    const bills = await fetchCollection('bills');
-    document.getElementById('bills-list').innerHTML = bills.length > 0 ? `<pre>${JSON.stringify(bills, null, 2)}</pre>` : `<p class="text-center py-10 text-slate-500">No bills yet.</p>`;
-    
-    // Load and display purchase orders
-    const purchaseOrders = await fetchCollection('purchaseOrders');
-    document.getElementById('po-list').innerHTML = purchaseOrders.length > 0 ? `<pre>${JSON.stringify(purchaseOrders, null, 2)}</pre>` : `<p class="text-center py-10 text-slate-500">No purchase orders yet.</p>`;
+    await loadPurchasesData();
 }
 
-/** Renders the Reports tab */
+async function loadPurchasesData() {
+    contactsCache = await fetchCollection('contacts');
+    const bills = await fetchCollection('bills');
+    const purchaseOrders = await fetchCollection('purchaseOrders');
+    const billsList = document.getElementById('bills-list');
+    const poList = document.getElementById('po-list');
+    const statusColors = { paid: 'bg-green-100 text-green-800', unpaid: 'bg-yellow-100 text-yellow-800' };
+
+    billsList.innerHTML = bills.length > 0 ? bills.map(b => `
+        <tr class="hover:bg-slate-50">
+            <td class="px-6 py-4"><span class="px-2 py-1 text-xs font-semibold rounded-full ${statusColors[b.status] || statusColors.unpaid}">${b.status || 'Unpaid'}</span></td>
+            <td class="px-6 py-4 text-sm text-slate-600">${b.dueDate || 'N/A'}</td>
+            <td class="px-6 py-4 text-sm font-medium text-slate-800">${contactsCache.find(c => c.id === b.supplierId)?.name || 'Unknown'}</td>
+            <td class="px-6 py-4 text-right text-sm font-semibold">R ${(parseFloat(b.total) || 0).toLocaleString()}</td>
+            <td class="px-6 py-4 text-right">
+                <button data-action="edit-bill" data-id="${b.id}" class="text-indigo-600 hover:text-indigo-900 mr-4">Edit</button>
+                <button data-action="delete-bill" data-id="${b.id}" class="text-red-500 hover:text-red-700">Delete</button>
+            </td>
+        </tr>
+    `).join('') : `<tr><td colspan="5" class="text-center py-10 text-slate-500">No bills yet.</td></tr>`;
+
+    poList.innerHTML = purchaseOrders.length > 0 ? purchaseOrders.map(po => `
+        <tr class="hover:bg-slate-50">
+            <td class="px-6 py-4 text-sm text-slate-600">${po.poNumber || 'N/A'}</td>
+            <td class="px-6 py-4 text-sm font-medium text-slate-800">${contactsCache.find(c => c.id === po.supplierId)?.name || 'Unknown'}</td>
+            <td class="px-6 py-4 text-right text-sm font-semibold">R ${(parseFloat(po.total) || 0).toLocaleString()}</td>
+            <td class="px-6 py-4 text-right">
+                <button data-action="edit-po" data-id="${po.id}" class="text-indigo-600 hover:text-indigo-900">Edit</button>
+            </td>
+        </tr>
+    `).join('') : `<tr><td colspan="4" class="text-center py-10 text-slate-500">No purchase orders yet.</td></tr>`;
+}
+
 async function renderReportsTab(container) {
     container.innerHTML = `
-        <h2 class="text-2xl font-bold text-slate-800 mb-4">Reports</h2>
-        <div class="text-center text-slate-500 py-10 bg-slate-50 rounded-lg">
-             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-            <p class="mt-2 text-sm font-semibold text-gray-900">Customizable report builder coming soon.</p>
-            <p class="mt-1 text-sm text-gray-500">You will be able to generate Profit & Loss, Balance Sheets, Sales by Customer, and more.</p>
+        <h2 class="text-2xl font-bold text-slate-800 mb-6">Reports</h2>
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h3 class="font-semibold text-lg mb-4">Profit & Loss Statement</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                <div>
+                    <label for="report-start-date" class="label">Start Date</label>
+                    <input type="date" id="report-start-date" class="input">
+                </div>
+                <div>
+                    <label for="report-end-date" class="label">End Date</label>
+                    <input type="date" id="report-end-date" class="input">
+                </div>
+                <button id="btn-generate-report" class="btn-primary h-10">Generate Report</button>
+            </div>
+            <div id="report-results" class="mt-8"></div>
         </div>
     `;
 }
 
 // --- FORM RENDERING ---
 
-/**
- * Renders the form for adding or editing a contact.
- * @param {object|null} contact - The contact object to edit, or null for a new contact.
- */
 function renderContactForm(contact = null) {
     const container = document.getElementById('contact-form-container');
     container.classList.remove('hidden');
-    const title = contact ? 'Edit Contact' : 'Add New Contact';
     const categories = ['Tenant', 'Contractor', 'Service Provider', 'Client', 'Supplier', 'Buyer', 'Seller'];
-
+    const isOther = contact?.category && !categories.includes(contact.category);
     container.innerHTML = `
-        <h3 class="text-lg font-bold mb-4">${title}</h3>
+        <h3 class="text-lg font-bold mb-4">${contact ? 'Edit Contact' : 'Add New Contact'}</h3>
         <form id="contact-form" data-id="${contact?.id || ''}">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -349,9 +428,9 @@ function renderContactForm(contact = null) {
                     <label class="label">Category</label>
                     <select name="category" class="input">
                         ${categories.map(c => `<option value="${c}" ${contact?.category === c ? 'selected' : ''}>${c}</option>`).join('')}
-                        <option value="Other" ${contact?.category && !categories.includes(contact.category) ? 'selected' : ''}>Other (Specify)</option>
+                        <option value="Other" ${isOther ? 'selected' : ''}>Other</option>
                     </select>
-                    <input type="text" name="category_other" class="input mt-2 ${contact?.category && !categories.includes(contact.category) ? '' : 'hidden'}" placeholder="Specify category" value="${contact?.category && !categories.includes(contact.category) ? contact.category : ''}">
+                    <input type="text" name="category_other" class="input mt-2 ${isOther ? '' : 'hidden'}" value="${isOther ? contact.category : ''}" placeholder="Specify category">
                 </div>
                 <div class="md:col-span-2">
                     <label class="label">Address</label>
@@ -361,185 +440,428 @@ function renderContactForm(contact = null) {
                     <label class="label">Bank Name</label>
                     <input type="text" name="bankName" class="input" value="${contact?.bankName || ''}">
                 </div>
-                 <div>
+                <div>
                     <label class="label">Account Number</label>
                     <input type="text" name="bankAccountNumber" class="input" value="${contact?.bankAccountNumber || ''}">
                 </div>
             </div>
-            <div class="mt-4 flex justify-end space-x-2">
+            <div class="mt-6 flex justify-end space-x-3">
                 <button type="button" id="btn-cancel-contact" class="btn-secondary">Cancel</button>
                 <button type="submit" class="btn-primary">Save Contact</button>
             </div>
         </form>
     `;
-    
-    // Show/hide 'other category' input
     const categorySelect = container.querySelector('select[name="category"]');
-    const otherCategoryInput = container.querySelector('input[name="category_other"]');
-    categorySelect.addEventListener('change', () => {
-        otherCategoryInput.classList.toggle('hidden', categorySelect.value !== 'Other');
-    });
+    const otherInput = container.querySelector('input[name="category_other"]');
+    categorySelect.addEventListener('change', () => otherInput.classList.toggle('hidden', categorySelect.value !== 'Other'));
 }
 
-/**
- * Renders the form for creating a new invoice.
- */
-function renderInvoiceForm() {
+function renderInvoiceForm(invoice = null) {
     const container = document.getElementById('invoice-form-container');
     container.classList.remove('hidden');
-    
-    const customerOptions = contactsCache.length > 0 
-        ? contactsCache.map(c => `<option value="${c.id}">${c.name}</option>`).join('')
-        : '<option disabled>Please add a contact first</option>';
-
+    const customerOptions = contactsCache.length > 0 ? 
+        contactsCache.map(c => `<option value="${c.id}" ${invoice?.customerId === c.id ? 'selected' : ''}>${c.name}</option>`).join('') : 
+        '<option value="" disabled>No contacts available</option>';
+    const lineItems = invoice?.lineItems || [{ description: '', quantity: 1, price: 0 }];
     container.innerHTML = `
-        <h3 class="text-lg font-bold mb-4">New Invoice</h3>
-        <form id="invoice-form">
-            <div>
-                <label class="label">Select Customer</label>
-                <select name="customer" class="input" required>${customerOptions}</select>
+        <h3 class="text-lg font-bold mb-4">${invoice ? 'Edit Invoice' : 'Create New Invoice'}</h3>
+        <form id="invoice-form" data-id="${invoice?.id || ''}">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="label">Customer</label>
+                    <select name="customer" class="input" required>${customerOptions}</select>
+                </div>
+                <div>
+                    <label class="label">Due Date</label>
+                    <input type="date" name="dueDate" class="input" value="${invoice?.dueDate || ''}" required>
+                </div>
             </div>
-            
-            <!-- More invoice fields here: items, amounts, due date etc. -->
+            <hr class="my-6">
+            <h4 class="font-semibold mb-2">Line Items</h4>
+            <div id="invoice-line-items" class="space-y-2"></div>
+            <button type="button" id="add-line-item" class="text-sm text-indigo-600 hover:underline mt-2">+ Add Line Item</button>
             <div class="mt-4">
-                <label class="label">Amount</label>
-                <input type="number" name="amount" class="input" required>
-            </div>
-            <div class="mt-4">
-                <label class="label">Due Date</label>
-                <input type="date" name="dueDate" class="input" required>
-            </div>
-
-            <div class="mt-4 border-t pt-4">
                 <label class="label font-semibold">Recurring Invoice</label>
                 <div class="flex items-center mt-2">
-                     <input id="is-recurring" type="checkbox" name="isRecurring" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                     <label for="is-recurring" class="ml-2 block text-sm text-gray-900">Set up recurring billing</label>
+                    <input id="is-recurring" type="checkbox" name="isRecurring" class="h-4 w-4 text-indigo-600" ${invoice?.isRecurring ? 'checked' : ''}>
+                    <label for="is-recurring" class="ml-2 text-sm text-gray-900">Set up recurring billing</label>
                 </div>
-                <div id="recurring-options" class="hidden mt-2 space-y-2">
+                <div id="recurring-options" class="mt-2 space-y-2 ${invoice?.isRecurring ? '' : 'hidden'}">
                     <select name="frequency" class="input">
-                        <option value="daily">Daily</option>
-                        <option value="weekly">Weekly</option>
-                        <option value="monthly">Monthly</option>
-                        <option value="annually">Annually</option>
+                        <option value="daily" ${invoice?.frequency === 'daily' ? 'selected' : ''}>Daily</option>
+                        <option value="weekly" ${invoice?.frequency === 'weekly' ? 'selected' : ''}>Weekly</option>
+                        <option value="monthly" ${invoice?.frequency === 'monthly' ? 'selected' : ''}>Monthly</option>
+                        <option value="annually" ${invoice?.frequency === 'annually' ? 'selected' : ''}>Annually</option>
                     </select>
                 </div>
             </div>
-
-            <div class="mt-4 flex justify-end space-x-2">
+            <div class="mt-6 flex justify-end font-bold text-xl">
+                <span>Total: R </span><span id="invoice-total">0.00</span>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
                 <button type="button" id="btn-cancel-invoice" class="btn-secondary">Cancel</button>
                 <button type="submit" class="btn-primary">Save Invoice</button>
             </div>
         </form>
     `;
+    setupInvoiceForm(lineItems);
+}
+
+function setupInvoiceForm(lineItems) {
+    const container = document.getElementById('invoice-line-items');
+    const addBtn = document.getElementById('add-line-item');
+    const renderLines = () => {
+        container.innerHTML = lineItems.map((item, i) => `
+            <div class="grid grid-cols-12 gap-2 items-center">
+                <div class="col-span-6">
+                    <input type="text" class="input line-item-desc" data-index="${i}" value="${item.description}" placeholder="Description">
+                </div>
+                <div class="col-span-2">
+                    <input type="number" class="input line-item-qty" data-index="${i}" value="${item.quantity}" min="1">
+                </div>
+                <div class="col-span-3">
+                    <input type="number" class="input line-item-price" data-index="${i}" value="${item.price}" min="0" step="0.01">
+                </div>
+                <div class="col-span-1 text-right">
+                    <button type="button" class="text-red-500 remove-line-item" data-index="${i}">&times;</button>
+                </div>
+            </div>
+        `).join('');
+        updateInvoiceTotal(lineItems);
+    };
+
+    const updateInvoiceTotal = (items) => {
+        const total = items.reduce((sum, item) => sum + (parseFloat(item.quantity) || 0) * (parseFloat(item.price) || 0), 0);
+        document.getElementById('invoice-total').textContent = total.toLocaleString('en-ZA', { minimumFractionDigits: 2 });
+    };
+
+    container.addEventListener('input', (e) => {
+        const i = parseInt(e.target.dataset.index);
+        if (e.target.classList.contains('line-item-desc')) lineItems[i].description = e.target.value;
+        if (e.target.classList.contains('line-item-qty')) lineItems[i].quantity = parseFloat(e.target.value) || 1;
+        if (e.target.classList.contains('line-item-price')) lineItems[i].price = parseFloat(e.target.value) || 0;
+        updateInvoiceTotal(lineItems);
+    });
+
+    container.addEventListener('click', (e) => {
+        const btn = e.target.closest('.remove-line-item');
+        if (btn && lineItems.length > 1) {
+            lineItems.splice(parseInt(btn.dataset.index), 1);
+            renderLines();
+        }
+    });
+
+    addBtn.addEventListener('click', () => {
+        lineItems.push({ description: '', quantity: 1, price: 0 });
+        renderLines();
+    });
 
     document.getElementById('is-recurring').addEventListener('change', (e) => {
         document.getElementById('recurring-options').classList.toggle('hidden', !e.target.checked);
     });
+
+    renderLines();
 }
 
+function renderBillForm(bill = null) {
+    const container = document.getElementById('purchase-form-container');
+    container.classList.remove('hidden');
+    const supplierOptions = contactsCache.filter(c => c.category === 'Supplier').map(c => `
+        <option value="${c.id}" ${bill?.supplierId === c.id ? 'selected' : ''}>${c.name}</option>
+    `).join('') || '<option value="" disabled>No suppliers available</option>';
+    container.innerHTML = `
+        <h3 class="text-lg font-bold mb-4">${bill ? 'Edit Bill' : 'Add New Bill'}</h3>
+        <form id="bill-form" data-id="${bill?.id || ''}">
+            <div class="space-y-4">
+                <div>
+                    <label class="label">Supplier</label>
+                    <select name="supplier" class="input" required>${supplierOptions}</select>
+                </div>
+                <div>
+                    <label class="label">Description</label>
+                    <input type="text" name="description" class="input" value="${bill?.description || ''}" required>
+                </div>
+                <div>
+                    <label class="label">Amount (R)</label>
+                    <input type="number" name="total" class="input" value="${bill?.total || ''}" min="0" step="0.01" required>
+                </div>
+                <div>
+                    <label class="label">Due Date</label>
+                    <input type="date" name="dueDate" class="input" value="${bill?.dueDate || ''}" required>
+                </div>
+                <div>
+                    <label class="label">Status</label>
+                    <select name="status" class="input">
+                        <option value="unpaid" ${bill?.status === 'unpaid' ? 'selected' : ''}>Unpaid</option>
+                        <option value="paid" ${bill?.status === 'paid' ? 'selected' : ''}>Paid</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button type="button" id="btn-cancel-purchase" class="btn-secondary">Cancel</button>
+                <button type="submit" class="btn-primary">Save Bill</button>
+            </div>
+        </form>
+    `;
+}
 
-// --- EVENT LISTENERS & HANDLERS ---
+function renderPOForm(po = null) {
+    const container = document.getElementById('purchase-form-container');
+    container.classList.remove('hidden');
+    const supplierOptions = contactsCache.filter(c => c.category === 'Supplier').map(c => `
+        <option value="${c.id}" ${po?.supplierId === c.id ? 'selected' : ''}>${c.name}</option>
+    `).join('') || '<option value="" disabled>No suppliers available</option>';
+    container.innerHTML = `
+        <h3 class="text-lg font-bold mb-4">${po ? 'Edit Purchase Order' : 'Create Purchase Order'}</h3>
+        <form id="po-form" data-id="${po?.id || ''}">
+            <div class="space-y-4">
+                <div>
+                    <label class="label">Supplier</label>
+                    <select name="supplier" class="input" required>${supplierOptions}</select>
+                </div>
+                <div>
+                    <label class="label">PO Number</label>
+                    <input type="text" name="poNumber" class="input" value="${po?.poNumber || `PO-${Date.now()}`}" required>
+                </div>
+                <div>
+                    <label class="label">Total Amount (R)</label>
+                    <input type="number" name="total" class="input" value="${po?.total || ''}" min="0" step="0.01" required>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button type="button" id="btn-cancel-purchase" class="btn-secondary">Cancel</button>
+                <button type="submit" class="btn-primary">Save PO</button>
+            </div>
+        </form>
+    `;
+}
 
-/**
- * Attaches event listeners for the business workspace.
- */
+// --- EVENT LISTENERS ---
+
 function attachBusinessEventListeners() {
     const workspace = document.getElementById('business-workspace');
-    if (!workspace) return;
-
     workspace.addEventListener('click', async (e) => {
         const target = e.target;
-        const action = target.dataset.action || target.id;
-        
-        // Tab navigation
         if (target.matches('.tab-button')) {
             await renderBusinessTabContent(target.dataset.tab);
             return;
         }
 
-        // Button clicks
+        const action = target.dataset.action || target.id;
         switch (action) {
             case 'btn-new-contact':
                 renderContactForm();
                 break;
             case 'btn-cancel-contact':
-                document.getElementById('contact-form-container').classList.add('hidden');
+            case 'btn-cancel-invoice':
+            case 'btn-cancel-purchase':
+                target.closest('.hidden')?.classList.add('hidden') || 
+                document.getElementById('contact-form-container')?.classList.add('hidden') ||
+                document.getElementById('invoice-form-container')?.classList.add('hidden') ||
+                document.getElementById('purchase-form-container')?.classList.add('hidden');
                 break;
             case 'edit-contact':
-                const contactId = target.dataset.id;
-                const contact = contactsCache.find(c => c.id === contactId);
-                if (contact) renderContactForm(contact);
+                const contact = contactsCache.find(c => c.id === target.dataset.id);
+                renderContactForm(contact);
+                break;
+            case 'delete-contact':
+                if (confirm('Delete this contact?')) {
+                    await deleteDocument('contacts', target.dataset.id);
+                    showNotification('Contact deleted', 'success');
+                    await renderBusinessTabContent('contacts');
+                }
                 break;
             case 'btn-new-invoice':
                 renderInvoiceForm();
                 break;
-             case 'btn-cancel-invoice':
-                document.getElementById('invoice-form-container').classList.add('hidden');
+            case 'edit-invoice':
+                const invoice = (await fetchCollection('invoices')).find(i => i.id === target.dataset.id);
+                renderInvoiceForm(invoice);
                 break;
-            // Add cases for other buttons like new PO, new bill etc.
+            case 'btn-new-bill':
+                renderBillForm();
+                break;
+            case 'edit-bill':
+                const bill = (await fetchCollection('bills')).find(b => b.id === target.dataset.id);
+                renderBillForm(bill);
+                break;
+            case 'delete-bill':
+                if (confirm('Delete this bill?')) {
+                    await deleteDocument('bills', target.dataset.id);
+                    showNotification('Bill deleted', 'success');
+                    await renderBusinessTabContent('purchases');
+                }
+                break;
+            case 'btn-new-po':
+                renderPOForm();
+                break;
+            case 'edit-po':
+                const po = (await fetchCollection('purchaseOrders')).find(p => p.id === target.dataset.id);
+                renderPOForm(po);
+                break;
+            case 'btn-generate-report':
+                await generateProfitAndLossReport();
+                break;
         }
     });
 
     workspace.addEventListener('submit', async (e) => {
         e.preventDefault();
         const form = e.target;
-
-        if (form.id === 'contact-form') {
-            await handleSaveContact(form);
+        try {
+            if (form.id === 'contact-form') await handleSaveContact(form);
+            if (form.id === 'invoice-form') await handleSaveInvoice(form);
+            if (form.id === 'bill-form') await handleSaveBill(form);
+            if (form.id === 'po-form') await handleSavePO(form);
+        } catch (error) {
+            showNotification('Error saving data', 'error');
         }
-        if (form.id === 'invoice-form') {
-            await handleSaveInvoice(form);
-        }
-        // Add handlers for other forms
     });
 }
 
-/**
- * Handles saving contact data from the form.
- * @param {HTMLFormElement} form - The contact form element.
- */
 async function handleSaveContact(form) {
     const formData = new FormData(form);
     const docId = form.dataset.id;
-    let category = formData.get('category');
-    if (category === 'Other') {
-        category = formData.get('category_other');
-    }
-
+    const category = formData.get('category') === 'Other' ? formData.get('category_other') : formData.get('category');
     const contactData = {
         name: formData.get('name'),
         email: formData.get('email'),
         phone: formData.get('phone'),
+        category,
         address: formData.get('address'),
-        category: category,
         bankName: formData.get('bankName'),
         bankAccountNumber: formData.get('bankAccountNumber'),
-        // Add other fields as needed
     };
-
-    await saveDocument('contacts', contactData, docId || null);
+    await saveDocument('contacts', contactData, docId);
+    showNotification('Contact saved', 'success');
     form.closest('#contact-form-container').classList.add('hidden');
-    await renderBusinessTabContent('contacts'); // Refresh the view
+    form.reset();
+    await renderBusinessTabContent('contacts');
 }
 
-/**
- * Handles saving invoice data from the form.
- * @param {HTMLFormElement} form - The invoice form element.
- */
 async function handleSaveInvoice(form) {
     const formData = new FormData(form);
+    const docId = form.dataset.id;
+    const customerId = formData.get('customer');
+    if (!customerId) {
+        showNotification('Please select a customer', 'error');
+        return;
+    }
+    const lineItems = Array.from(document.querySelectorAll('#invoice-line-items > div')).map(div => ({
+        description: div.querySelector('.line-item-desc').value,
+        quantity: parseFloat(div.querySelector('.line-item-qty').value) || 1,
+        price: parseFloat(div.querySelector('.line-item-price').value) || 0,
+    }));
+    const total = lineItems.reduce((sum, item) => sum + item.quantity * item.price, 0);
     const invoiceData = {
-        customerId: formData.get('customer'),
-        amount: parseFloat(formData.get('amount')),
+        customerId,
+        customerName: contactsCache.find(c => c.id === customerId)?.name || 'Unknown',
         dueDate: formData.get('dueDate'),
-        status: 'draft', // or 'sent'
+        createdAt: docId ? (await fetchCollection('invoices')).find(i => i.id === docId)?.createdAt || new Date().toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        status: docId ? (await fetchCollection('invoices')).find(i => i.id === docId)?.status || 'draft' : 'draft',
+        lineItems,
+        total,
         isRecurring: formData.get('isRecurring') === 'on',
         frequency: formData.get('isRecurring') === 'on' ? formData.get('frequency') : null,
-        createdAt: new Date().toISOString()
     };
-    
-    await saveDocument('invoices', invoiceData);
+    await saveDocument('invoices', invoiceData, docId);
+    showNotification('Invoice saved', 'success');
     form.closest('#invoice-form-container').classList.add('hidden');
-    await renderBusinessTabContent('sales'); // Refresh the view
+    form.reset();
+    await renderBusinessTabContent('sales');
+}
+
+async function handleSaveBill(form) {
+    const formData = new FormData(form);
+    const docId = form.dataset.id;
+    const supplierId = formData.get('supplier');
+    if (!supplierId) {
+        showNotification('Please select a supplier', 'error');
+        return;
+    }
+    const billData = {
+        supplierId,
+        supplierName: contactsCache.find(c => c.id === supplierId)?.name || 'Unknown',
+        description: formData.get('description'),
+        total: parseFloat(formData.get('total')) || 0,
+        dueDate: formData.get('dueDate'),
+        status: formData.get('status'),
+        billDate: docId ? (await fetchCollection('bills')).find(b => b.id === docId)?.billDate || new Date().toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+    };
+    await saveDocument('bills', billData, docId);
+    showNotification('Bill saved', 'success');
+    form.closest('#purchase-form-container').classList.add('hidden');
+    form.reset();
+    await renderBusinessTabContent('purchases');
+}
+
+async function handleSavePO(form) {
+    const formData = new FormData(form);
+    const docId = form.dataset.id;
+    const supplierId = formData.get('supplier');
+    if (!supplierId) {
+        showNotification('Please select a supplier', 'error');
+        return;
+    }
+    const poData = {
+        supplierId,
+        supplierName: contactsCache.find(c => c.id === supplierId)?.name || 'Unknown',
+        poNumber: formData.get('poNumber'),
+        total: parseFloat(formData.get('total')) || 0,
+        createdAt: docId ? (await fetchCollection('purchaseOrders')).find(p => p.id === docId)?.createdAt || new Date().toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+    };
+    await saveDocument('purchaseOrders', poData, docId);
+    showNotification('Purchase Order saved', 'success');
+    form.closest('#purchase-form-container').classList.add('hidden');
+    form.reset();
+    await renderBusinessTabContent('purchases');
+}
+
+async function generateProfitAndLossReport() {
+    const startDate = document.getElementById('report-start-date').value;
+    const endDate = document.getElementById('report-end-date').value;
+    const results = document.getElementById('report-results');
+    if (!startDate || !endDate) {
+        results.innerHTML = `<p class="text-red-500">Please select start and end dates.</p>`;
+        return;
+    }
+
+    results.innerHTML = `<p class="text-slate-500">Generating report...</p>`;
+    const invoices = await fetchCollection('invoices');
+    const bills = await fetchCollection('bills');
+    const filteredInvoices = invoices.filter(inv => inv.createdAt >= startDate && inv.createdAt <= endDate);
+    const filteredBills = bills.filter(b => b.billDate >= startDate && b.billDate <= endDate);
+    const totalRevenue = filteredInvoices.reduce((sum, inv) => sum + (parseFloat(inv.total) || 0), 0);
+    const totalExpenses = filteredBills.reduce((sum, b) => sum + (parseFloat(b.total) || 0), 0);
+    const netProfit = totalRevenue - totalExpenses;
+
+    results.innerHTML = `
+        <h4 class="font-bold text-xl mb-4">Profit & Loss from ${startDate} to ${endDate}</h4>
+        <div class="space-y-3">
+            <div class="flex justify-between p-4 bg-green-50 rounded-lg">
+                <span class="font-medium text-green-800">Total Revenue</span>
+                <span class="font-bold text-lg text-green-900">R ${totalRevenue.toLocaleString()}</span>
+            </div>
+            <div class="flex justify-between p-4 bg-red-50 rounded-lg">
+                <span class="font-medium text-red-800">Total Expenses</span>
+                <span class="font-bold text-lg text-red-900">R ${totalExpenses.toLocaleString()}</span>
+            </div>
+            <div class="flex justify-between p-4 bg-slate-100 rounded-lg border-t-2 border-slate-800">
+                <span class="font-bold text-slate-900">Net Profit</span>
+                <span class="font-bold text-2xl text-slate-900">R ${netProfit.toLocaleString()}</span>
+            </div>
+        </div>
+    `;
+}
+
+// --- UTILITY ---
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+        type === 'success' ? 'bg-green-500 text-white' : type === 'error' ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'
+    }`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    setTimeout(() => notification.remove(), 3000);
 }

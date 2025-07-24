@@ -11,17 +11,18 @@ import { init as initBusinessModule } from './finhelp-business.js';
 let currentUser = null;
 let isPersonalLoaded = false;
 let isBusinessLoaded = false;
+let isInitialized = false; // Add this flag
 
 /**
  * Main initializer for the FinHelp module.
  * @param {object} user - The authenticated Firebase user object.
  */
 export function init(user) {
-    if (!user) {
-        console.error("FinHelp Controller: User not authenticated.");
+    if (!user || isInitialized) {
         return;
     }
     currentUser = user;
+    isInitialized = true;
     console.log("FinHelp Controller initialized.");
 
     setupWorkspaceSwitching();
@@ -88,7 +89,7 @@ async function loadBusinessModule() {
 // Initialize the FinHelp Controller when Firebase is ready
 document.addEventListener('firebase-ready', () => {
     onAuthStateChanged(auth, (user) => {
-        if (user && !currentUser) { // Initialize only once
+        if (user && !isInitialized) {
             init(user);
         }
     });

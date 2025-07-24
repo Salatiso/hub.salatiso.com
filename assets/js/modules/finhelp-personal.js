@@ -548,9 +548,73 @@ window.openCalculatorModal = (type) => {
 };
 
 window.closeModal = (id) => removeModal(id);
-async function handleGoalFormSubmit(e) { /* ... same as before ... */ }
-async function handleAssetFormSubmit(e) { /* ... same as before ... */ }
-async function handleLiabilityFormSubmit(e) { /* ... same as before ... */ }
+async function handleGoalFormSubmit(e) {
+    e.preventDefault();
+    const form = e.target;
+    const goalId = form.dataset.id;
+    const goalData = {
+        id: goalId || Date.now().toString(),
+        name: document.getElementById('goal-name').value,
+        targetAmount: parseFloat(document.getElementById('goal-target').value),
+        currentAmount: parseFloat(document.getElementById('goal-current').value),
+        targetDate: document.getElementById('goal-date').value,
+    };
+
+    if (goalId) {
+        const index = userFinancialData.personal.savingsGoals.findIndex(g => g.id === goalId);
+        userFinancialData.personal.savingsGoals[index] = goalData;
+    } else {
+        userFinancialData.personal.savingsGoals.push(goalData);
+    }
+    await saveFinancialData();
+    removeModal('goal-modal');
+    await renderTabContent('savings');
+}
+
+async function handleAssetFormSubmit(e) {
+    e.preventDefault();
+    const form = e.target;
+    const assetId = form.dataset.id;
+    const assetData = {
+        id: assetId || Date.now().toString(),
+        name: document.getElementById('asset-name').value,
+        type: document.getElementById('asset-type').value,
+        value: parseFloat(document.getElementById('asset-value').value),
+    };
+
+    if (assetId) {
+        const index = userFinancialData.personal.assets.findIndex(a => a.id === assetId);
+        userFinancialData.personal.assets[index] = assetData;
+    } else {
+        userFinancialData.personal.assets.push(assetData);
+    }
+    await saveFinancialData();
+    removeModal('asset-modal');
+    await renderTabContent('assets-liabilities');
+}
+
+async function handleLiabilityFormSubmit(e) {
+    e.preventDefault();
+    const form = e.target;
+    const liabilityId = form.dataset.id;
+    const liabilityData = {
+        id: liabilityId || Date.now().toString(),
+        name: document.getElementById('liability-name').value,
+        type: document.getElementById('liability-type').value,
+        balance: parseFloat(document.getElementById('liability-balance').value),
+    };
+
+    if (liabilityId) {
+        const index = userFinancialData.personal.liabilities.findIndex(l => l.id === liabilityId);
+        userFinancialData.personal.liabilities[index] = liabilityData;
+    } else {
+        userFinancialData.personal.liabilities.push(liabilityData);
+    }
+    await saveFinancialData();
+    removeModal('liability-modal');
+    await renderTabContent('assets-liabilities');
+}
+
 async function handleKidFormSubmit(e) {
     e.preventDefault();
     const form = e.target;

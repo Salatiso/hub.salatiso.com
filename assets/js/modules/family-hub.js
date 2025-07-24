@@ -119,11 +119,114 @@ function renderTabContent(tabName) {
 // --- SPECIFIC TAB RENDERERS ---
 
 function renderMembersTab(container, isAdmin) {
-    // ... (This function remains unchanged from the previous version)
+    const membersHtml = familyMembers.map(member => {
+        const memberData = currentFamily.memberDetails?.[member.id] || {};
+        return `
+            <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <img src="${member.photoURL || 'https://placehold.co/40x40/E2E8F0/475569?text=' + (member.displayName?.charAt(0) || 'U')}" class="w-10 h-10 rounded-full object-cover mr-3">
+                        <div>
+                            <p class="font-semibold text-slate-800">${member.displayName || member.email}</p>
+                            <p class="text-sm text-slate-500">${memberData.relationship || 'Family Member'}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        ${memberData.role ? `<span class="px-2 py-1 text-xs font-medium bg-indigo-100 text-indigo-800 rounded-full">${memberData.role}</span>` : ''}
+                        ${isAdmin && member.id !== currentUser.uid ? `<button class="remove-member-btn text-red-500 hover:text-red-700" data-member-id="${member.id}"><i class="fas fa-user-minus"></i></button>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    container.innerHTML = `
+        <div class="space-y-6">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-slate-800">Family Members (${familyMembers.length})</h3>
+                ${isAdmin ? `<button id="invite-member-btn" class="btn-primary"><i class="fas fa-user-plus mr-2"></i>Invite Member</button>` : ''}
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                ${membersHtml || '<p class="text-slate-500 col-span-2 text-center py-8">No family members yet.</p>'}
+            </div>
+        </div>
+
+        <!-- Invite Member Modal -->
+        <div id="invite-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+            <div class="flex items-center justify-center min-h-screen p-4">
+                <div class="bg-white rounded-lg p-6 w-full max-w-md">
+                    <h3 class="text-lg font-semibold mb-4">Invite Family Member</h3>
+                    <form id="invite-form">
+                        <div class="mb-4">
+                            <label for="member-email" class="block text-sm font-medium mb-1">Email Address</label>
+                            <input type="email" id="member-email" class="input w-full" required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="member-relationship" class="block text-sm font-medium mb-1">Relationship</label>
+                            <select id="member-relationship" class="input w-full" required>
+                                <option value="">Select relationship...</option>
+                                ${relationshipTypes.map(rel => `<option value="${rel}">${rel}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label for="member-role" class="block text-sm font-medium mb-1">Role (Optional)</label>
+                            <select id="member-role" class="input w-full">
+                                <option value="">No specific role</option>
+                                ${suggestedRoles.map(role => `<option value="${role}">${role}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="flex justify-end space-x-3">
+                            <button type="button" id="close-invite-modal" class="btn-secondary">Cancel</button>
+                            <button type="submit" class="btn-primary">Send Invitation</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Event listeners
+    if (isAdmin) {
+        document.getElementById('invite-member-btn')?.addEventListener('click', () => {
+            document.getElementById('invite-modal').classList.remove('hidden');
+        });
+        
+        document.getElementById('close-invite-modal')?.addEventListener('click', () => {
+            document.getElementById('invite-modal').classList.add('hidden');
+        });
+        
+        document.getElementById('invite-form')?.addEventListener('submit', handleInviteMember);
+        
+        document.querySelectorAll('.remove-member-btn').forEach(btn => {
+            btn.addEventListener('click', handleRemoveMember);
+        });
+    }
 }
 
 function renderFamilyTreeTab(container) {
-    // ... (This function remains unchanged from the previous version)
+    // Create a visual family tree based on relationships
+    const treeData = buildFamilyTreeData();
+    
+    container.innerHTML = `
+        <div class="space-y-6">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-slate-800">Family Tree</h3>
+                <button id="expand-tree-btn" class="btn-secondary"><i class="fas fa-expand-arrows-alt mr-2"></i>Expand View</button>
+            </div>
+            <div id="family-tree-container" class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 overflow-x-auto">
+                ${renderFamilyTreeHTML(treeData)}
+            </div>
+        </div>
+    `;
+
+    document.getElementById('expand-tree-btn')?.addEventListener('click', () => {
+        // Toggle full-screen tree view
+        const container = document.getElementById('family-tree-container');
+        container.classList.toggle('fixed');
+        container.classList.toggle('inset-0');
+        container.classList.toggle('z-50');
+        container.classList.toggle('bg-white');
+    });
 }
 
 function renderProfileTab(container, isAdmin) {

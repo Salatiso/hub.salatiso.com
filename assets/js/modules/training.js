@@ -2,6 +2,7 @@
 /* FILE: assets/js/modules/training.js (NEW - REPLACES PLACEHOLDER)                  */
 /* ================================================================================= */
 import { auth } from '../firebase-config.js';
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 // For v2, we'd use:
 // import { getDocument, updateDocument } from '../database.js';
 

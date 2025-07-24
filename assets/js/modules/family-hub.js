@@ -117,6 +117,7 @@ function renderFamilyDashboard() {
                 <button data-tab="familyTree" class="tab-button py-4 px-1 inline-flex items-center text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"><i class="fas fa-sitemap mr-2"></i> Family Tree</button>
                 <button data-tab="profile" class="tab-button py-4 px-1 inline-flex items-center text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"><i class="fas fa-id-card mr-2"></i> Family Profile</button>
                 <button data-tab="governance" class="tab-button py-4 px-1 inline-flex items-center text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"><i class="fas fa-gavel mr-2"></i> Governance</button>
+                <button data-tab="timeline" class="tab-button py-4 px-1 inline-flex items-center text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"><i class="fas fa-clock mr-2"></i> Timeline</button>
             </nav>
         </div>
         <div id="tab-content" class="mt-6"></div>`;
@@ -149,17 +150,39 @@ async function renderIndividualView() {
     const invitationsHtml = pendingInvitations.length > 0 ? `
         <div class="mb-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
             <h3 class="font-semibold text-yellow-800 mb-3">Pending Family Invitations</h3>
-            <div class="space-y-3">
+            <div class="space-y-4">
                 ${pendingInvitations.map(inv => `
-                    <div class="flex items-center justify-between bg-white p-3 rounded border">
-                        <div>
-                            <p class="font-medium text-slate-800">${inv.familyName}</p>
-                            <p class="text-sm text-slate-600">Invited by ${inv.invitedByName} as ${inv.relationship}</p>
+                    <div class="bg-white p-4 rounded border">
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <p class="font-medium text-slate-800">${inv.familyName}</p>
+                                <p class="text-sm text-slate-600">Invited by ${inv.invitedByName} as ${inv.relationship}</p>
+                                ${inv.role ? `<p class="text-xs text-slate-500">Role: ${inv.role}</p>` : ''}
+                            </div>
+                            <div class="space-x-2">
+                                <button class="view-family-tree-btn text-sm px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700" data-invitation-id="${inv.id}">View Family Tree</button>
+                                <button class="accept-invitation-btn text-sm px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700" data-invitation-id="${inv.id}">Accept</button>
+                                <button class="decline-invitation-btn text-sm px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700" data-invitation-id="${inv.id}">Decline</button>
+                            </div>
                         </div>
-                        <div class="space-x-2">
-                            <button class="accept-invitation-btn text-sm px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700" data-invitation-id="${inv.id}">Accept</button>
-                            <button class="decline-invitation-btn text-sm px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700" data-invitation-id="${inv.id}">Decline</button>
-                        </div>
+                        ${inv.familyTreePreview ? `
+                            <div class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded">
+                                <h4 class="font-medium text-blue-800 mb-2">Family Overview</h4>
+                                <div class="grid grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                        <p class="text-blue-700"><strong>Total Members:</strong> ${inv.familyTreePreview.totalMembers}</p>
+                                        <p class="text-blue-700"><strong>Generations:</strong> ${inv.familyTreePreview.generations}</p>
+                                    </div>
+                                    <div>
+                                        ${inv.familyTreePreview.familyMotto ? `<p class="text-blue-700"><strong>Motto:</strong> "${inv.familyTreePreview.familyMotto}"</p>` : ''}
+                                        <p class="text-blue-700"><strong>Your Position:</strong> ${inv.relationship}</p>
+                                    </div>
+                                </div>
+                                <button class="mt-2 text-xs text-blue-600 hover:text-blue-800 view-full-tree-btn" data-invitation-id="${inv.id}">
+                                    <i class="fas fa-sitemap mr-1"></i>View Full Family Tree Preview
+                                </button>
+                            </div>
+                        ` : ''}
                     </div>
                 `).join('')}
             </div>
@@ -211,6 +234,27 @@ async function renderIndividualView() {
                 </div>
             </div>
         </div>
+
+        <!-- Family Tree Preview Modal -->
+        <div id="family-tree-preview-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+            <div class="flex items-center justify-center min-h-screen p-4">
+                <div class="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold" id="preview-family-name">Family Tree Preview</h3>
+                        <button id="close-tree-preview" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    <div id="tree-preview-content">
+                        <!-- Tree preview will be populated here -->
+                    </div>
+                    <div class="mt-6 flex justify-center space-x-4">
+                        <button id="accept-from-preview" class="btn-primary">Accept Invitation</button>
+                        <button id="decline-from-preview" class="btn-secondary">Decline</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     `;
 
     // Event listeners for create family
@@ -232,6 +276,31 @@ async function renderIndividualView() {
     document.querySelectorAll('.decline-invitation-btn').forEach(btn => {
         btn.addEventListener('click', handleDeclineInvitation);
     });
+    
+    // Event listeners for family tree preview
+    document.querySelectorAll('.view-family-tree-btn, .view-full-tree-btn').forEach(btn => {
+        btn.addEventListener('click', handleViewFamilyTreePreview);
+    });
+    
+    document.getElementById('close-tree-preview')?.addEventListener('click', () => {
+        document.getElementById('family-tree-preview-modal').classList.add('hidden');
+    });
+    
+    document.getElementById('accept-from-preview')?.addEventListener('click', () => {
+        const activeInvitationId = document.getElementById('family-tree-preview-modal').dataset.invitationId;
+        if (activeInvitationId) {
+            const event = { target: { dataset: { invitationId: activeInvitationId } } };
+            handleAcceptInvitation(event);
+        }
+    });
+    
+    document.getElementById('decline-from-preview')?.addEventListener('click', () => {
+        const activeInvitationId = document.getElementById('family-tree-preview-modal').dataset.invitationId;
+        if (activeInvitationId) {
+            const event = { target: { dataset: { invitationId: activeInvitationId } } };
+            handleDeclineInvitation(event);
+        }
+    });
 }
 
 
@@ -244,6 +313,7 @@ function buildFamilyTreeData() {
         relationships: {}
     };
 
+    // Include actual family members
     familyMembers.forEach(member => {
         const memberDetails = currentFamily.memberDetails?.[member.id] || {};
         const relationship = memberDetails.relationship || 'Family Member';
@@ -259,7 +329,53 @@ function buildFamilyTreeData() {
         tree.generations[generation].push({
             ...member,
             relationship,
-            role: memberDetails.role
+            role: memberDetails.role,
+            status: 'accepted',
+            memberType: 'active'
+        });
+    });
+
+    // Include pending invitations
+    const pendingInvitations = currentFamily.pendingInvitations || {};
+    Object.entries(pendingInvitations).forEach(([email, data]) => {
+        const relationship = data.relationship;
+        
+        // Determine generation level
+        let generation = 0;
+        if (['Grandfather', 'Grandmother'].includes(relationship)) generation = -2;
+        else if (['Father', 'Mother', 'Uncle', 'Aunt'].includes(relationship)) generation = -1;
+        else if (['Son', 'Daughter', 'Nephew', 'Niece'].includes(relationship)) generation = 1;
+        else if (['Grandson', 'Granddaughter'].includes(relationship)) generation = 2;
+        
+        if (!tree.generations[generation]) tree.generations[generation] = [];
+        tree.generations[generation].push({
+            email: email,
+            displayName: email.split('@')[0],
+            relationship,
+            role: data.role,
+            status: 'pending',
+            memberType: 'invited',
+            sentAt: data.sentAt
+        });
+    });
+
+    // Include family timeline members (past/future)
+    const timelineMembers = currentFamily.timelineMembers || [];
+    timelineMembers.forEach(member => {
+        const relationship = member.relationship;
+        
+        // Determine generation level
+        let generation = 0;
+        if (['Grandfather', 'Grandmother'].includes(relationship)) generation = -2;
+        else if (['Father', 'Mother', 'Uncle', 'Aunt'].includes(relationship)) generation = -1;
+        else if (['Son', 'Daughter', 'Nephew', 'Niece'].includes(relationship)) generation = 1;
+        else if (['Grandson', 'Granddaughter'].includes(relationship)) generation = 2;
+        
+        if (!tree.generations[generation]) tree.generations[generation] = [];
+        tree.generations[generation].push({
+            ...member,
+            status: member.status || 'timeline',
+            memberType: 'timeline'
         });
     });
 
@@ -281,18 +397,50 @@ function renderFamilyTreeHTML(treeData) {
             <div class="generation-row mb-8">
                 <h4 class="text-sm font-medium text-slate-600 mb-3">${generationLabel}</h4>
                 <div class="flex flex-wrap gap-4 justify-center">
-                    ${members.map(member => `
-                        <div class="family-member-card bg-slate-50 p-4 rounded-lg border-2 border-slate-200 text-center min-w-[120px]">
-                            <img src="${member.photoURL || 'https://placehold.co/60x60/E2E8F0/475569?text=' + (member.displayName?.charAt(0) || 'U')}" class="w-12 h-12 rounded-full object-cover mx-auto mb-2">
-                            <p class="font-semibold text-slate-800 text-sm">${member.displayName || member.email}</p>
-                            <p class="text-xs text-slate-500">${member.relationship}</p>
-                            ${member.role ? `<p class="text-xs text-indigo-600 font-medium mt-1">${member.role}</p>` : ''}
-                        </div>
-                    `).join('')}
+                    ${members.map(member => {
+                        const statusClass = getStatusClass(member.status, member.memberType);
+                        const statusIcon = getStatusIcon(member.status, member.memberType);
+                        
+                        return `
+                            <div class="family-member-card ${statusClass} p-4 rounded-lg border-2 text-center min-w-[120px] relative">
+                                ${statusIcon}
+                                <img src="${member.photoURL || 'https://placehold.co/60x60/E2E8F0/475569?text=' + (member.displayName?.charAt(0) || member.email?.charAt(0) || 'U')}" class="w-12 h-12 rounded-full object-cover mx-auto mb-2">
+                                <p class="font-semibold text-slate-800 text-sm">${member.displayName || member.email || member.fullName}</p>
+                                <p class="text-xs text-slate-500">${member.relationship}</p>
+                                ${member.role ? `<p class="text-xs text-indigo-600 font-medium mt-1">${member.role}</p>` : ''}
+                                ${member.status === 'pending' ? `<p class="text-xs text-yellow-600 mt-1">Invitation Pending</p>` : ''}
+                                ${member.dateOfBirth ? `<p class="text-xs text-slate-400 mt-1">Born: ${new Date(member.dateOfBirth).toLocaleDateString()}</p>` : ''}
+                                ${member.dateOfDeath ? `<p class="text-xs text-slate-400 mt-1">Died: ${new Date(member.dateOfDeath).toLocaleDateString()}</p>` : ''}
+                                ${member.expectedDate ? `<p class="text-xs text-blue-400 mt-1">Expected: ${new Date(member.expectedDate).toLocaleDateString()}</p>` : ''}
+                            </div>
+                        `;
+                    }).join('')}
                 </div>
             </div>
         `;
     }).join('');
+}
+
+function getStatusClass(status, memberType) {
+    switch (memberType) {
+        case 'active': return 'bg-green-50 border-green-200';
+        case 'invited': return 'bg-yellow-50 border-yellow-200';
+        case 'timeline': 
+            if (status === 'deceased') return 'bg-gray-50 border-gray-300';
+            if (status === 'expected') return 'bg-blue-50 border-blue-200';
+            return 'bg-purple-50 border-purple-200';
+        default: return 'bg-slate-50 border-slate-200';
+    }
+}
+
+function getStatusIcon(status, memberType) {
+    const icons = {
+        'accepted': '<div class="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center"><i class="fas fa-check text-white text-xs"></i></div>',
+        'pending': '<div class="absolute -top-1 -right-1 w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center"><i class="fas fa-clock text-white text-xs"></i></div>',
+        'deceased': '<div class="absolute -top-1 -right-1 w-5 h-5 bg-gray-500 rounded-full flex items-center justify-center"><i class="fas fa-cross text-white text-xs"></i></div>',
+        'expected': '<div class="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center"><i class="fas fa-baby text-white text-xs"></i></div>'
+    };
+    return icons[status] || '';
 }
 
 function getGenerationLabel(generation) {
@@ -312,9 +460,10 @@ function renderTabContent(tabName) {
 
     switch (tabName) {
         case 'members': renderMembersTab(contentContainer, isAdmin); break;
-        case 'familyTree': renderFamilyTreeTab(contentContainer); break;
+        case 'familyTree': renderFamilyTreeTab(contentContainer, isAdmin); break;
         case 'profile': renderProfileTab(contentContainer, isAdmin); break;
         case 'governance': renderGovernanceTab(contentContainer, isAdmin); break;
+        case 'timeline': renderTimelineTab(contentContainer, isAdmin); break;
     }
 }
 
@@ -511,7 +660,7 @@ function renderMembersTab(container, isAdmin) {
     });
 }
 
-function renderFamilyTreeTab(container) {
+function renderFamilyTreeTab(container, isAdmin) {
     // Create a visual family tree based on relationships
     const treeData = buildFamilyTreeData();
     
@@ -519,12 +668,83 @@ function renderFamilyTreeTab(container) {
         <div class="space-y-6">
             <div class="flex justify-between items-center">
                 <h3 class="text-lg font-semibold text-slate-800">Family Tree</h3>
-                <button id="expand-tree-btn" class="btn-secondary"><i class="fas fa-expand-arrows-alt mr-2"></i>Expand View</button>
+                <div class="space-x-2">
+                    ${isAdmin ? `
+                        <button id="add-timeline-member-btn" class="btn-secondary"><i class="fas fa-plus mr-2"></i>Add Past/Future Member</button>
+                        <button id="expand-tree-btn" class="btn-secondary"><i class="fas fa-expand-arrows-alt mr-2"></i>Expand View</button>
+                    ` : `
+                        <button id="expand-tree-btn" class="btn-secondary"><i class="fas fa-expand-arrows-alt mr-2"></i>Expand View</button>
+                    `}
+                </div>
             </div>
+            
+            <div class="bg-white p-4 rounded-lg border border-blue-200 mb-4">
+                <h4 class="font-medium text-blue-800 mb-2">Family Tree Legend</h4>
+                <div class="flex flex-wrap gap-4 text-sm">
+                    <div class="flex items-center"><div class="w-4 h-4 bg-green-100 border border-green-200 rounded mr-2"></div><span>Active Members</span></div>
+                    <div class="flex items-center"><div class="w-4 h-4 bg-yellow-100 border border-yellow-200 rounded mr-2"></div><span>Pending Invitations</span></div>
+                    <div class="flex items-center"><div class="w-4 h-4 bg-gray-100 border border-gray-300 rounded mr-2"></div><span>Deceased Members</span></div>
+                    <div class="flex items-center"><div class="w-4 h-4 bg-blue-100 border border-blue-200 rounded mr-2"></div><span>Expected/Future Members</span></div>
+                </div>
+            </div>
+            
             <div id="family-tree-container" class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 overflow-x-auto">
                 ${renderFamilyTreeHTML(treeData)}
             </div>
         </div>
+
+        ${isAdmin ? `
+            <!-- Add Timeline Member Modal -->
+            <div id="timeline-member-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+                <div class="flex items-center justify-center min-h-screen p-4">
+                    <div class="bg-white rounded-lg p-6 w-full max-w-md">
+                        <h3 class="text-lg font-semibold mb-4">Add Past or Future Family Member</h3>
+                        <form id="timeline-member-form">
+                            <div class="mb-4">
+                                <label for="timeline-full-name" class="block text-sm font-medium mb-1">Full Name</label>
+                                <input type="text" id="timeline-full-name" class="input w-full" required>
+                            </div>
+                            <div class="mb-4">
+                                <label for="timeline-relationship" class="block text-sm font-medium mb-1">Relationship</label>
+                                <select id="timeline-relationship" class="input w-full" required>
+                                    <option value="">Select relationship...</option>
+                                    ${relationshipTypes.map(rel => `<option value="${rel}">${rel}</option>`).join('')}
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label for="timeline-status" class="block text-sm font-medium mb-1">Status</label>
+                                <select id="timeline-status" class="input w-full" required>
+                                    <option value="">Select status...</option>
+                                    <option value="deceased">Deceased (Past Member)</option>
+                                    <option value="expected">Expected (Future Member)</option>
+                                    <option value="historical">Historical Record</option>
+                                </select>
+                            </div>
+                            <div class="mb-4" id="birth-date-container">
+                                <label for="timeline-birth-date" class="block text-sm font-medium mb-1">Date of Birth</label>
+                                <input type="date" id="timeline-birth-date" class="input w-full">
+                            </div>
+                            <div class="mb-4 hidden" id="death-date-container">
+                                <label for="timeline-death-date" class="block text-sm font-medium mb-1">Date of Death</label>
+                                <input type="date" id="timeline-death-date" class="input w-full">
+                            </div>
+                            <div class="mb-4 hidden" id="expected-date-container">
+                                <label for="timeline-expected-date" class="block text-sm font-medium mb-1">Expected Date</label>
+                                <input type="date" id="timeline-expected-date" class="input w-full">
+                            </div>
+                            <div class="mb-4">
+                                <label for="timeline-notes" class="block text-sm font-medium mb-1">Notes (Optional)</label>
+                                <textarea id="timeline-notes" rows="3" class="input w-full" placeholder="Additional information about this family member..."></textarea>
+                            </div>
+                            <div class="flex justify-end space-x-3">
+                                <button type="button" id="close-timeline-member-modal" class="btn-secondary">Cancel</button>
+                                <button type="submit" class="btn-primary">Add to Family Tree</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        ` : ''}
     `;
 
     document.getElementById('expand-tree-btn')?.addEventListener('click', () => {
@@ -535,6 +755,24 @@ function renderFamilyTreeTab(container) {
         container.classList.toggle('z-50');
         container.classList.toggle('bg-white');
     });
+
+    if (isAdmin) {
+        document.getElementById('add-timeline-member-btn')?.addEventListener('click', () => {
+            document.getElementById('timeline-member-modal').classList.remove('hidden');
+        });
+        
+        document.getElementById('close-timeline-member-modal')?.addEventListener('click', () => {
+            document.getElementById('timeline-member-modal').classList.add('hidden');
+        });
+        
+        document.getElementById('timeline-status')?.addEventListener('change', (e) => {
+            const status = e.target.value;
+            document.getElementById('death-date-container').classList.toggle('hidden', status !== 'deceased');
+            document.getElementById('expected-date-container').classList.toggle('hidden', status !== 'expected');
+        });
+        
+        document.getElementById('timeline-member-form')?.addEventListener('submit', handleAddTimelineMember);
+    }
 }
 
 function renderProfileTab(container, isAdmin) {
@@ -826,6 +1064,295 @@ function renderGovernanceTab(container, isAdmin) {
     }
 }
 
+function renderTimelineTab(container, isAdmin) {
+    const timelineEvents = generateFamilyTimeline();
+    
+    container.innerHTML = `
+        <div class="space-y-6">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-slate-800">Family Timeline</h3>
+                ${isAdmin ? `<button id="add-timeline-event-btn" class="btn-secondary"><i class="fas fa-plus mr-2"></i>Add Event</button>` : ''}
+            </div>
+            
+            <div class="bg-white p-4 rounded-lg border border-blue-200 mb-4">
+                <h4 class="font-medium text-blue-800 mb-2">Auto-Generated Timeline</h4>
+                <p class="text-sm text-blue-700">This timeline is automatically generated from family profile information, member details, entity creation dates, and other family events.</p>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-sm border border-slate-200">
+                <div class="timeline-container p-6">
+                    ${timelineEvents.length > 0 ? renderTimelineEvents(timelineEvents) : '<p class="text-center text-slate-500 py-8">No timeline events found. Add family information to populate the timeline.</p>'}
+                </div>
+            </div>
+        </div>
+
+        ${isAdmin ? `
+            <!-- Add Timeline Event Modal -->
+            <div id="timeline-event-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+                <div class="flex items-center justify-center min-h-screen p-4">
+                    <div class="bg-white rounded-lg p-6 w-full max-w-md">
+                        <h3 class="text-lg font-semibold mb-4">Add Timeline Event</h3>
+                        <form id="timeline-event-form">
+                            <div class="mb-4">
+                                <label for="event-title" class="block text-sm font-medium mb-1">Event Title</label>
+                                <input type="text" id="event-title" class="input w-full" required>
+                            </div>
+                            <div class="mb-4">
+                                <label for="event-date" class="block text-sm font-medium mb-1">Event Date</label>
+                                <input type="date" id="event-date" class="input w-full" required>
+                            </div>
+                            <div class="mb-4">
+                                <label for="event-category" class="block text-sm font-medium mb-1">Category</label>
+                                <select id="event-category" class="input w-full" required>
+                                    <option value="">Select category...</option>
+                                    <option value="birth">Birth</option>
+                                    <option value="death">Death</option>
+                                    <option value="marriage">Marriage</option>
+                                    <option value="achievement">Achievement</option>
+                                    <option value="business">Business Event</option>
+                                    <option value="milestone">Family Milestone</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label for="event-description" class="block text-sm font-medium mb-1">Description</label>
+                                <textarea id="event-description" rows="3" class="input w-full" placeholder="Describe the event..."></textarea>
+                            </div>
+                            <div class="mb-4">
+                                <label for="event-members" class="block text-sm font-medium mb-1">Related Family Members</label>
+                                <input type="text" id="event-members" class="input w-full" placeholder="e.g., John Smith, Mary Johnson">
+                            </div>
+                            <div class="flex justify-end space-x-3">
+                                <button type="button" id="close-timeline-event-modal" class="btn-secondary">Cancel</button>
+                                <button type="submit" class="btn-primary">Add Event</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        ` : ''}
+    `;
+
+    if (isAdmin) {
+        document.getElementById('add-timeline-event-btn')?.addEventListener('click', () => {
+            document.getElementById('timeline-event-modal').classList.remove('hidden');
+        });
+        
+        document.getElementById('close-timeline-event-modal')?.addEventListener('click', () => {
+            document.getElementById('timeline-event-modal').classList.add('hidden');
+        });
+        
+        document.getElementById('timeline-event-form')?.addEventListener('submit', handleAddTimelineEvent);
+    }
+}
+
+function generateFamilyTimeline() {
+    const events = [];
+    
+    // Add family creation event
+    if (currentFamily.createdAt) {
+        events.push({
+            date: currentFamily.createdAt,
+            title: `${currentFamily.name} Family Profile Created`,
+            category: 'milestone',
+            description: 'Family profile was established on the Family Hub platform',
+            icon: 'fas fa-home',
+            color: 'indigo'
+        });
+    }
+    
+    // Add member join dates
+    familyMembers.forEach(member => {
+        const memberDetails = currentFamily.memberDetails?.[member.id] || {};
+        if (memberDetails.joinedDate) {
+            events.push({
+                date: memberDetails.joinedDate,
+                title: `${member.displayName || member.email} Joined Family`,
+                category: 'member',
+                description: `Added as ${memberDetails.relationship}${memberDetails.role ? ` with role: ${memberDetails.role}` : ''}`,
+                icon: 'fas fa-user-plus',
+                color: 'green'
+            });
+        }
+        
+        // Add birth dates from member details
+        if (memberDetails.dateOfBirth) {
+            events.push({
+                date: memberDetails.dateOfBirth,
+                title: `${member.displayName || memberDetails.fullName} Born`,
+                category: 'birth',
+                description: `Birth of ${memberDetails.relationship}`,
+                icon: 'fas fa-baby',
+                color: 'blue'
+            });
+        }
+    });
+    
+    // Add timeline members (deceased, expected, etc.)
+    const timelineMembers = currentFamily.timelineMembers || [];
+    timelineMembers.forEach(member => {
+        if (member.dateOfBirth) {
+            events.push({
+                date: member.dateOfBirth,
+                title: `${member.fullName} Born`,
+                category: 'birth',
+                description: `Birth of ${member.relationship}`,
+                icon: 'fas fa-baby',
+                color: 'blue'
+            });
+        }
+        
+        if (member.dateOfDeath) {
+            events.push({
+                date: member.dateOfDeath,
+                title: `${member.fullName} Passed Away`,
+                category: 'death',
+                description: `Death of ${member.relationship}`,
+                icon: 'fas fa-cross',
+                color: 'gray'
+            });
+        }
+        
+        if (member.expectedDate && member.status === 'expected') {
+            events.push({
+                date: member.expectedDate,
+                title: `${member.fullName} Expected`,
+                category: 'birth',
+                description: `Expected arrival of ${member.relationship}`,
+                icon: 'fas fa-calendar-plus',
+                color: 'purple'
+            });
+        }
+    });
+    
+    // Add formal entities creation dates
+    const formalEntities = currentFamily.profile?.formalEntities || [];
+    formalEntities.forEach(entity => {
+        if (entity.yearStarted) {
+            events.push({
+                date: `${entity.yearStarted}-01-01`,
+                title: `${entity.name} Established`,
+                category: 'business',
+                description: `${entity.type} was established${entity.members ? ` with family members: ${entity.members}` : ''}`,
+                icon: 'fas fa-building',
+                color: 'yellow'
+            });
+        }
+    });
+    
+    // Add informal entities/initiatives
+    const informalEntities = currentFamily.profile?.informalEntities || [];
+    informalEntities.forEach(entity => {
+        if (entity.yearStarted) {
+            events.push({
+                date: `${entity.yearStarted}-01-01`,
+                title: `${entity.name} Initiative Started`,
+                category: 'business',
+                description: `${entity.type} initiative was started${entity.members ? ` with family members: ${entity.members}` : ''}`,
+                icon: 'fas fa-lightbulb',
+                color: 'orange'
+            });
+        }
+    });
+    
+    // Add governance role assignments
+    const assignments = currentFamily.governance?.assignments || [];
+    assignments.forEach(assignment => {
+        if (assignment.startDate) {
+            const member = familyMembers.find(m => m.id === assignment.memberId);
+            if (member) {
+                events.push({
+                    date: assignment.startDate,
+                    title: `${member.displayName || member.email} Assigned as ${assignment.roleTitle}`,
+                    category: 'governance',
+                    description: assignment.duties || 'Role assignment in family governance',
+                    icon: 'fas fa-gavel',
+                    color: 'red'
+                });
+            }
+        }
+    });
+    
+    // Add custom timeline events
+    const customEvents = currentFamily.timelineEvents || [];
+    customEvents.forEach(event => {
+        events.push({
+            ...event,
+            icon: getCategoryIcon(event.category),
+            color: getCategoryColor(event.category)
+        });
+    });
+    
+    // Sort events by date (newest first)
+    return events.sort((a, b) => new Date(b.date) - new Date(a.date));
+}
+
+function renderTimelineEvents(events) {
+    return `
+        <div class="relative">
+            <div class="absolute left-8 top-0 bottom-0 w-0.5 bg-slate-200"></div>
+            ${events.map((event, index) => `
+                <div class="relative flex items-start mb-8 ${index === events.length - 1 ? 'mb-0' : ''}">
+                    <div class="flex-shrink-0 w-16 h-16 bg-${event.color}-500 rounded-full flex items-center justify-center text-white shadow-lg z-10">
+                        <i class="${event.icon} text-lg"></i>
+                    </div>
+                    <div class="ml-6 flex-1">
+                        <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-semibold text-slate-800">${event.title}</h4>
+                                <span class="text-sm text-slate-500">${formatEventDate(event.date)}</span>
+                            </div>
+                            <p class="text-sm text-slate-600 mb-2">${event.description}</p>
+                            <span class="inline-block px-2 py-1 text-xs font-medium bg-${event.color}-100 text-${event.color}-800 rounded-full">
+                                ${event.category.charAt(0).toUpperCase() + event.category.slice(1)}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+function getCategoryIcon(category) {
+    const icons = {
+        'birth': 'fas fa-baby',
+        'death': 'fas fa-cross',
+        'marriage': 'fas fa-heart',
+        'achievement': 'fas fa-trophy',
+        'business': 'fas fa-briefcase',
+        'milestone': 'fas fa-star',
+        'governance': 'fas fa-gavel',
+        'member': 'fas fa-user-plus',
+        'other': 'fas fa-calendar'
+    };
+    return icons[category] || 'fas fa-calendar';
+}
+
+function getCategoryColor(category) {
+    const colors = {
+        'birth': 'blue',
+        'death': 'gray',
+        'marriage': 'pink',
+        'achievement': 'green',
+        'business': 'yellow',
+        'milestone': 'indigo',
+        'governance': 'red',
+        'member': 'green',
+        'other': 'slate'
+    };
+    return colors[category] || 'slate';
+}
+
+function formatEventDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+    });
+}
+
 
 // --- EVENT HANDLERS & LOGIC ---
 
@@ -894,7 +1421,25 @@ async function handleInviteMember(e) {
     const role = form.querySelector('#member-role').value;
     
     try {
-        // Create invitation record
+        // Generate family tree preview for the invitation
+        const treeData = buildFamilyTreeData();
+        const familyTreePreview = {
+            totalMembers: familyMembers.length,
+            generations: Object.keys(treeData.generations).length,
+            familyMotto: currentFamily.profile?.motto || '',
+            membersByGeneration: Object.fromEntries(
+                Object.entries(treeData.generations).map(([gen, members]) => [
+                    gen, 
+                    members.map(m => ({
+                        name: m.displayName || m.email || m.fullName,
+                        relationship: m.relationship,
+                        status: m.status || 'active'
+                    }))
+                ])
+            )
+        };
+        
+        // Create invitation record with family tree preview
         const invitationData = {
             familyId: currentFamily.id,
             familyName: currentFamily.name,
@@ -904,7 +1449,8 @@ async function handleInviteMember(e) {
             invitedBy: currentUser.uid,
             invitedByName: currentUser.displayName || currentUser.email,
             status: 'pending',
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            familyTreePreview: familyTreePreview
         };
         
         await addDocument('familyInvitations', invitationData);
@@ -928,7 +1474,7 @@ async function handleInviteMember(e) {
         document.getElementById('invite-modal').classList.add('hidden');
         form.reset();
         
-        alert(`Invitation sent to ${email}! They will be notified to join the family.`);
+        alert(`Invitation sent to ${email}! They will be notified to join the family with a preview of the family tree.`);
     } catch (error) {
         console.error('Error sending invitation:', error);
         alert('Failed to send invitation. Please try again.');
@@ -1429,6 +1975,7 @@ async function handleRemoveCategory(e) {
 async function handleProfileUpdate(e) {
     e.preventDefault();
     const newName = document.getElementById('family-name-input').value;
+    const motto = document.getElementById('family-motto').value;
     const summary = document.getElementById('family-summary').value;
     const mission = document.getElementById('family-mission').value;
     const values = document.getElementById('family-values').value.split(',').map(v => v.trim()).filter(Boolean);
@@ -1436,6 +1983,7 @@ async function handleProfileUpdate(e) {
     try {
         await updateDocument('families', currentFamily.id, {
             name: newName,
+            'profile.motto': motto,
             'profile.summary': summary,
             'profile.mission': mission,
             'profile.values': values
@@ -1450,28 +1998,63 @@ async function handleProfileUpdate(e) {
 async function handleAddEntity(e) {
     e.preventDefault();
     const form = e.target;
+    const entityType = form.querySelector('#entity-type-hidden').value;
+    
     const newEntity = {
         name: form.querySelector('#entity-name').value,
-        type: form.querySelector('#entity-type').value,
+        type: form.querySelector('#entity-category').value,
+        status: form.querySelector('#entity-status').value,
+        description: form.querySelector('#entity-description').value,
+        website: form.querySelector('#entity-website').value,
+        yearStarted: form.querySelector('#entity-year-started').value,
+        members: form.querySelector('#entity-members').value,
+        revenue: form.querySelector('#entity-revenue').value,
+        employees: form.querySelector('#entity-employees').value,
+        addedDate: new Date().toISOString()
     };
-    const updatedEntities = [...(currentFamily.profile?.formalEntities || []), newEntity];
+    
     try {
-        await updateDocument('families', currentFamily.id, { 'profile.formalEntities': updatedEntities });
+        const fieldName = entityType === 'formal' ? 'profile.formalEntities' : 'profile.informalEntities';
+        const currentEntities = currentFamily.profile?.[entityType === 'formal' ? 'formalEntities' : 'informalEntities'] || [];
+        const updatedEntities = [...currentEntities, newEntity];
+        
+        await updateDocument('families', currentFamily.id, { [fieldName]: updatedEntities });
+        
+        document.getElementById('entity-modal').classList.add('hidden');
         form.reset();
+        
+        alert(`${entityType === 'formal' ? 'Formal entity' : 'Initiative'} added successfully!`);
+        
+        // Refresh the display
+        renderProfileTab();
     } catch (error) {
-        console.error("Error adding entity:", error);
-        alert("Failed to add entity.");
+        console.error('Error adding entity:', error);
+        alert('Failed to add entity. Please try again.');
     }
 }
 
 async function handleRemoveEntity(e) {
+    const entityType = e.target.dataset.type;
     const indexToRemove = parseInt(e.target.dataset.index);
-    const updatedEntities = (currentFamily.profile?.formalEntities || []).filter((_, index) => index !== indexToRemove);
+    
+    if (!confirm('Are you sure you want to remove this entity?')) {
+        return;
+    }
+    
     try {
-        await updateDocument('families', currentFamily.id, { 'profile.formalEntities': updatedEntities });
+        const fieldName = entityType === 'formal' ? 'profile.formalEntities' : 'profile.informalEntities';
+        const currentEntities = currentFamily.profile?.[entityType === 'formal' ? 'formalEntities' : 'informalEntities'] || [];
+        const updatedEntities = currentEntities.filter((_, index) => index !== indexToRemove);
+        
+        await updateDocument('families', currentFamily.id, { [fieldName]: updatedEntities });
+        
+        // Refresh the display
+        renderProfileTab();
+        
+        alert('Entity removed successfully!');
     } catch (error) {
-        console.error("Error removing entity:", error);
-        alert("Failed to remove entity.");
+        console.error('Error removing entity:', error);
+        alert('Failed to remove entity. Please try again.');
     }
 }
 
@@ -1516,3 +2099,210 @@ onAuthStateChanged(auth, (user) => {
         init(user);
     }
 });
+
+async function handleSaveCustomField(e) {
+    e.preventDefault();
+    const form = e.target;
+    const category = form.querySelector('#custom-category').value;
+    const fieldName = form.querySelector('#custom-field-name').value;
+    const fieldValue = form.querySelector('#custom-field-value').value;
+    
+    if (!category || !fieldName || !fieldValue) {
+        alert('Please fill in all fields');
+        return;
+    }
+    
+    try {
+        const fieldPath = `profile.customFields.${category}`;
+        const currentCategoryFields = currentFamily.profile?.customFields?.[category] || {};
+        const updatedCategoryFields = { ...currentCategoryFields, [fieldName]: fieldValue };
+        
+        await updateDocument('families', currentFamily.id, { [fieldPath]: updatedCategoryFields });
+        
+        form.reset();
+        alert('Custom field saved successfully!');
+        
+        // Refresh the display
+        renderProfileTab();
+    } catch (error) {
+        console.error('Error saving custom field:', error);
+        alert('Failed to save custom field. Please try again.');
+    }
+}
+
+async function handleAddTimelineMember(e) {
+    e.preventDefault();
+    const form = e.target;
+    
+    const timelineMember = {
+        fullName: form.querySelector('#timeline-full-name').value,
+        relationship: form.querySelector('#timeline-relationship').value,
+        status: form.querySelector('#timeline-status').value,
+        dateOfBirth: form.querySelector('#timeline-birth-date').value || null,
+        dateOfDeath: form.querySelector('#timeline-death-date').value || null,
+        expectedDate: form.querySelector('#timeline-expected-date').value || null,
+        notes: form.querySelector('#timeline-notes').value || '',
+        addedDate: new Date().toISOString(),
+        addedBy: currentUser.uid
+    };
+    
+    try {
+        const currentTimelineMembers = currentFamily.timelineMembers || [];
+        const updatedTimelineMembers = [...currentTimelineMembers, timelineMember];
+        
+        await updateDocument('families', currentFamily.id, {
+            timelineMembers: updatedTimelineMembers
+        });
+        
+        document.getElementById('timeline-member-modal').classList.add('hidden');
+        form.reset();
+        
+        alert('Timeline member added successfully!');
+        
+        // Refresh both family tree and timeline tabs if they're visible
+        const activeTab = document.querySelector('.tab-button.active').dataset.tab;
+        if (activeTab === 'familyTree') {
+            renderFamilyTreeTab(document.getElementById('tab-content'), currentFamily.admin === currentUser.uid);
+        } else if (activeTab === 'timeline') {
+            renderTimelineTab(document.getElementById('tab-content'), currentFamily.admin === currentUser.uid);
+        }
+    } catch (error) {
+        console.error('Error adding timeline member:', error);
+        alert('Failed to add timeline member. Please try again.');
+    }
+}
+
+async function handleAddTimelineEvent(e) {
+    e.preventDefault();
+    const form = e.target;
+    
+    const timelineEvent = {
+        title: form.querySelector('#event-title').value,
+        date: form.querySelector('#event-date').value,
+        category: form.querySelector('#event-category').value,
+        description: form.querySelector('#event-description').value,
+        relatedMembers: form.querySelector('#event-members').value.split(',').map(m => m.trim()).filter(m => m),
+        addedDate: new Date().toISOString(),
+        addedBy: currentUser.uid
+    };
+    
+    try {
+        const currentTimelineEvents = currentFamily.timelineEvents || [];
+        const updatedTimelineEvents = [...currentTimelineEvents, timelineEvent];
+        
+        await updateDocument('families', currentFamily.id, {
+            timelineEvents: updatedTimelineEvents
+        });
+        
+        document.getElementById('timeline-event-modal').classList.add('hidden');
+        form.reset();
+        
+        alert('Timeline event added successfully!');
+        
+        // Refresh timeline tab if visible
+        const activeTab = document.querySelector('.tab-button.active').dataset.tab;
+        if (activeTab === 'timeline') {
+            renderTimelineTab(document.getElementById('tab-content'), currentFamily.admin === currentUser.uid);
+        }
+    } catch (error) {
+        console.error('Error adding timeline event:', error);
+        alert('Failed to add timeline event. Please try again.');
+    }
+}
+
+async function handleViewFamilyTreePreview(e) {
+    const invitationId = e.target.dataset.invitationId;
+    
+    try {
+        const invitation = await getDocument('familyInvitations', invitationId);
+        if (!invitation || !invitation.familyTreePreview) {
+            alert('Family tree preview not available.');
+            return;
+        }
+        
+        const modal = document.getElementById('family-tree-preview-modal');
+        const familyName = document.getElementById('preview-family-name');
+        const content = document.getElementById('tree-preview-content');
+        
+        modal.dataset.invitationId = invitationId;
+        familyName.textContent = `${invitation.familyName} - Family Tree Preview`;
+        
+        // Generate preview HTML
+        const preview = invitation.familyTreePreview;
+        const generationLabels = {
+            '-2': 'Grandparents Generation',
+            '-1': 'Parents Generation',
+            '0': 'Current Generation',
+            '1': 'Children Generation',
+            '2': 'Grandchildren Generation'
+        };
+        
+        content.innerHTML = `
+            <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <h4 class="font-semibold text-blue-800 mb-2">Your Position in the Family</h4>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-blue-700"><strong>You will join as:</strong> ${invitation.relationship}</p>
+                        ${invitation.role ? `<p class="text-blue-700"><strong>Your role:</strong> ${invitation.role}</p>` : ''}
+                    </div>
+                    <div>
+                        <p class="text-blue-700"><strong>Total family members:</strong> ${preview.totalMembers}</p>
+                        <p class="text-blue-700"><strong>Family generations:</strong> ${preview.generations}</p>
+                    </div>
+                </div>
+                ${preview.familyMotto ? `<p class="text-blue-700 mt-2"><strong>Family Motto:</strong> "${preview.familyMotto}"</p>` : ''}
+            </div>
+            
+            <div class="family-tree-preview">
+                <h4 class="font-semibold text-slate-800 mb-4">Family Structure</h4>
+                ${Object.entries(preview.membersByGeneration)
+                    .sort(([a], [b]) => parseInt(a) - parseInt(b))
+                    .map(([generation, members]) => `
+                        <div class="generation-preview mb-6">
+                            <h5 class="text-sm font-medium text-slate-600 mb-3">${generationLabels[generation] || `Generation ${generation}`}</h5>
+                            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                                ${members.map(member => `
+                                    <div class="family-member-preview p-3 rounded border ${member.name === invitation.invitedEmail.split('@')[0] ? 'border-blue-400 bg-blue-50' : 'border-slate-200 bg-white'}">
+                                        <div class="text-center">
+                                            <div class="w-8 h-8 rounded-full bg-slate-300 mx-auto mb-2 flex items-center justify-center text-sm font-semibold text-slate-600">
+                                                ${member.name.charAt(0).toUpperCase()}
+                                            </div>
+                                            <p class="text-sm font-medium text-slate-800">${member.name}</p>
+                                            <p class="text-xs text-slate-500">${member.relationship}</p>
+                                            ${member.status === 'pending' ? '<span class="text-xs text-yellow-600">Pending</span>' : ''}
+                                            ${member.name === invitation.invitedEmail.split('@')[0] ? '<span class="text-xs text-blue-600 font-medium">← You</span>' : ''}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                                ${generation === getInviteeGeneration(invitation.relationship) && !members.some(m => m.name === invitation.invitedEmail.split('@')[0]) ? `
+                                    <div class="family-member-preview p-3 rounded border-blue-400 bg-blue-50 border-dashed">
+                                        <div class="text-center">
+                                            <div class="w-8 h-8 rounded-full bg-blue-400 mx-auto mb-2 flex items-center justify-center text-sm font-semibold text-white">
+                                                ${invitation.invitedEmail.charAt(0).toUpperCase()}
+                                            </div>
+                                            <p class="text-sm font-medium text-blue-800">You</p>
+                                            <p class="text-xs text-blue-600">${invitation.relationship}</p>
+                                            <span class="text-xs text-blue-600 font-medium">Your Position</span>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `).join('')}
+            </div>
+        `;
+        
+        modal.classList.remove('hidden');
+    } catch (error) {
+        console.error('Error viewing family tree preview:', error);
+        alert('Failed to load family tree preview.');
+    }
+}
+
+function getInviteeGeneration(relationship) {
+    if (['Grandfather', 'Grandmother'].includes(relationship)) return '-2';
+    if (['Father', 'Mother', 'Uncle', 'Aunt'].includes(relationship)) return '-1';
+    if (['Son', 'Daughter', 'Nephew', 'Niece'].includes(relationship)) return '1';
+    if (['Grandson', 'Granddaughter'].includes(relationship)) return '2';
+    return '0'; // Current generation
+}

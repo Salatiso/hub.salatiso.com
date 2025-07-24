@@ -103,20 +103,40 @@ function attachEventListeners() {
 
 async function renderTabContent(tabName) {
     const container = document.getElementById('personal-tab-content');
-    if (!container) return;
-    container.innerHTML = `<p class="text-center text-slate-500 py-10">Loading ${tabName}...</p>`;
-    let content = '';
-    switch (tabName) {
-        case 'dashboard': content = renderDashboardTab(); break;
-        case 'budget': content = renderBudgetingTab(); break;
-        case 'assets-liabilities': content = renderAssetsLiabilitiesTab(); break;
-        case 'savings': content = renderSavingsGoalsTab(); break;
-        case 'calculators': content = renderCalculatorsTab(); break;
-        case 'credit': content = renderCreditProfileTab(); break;
-        case 'kids': content = renderKidsDashboardTab(); break;
-        default: content = `<div class="text-center py-10"><h3 class="font-semibold text-lg">${tabName.charAt(0).toUpperCase() + tabName.slice(1)} Coming Soon</h3></div>`;
+    if (!container) {
+        console.error('Tab content container not found');
+        return;
     }
-    container.innerHTML = content;
+    
+    container.innerHTML = `<div class="flex items-center justify-center py-10">
+        <i class="fas fa-spinner fa-spin text-2xl text-indigo-500 mr-3"></i>
+        <span class="text-slate-500">Loading ${tabName}...</span>
+    </div>`;
+    
+    let content = '';
+    try {
+        switch (tabName) {
+            case 'dashboard': content = renderDashboardTab(); break;
+            case 'budget': content = renderBudgetingTab(); break;
+            case 'assets-liabilities': content = renderAssetsLiabilitiesTab(); break;
+            case 'savings': content = renderSavingsGoalsTab(); break;
+            case 'calculators': content = renderCalculatorsTab(); break;
+            case 'credit': content = renderCreditProfileTab(); break;
+            case 'kids': content = renderKidsDashboardTab(); break;
+            default: 
+                content = `<div class="text-center py-10">
+                    <h3 class="font-semibold text-lg text-slate-600">${tabName.charAt(0).toUpperCase() + tabName.slice(1)} Coming Soon</h3>
+                    <p class="text-slate-500 mt-2">This feature is under development.</p>
+                </div>`;
+        }
+        container.innerHTML = content;
+    } catch (error) {
+        console.error(`Error rendering ${tabName} tab:`, error);
+        container.innerHTML = `<div class="text-center py-10 text-red-500">
+            <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
+            <p>Error loading ${tabName} content. Please refresh the page.</p>
+        </div>`;
+    }
 }
 
 // --- TAB RENDERING FUNCTIONS ---

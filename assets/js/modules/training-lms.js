@@ -1,9 +1,12 @@
 // /assets/js/modules/training-lms.js
 
+import { db } from '../firebase-config.js';
+import { collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { auth } from '../firebase-config.js';
+
 // ** FIX **: Wait for the 'firebase-ready' event from auth.js before running.
 document.addEventListener('firebase-ready', () => {
-    
-    const db = firebase.firestore();
     const courseGrid = document.getElementById('course-grid');
     const loadingIndicator = document.getElementById('loading-indicator');
     const noResults = document.getElementById('no-results');
@@ -45,7 +48,8 @@ document.addEventListener('firebase-ready', () => {
         courseGrid.innerHTML = '';
 
         try {
-            const coursesCollection = await db.collection('courses').orderBy('title').get();
+            const coursesQuery = query(collection(db, 'courses'), orderBy('title'));
+            const coursesCollection = await getDocs(coursesQuery);
             allCourses = coursesCollection.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             
             if (allCourses.length > 0) {

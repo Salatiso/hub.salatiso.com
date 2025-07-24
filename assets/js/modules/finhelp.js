@@ -69,3 +69,24 @@ async function loadBusinessModule() {
         document.getElementById('business-workspace').innerHTML = `<p class="text-red-500 text-center">Error loading business finance tools.</p>`;
     }
 }
+
+// Initialize the FinHelp when Firebase is ready
+document.addEventListener('firebase-ready', () => {
+    console.log('Firebase ready event received, initializing FinHelp...');
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            console.log('User authenticated, initializing FinHelp for:', user.email);
+            init(user);
+        } else {
+            console.log('No user authenticated');
+        }
+    });
+});
+
+// Also listen for auth state changes directly
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        console.log('Auth state changed, user authenticated:', user.email);
+        init(user);
+    }
+});

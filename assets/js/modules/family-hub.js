@@ -107,10 +107,42 @@ function renderFamilyDashboard() {
 
 // --- INDIVIDUAL VIEW (NO FAMILY) ---
 
-function renderIndividualView() {
+async function renderIndividualView() {
+    // Check for pending family invitations
+    const invitationsQuery = query(
+        collection(db, 'familyInvitations'),
+        where('invitedEmail', '==', currentUser.email),
+        where('status', '==', 'pending')
+    );
+    
+    const invitationSnap = await getDocs(invitationsQuery);
+    const pendingInvitations = invitationSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    
+    const invitationsHtml = pendingInvitations.length > 0 ? `
+        <div class="mb-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <h3 class="font-semibold text-yellow-800 mb-3">Pending Family Invitations</h3>
+            <div class="space-y-3">
+                ${pendingInvitations.map(inv => `
+                    <div class="flex items-center justify-between bg-white p-3 rounded border">
+                        <div>
+                            <p class="font-medium text-slate-800">${inv.familyName}</p>
+                            <p class="text-sm text-slate-600">Invited by ${inv.invitedByName} as ${inv.relationship}</p>
+                        </div>
+                        <div class="space-x-2">
+                            <button class="accept-invitation-btn text-sm px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700" data-invitation-id="${inv.id}">Accept</button>
+                            <button class="decline-invitation-btn text-sm px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700" data-invitation-id="${inv.id}">Decline</button>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    ` : '';
+
     mainContainer.innerHTML = `
         <div class="text-center py-12">
             <div class="max-w-md mx-auto">
+                ${invitationsHtml}
+                
                 <div class="w-24 h-24 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
                     <i class="fas fa-users text-3xl text-indigo-600"></i>
                 </div>
@@ -153,7 +185,7 @@ function renderIndividualView() {
         </div>
     `;
 
-    // Event listeners
+    // Event listeners for create family
     document.getElementById('create-family-btn').addEventListener('click', () => {
         document.getElementById('create-family-modal').classList.remove('hidden');
     });
@@ -163,6 +195,15 @@ function renderIndividualView() {
     });
     
     document.getElementById('create-family-form').addEventListener('submit', handleCreateFamily);
+    
+    // Event listeners for invitations
+    document.querySelectorAll('.accept-invitation-btn').forEach(btn => {
+        btn.addEventListener('click', handleAcceptInvitation);
+    });
+    
+    document.querySelectorAll('.decline-invitation-btn').forEach(btn => {
+        btn.addEventListener('click', handleDeclineInvitation);
+    });
 }
 
 

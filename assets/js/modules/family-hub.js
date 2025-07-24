@@ -5,7 +5,7 @@
 /* FIX: Corrected the error on the Governance tab for new families.                  */
 /* ================================================================================= */
 import { auth, db } from '../firebase-config.js';
-import { getDocument, updateDocument, addDocument } from '../database.js';
+import { getDocument, updateDocument, addDocument, saveDocument } from '../database.js';
 import { uploadFile } from '../storage.js';
 import { collection, query, where, onSnapshot, doc, writeBatch, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -544,9 +544,13 @@ async function handleCreateFamily(e) {
         
         const familyDoc = await addDocument('families', familyData);
         
-        // Update user document with family ID
-        await updateDocument('users', currentUser.uid, { 
-            familyId: familyDoc.id 
+        // Create or update user document with family ID
+        await saveDocument('users', currentUser.uid, { 
+            familyId: familyDoc.id,
+            email: currentUser.email,
+            displayName: currentUser.displayName || currentUser.email,
+            photoURL: currentUser.photoURL || null,
+            lastUpdated: new Date().toISOString()
         });
         
         // Close modal
@@ -613,12 +617,85 @@ async function handleRemoveMember(e) {
         });
         
         // Remove family ID from user
-        await updateDocument('users', memberId, { familyId: null });
+        await saveDocument('users', memberId, { 
+            familyId: null,
+            lastUpdated: new Date().toISOString()
+        });
         
         alert('Member removed from family.');
     } catch (error) {
         console.error('Error removing member:', error);
         alert('Failed to remove member. Please try again.');
+    }
+}
+
+async function handleAcceptInvitation(e) {
+    const invitationId = e.target.dataset.invitationId;
+    
+    try {
+        // Get the invitation details
+        const invitationDoc = await getDocument('familyInvitations', invitationId);
+        if (!invitationDoc) return;
+        
+        // Add user to family
+        const familyDoc = await getDocument('families', invitationDoc.familyId);
+        const updatedMembers = [...(familyDoc.members || []), currentUser.uid];
+        const updatedMemberDetails = {
+            ...familyDoc.memberDetails,
+            [currentUser.uid]: {
+                relationship: invitationDoc.relationship,
+                role: invitationDoc.role,
+                joinedDate: new Date().toISOString()
+            }
+        };
+        
+        await updateDocument('families', invitationDoc.familyId, {
+            members: updatedMembers,
+            memberDetails: updatedMemberDetails
+        });
+        
+        // Update user with family ID
+        await saveDocument('users', currentUser.uid, {
+            familyId: invitationDoc.familyId,
+            email: currentUser.email,
+            displayName: currentUser.displayName || currentUser.email,
+            photoURL: currentUser.photoURL || null,
+            lastUpdated: new Date().toISOString()
+        });
+        
+        // Mark invitation as accepted
+        await updateDocument('familyInvitations', invitationId, {
+            status: 'accepted',
+            acceptedAt: new Date().toISOString()
+        });
+        
+        alert('Family invitation accepted! Welcome to the family.');
+    } catch (error) {
+        console.error('Error accepting invitation:', error);
+        alert('Failed to accept invitation. Please try again.');
+    }
+}
+
+async function handleDeclineInvitation(e) {
+    const invitationId = e.target.dataset.invitationId;
+    
+    if (!confirm('Are you sure you want to decline this family invitation?')) {
+        return;
+    }
+    
+    try {
+        await updateDocument('familyInvitations', invitationId, {
+            status: 'declined',
+            declinedAt: new Date().toISOString()
+        });
+        
+        // Refresh the individual view
+        renderIndividualView();
+        
+        alert('Family invitation declined.');
+    } catch (error) {
+        console.error('Error declining invitation:', error);
+        alert('Failed to decline invitation. Please try again.');
     }
 }
 

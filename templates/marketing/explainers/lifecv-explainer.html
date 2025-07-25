@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeCV Module Explainer</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700;900&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- PDF Generation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --brand-color: #1e40af; /* Deep Blue */
+            --brand-color-light: #3b82f6; /* Lighter Blue */
+            --text-main: #1f2937; /* Dark Gray */
+            --text-light: #6b7280; /* Medium Gray */
+            --bg-main: #f3f4f6; /* Light Gray Background */
+            --bg-page: #ffffff; /* White Page */
+        }
+        body {
+            font-family: 'Manrope', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.7;
+        }
+        .document-page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 1.5rem auto;
+            background-color: var(--bg-page);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 15mm 20mm;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .document-title {
+            font-family: 'Roboto Slab', serif;
+            color: var(--brand-color);
+            font-weight: 900;
+            border-bottom: 4px solid var(--brand-color-light);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        h1, h2, h3, h4 {
+            font-family: 'Roboto Slab', serif;
+            font-weight: 700;
+            color: #111827;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        h1 { font-size: 2.25rem; }
+        h2 { font-size: 1.75rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.25rem; }
+        h3 { font-size: 1.25rem; }
+        p { margin-bottom: 1rem; }
+        ul { list-style-position: inside; margin-bottom: 1rem; }
+        li { margin-bottom: 0.5rem; }
+        .editable { background-color: #fefce8; padding: 2px 4px; border-radius: 3px; outline-color: var(--brand-color-light); }
+        .page-num { position: absolute; bottom: 10mm; right: 20mm; font-size: 0.8rem; color: var(--text-light); }
+        .watermark {
+            position: absolute;
+            opacity: 0.05;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 6rem;
+            font-weight: bold;
+            color: var(--brand-color);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .sidebar {
+            position: fixed;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: var(--bg-page);
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 1rem;
+            z-index: 1000;
+        }
+        .sidebar button {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            border-radius: 6px;
+            background-color: #f3f4f6;
+            color: #374151;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: 1px solid #e5e7eb;
+        }
+        .sidebar button:hover { background-color: var(--brand-color); color: white; }
+        .sidebar button i { margin-right: 0.75rem; width: 20px; text-align: center; }
+        .sidebar .divider { height: 1px; background-color: #e5e7eb; margin: 1rem 0; }
+        .salatiso-logo-svg {
+            height: 80px;
+            width: 80px;
+        }
+        .detail-item .remove-btn {
+            display: none;
+            cursor: pointer;
+        }
+        .detail-item:hover .remove-btn {
+            display: inline-block;
+        }
+        @media print {
+            body { background-color: white; }
+            .sidebar, .remove-btn, .add-field-btn { display: none !important; }
+            .document-page { margin: 0; box-shadow: none; border: none; }
+            .editable { background-color: transparent !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- INTERACTIVE SIDEBAR -->
+    <div class="sidebar">
+        <h3 class="font-bold text-center mb-4 text-lg">Controls</h3>
+        <button onclick="window.print()"><i class="fas fa-print"></i> Print</button>
+        <button id="download-pdf"><i class="fas fa-file-pdf"></i> Download PDF</button>
+        <button id="reset-fields"><i class="fas fa-undo"></i> Reset Fields</button>
+        <div class="divider"></div>
+        <h4 class="font-semibold text-center my-2 text-md">Toggle Pages</h4>
+        <button onclick="togglePage('cover-page')"><i class="fas fa-file-powerpoint"></i> Cover</button>
+        <button onclick="togglePage('toc-page')"><i class="fas fa-list-ul"></i> Contents</button>
+        <button onclick="togglePage('back-page')"><i class="fas fa-info-circle"></i> Back Page</button>
+        <div class="divider"></div>
+        <button onclick="restorePages()"><i class="fas fa-eye"></i> Show All</button>
+    </div>
+
+    <!-- COVER PAGE -->
+    <div id="cover-page" class="document-page">
+        <div class="flex-grow flex flex-col justify-center items-center text-center">
+            <div class="mb-8">
+                 <svg viewBox="0 0 100 100" class="salatiso-logo-svg mx-auto text-slate-800">
+                    <circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="8" fill="none"/>
+                    <path d="M50 10 L 50 90 M10 50 L 90 50" stroke="#4b5563" stroke-width="2"/>
+                    <path d="M50 10 L 40 25 L 60 25 Z" fill="currentColor"/>
+                </svg>
+                <span class="font-bold text-5xl text-gray-800 mt-4 block" style="font-family: 'Roboto Slab', serif;">The Hub by Salatiso</span>
+            </div>
+            <h1 class="document-title !border-none !text-5xl" contenteditable="true">LifeCV Module Explainer</h1>
+            <p class="text-xl text-gray-600 mt-4" contenteditable="true">Documenting Your Entire Life's Journey</p>
+            
+            <div id="cover-details" class="mt-12 text-left w-full max-w-md mx-auto">
+                <div class="detail-item flex items-center mb-2">
+                    <strong class="w-1/3">Prepared For:</strong>
+                    <span contenteditable="true" class="editable flex-grow">[User Name]</span>
+                    <span class="remove-btn text-red-500 ml-2" onclick="this.parentElement.remove()"><i class="fas fa-times-circle"></i></span>
+                </div>
+                <div class="detail-item flex items-center mb-2">
+                    <strong class="w-1/3">Prepared By:</strong>
+                    <span contenteditable="true" class="editable flex-grow">The Hub Team</span>
+                     <span class="remove-btn text-red-500 ml-2" onclick="this.parentElement.remove()"><i class="fas fa-times-circle"></i></span>
+                </div>
+            </div>
+            <button onclick="addDetailField()" class="add-field-btn mt-4 text-sm text-blue-600 hover:underline"><i class="fas fa-plus-circle mr-1"></i> Add Custom Field</button>
+
+        </div>
+        <div class="mt-auto flex justify-between items-end">
+             <!-- QR Code: Change the data= part to your desired URL -->
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=https://hub.salatiso.com/modules/life-cv.html" alt="QR Code to LifeCV" title="Scan for more info">
+            <div class="text-right text-gray-500">
+                <p><strong>Date:</strong> <span contenteditable="true" class="editable">July 25, 2025</span></p>
+                <p><strong>Version:</strong> <span contenteditable="true" class="editable">1.0</span></p>
+            </div>
+        </div>
+        <div class="page-num"></div>
+    </div>
+
+    <!-- TABLE OF CONTENTS -->
+    <div id="toc-page" class="document-page">
+        <h1 class="document-title">Table of Contents</h1>
+        <ul class="text-lg space-y-2" id="toc-list">
+        </ul>
+        <div class="page-num"></div>
+    </div>
+    
+    <!-- MAIN CONTENT PAGE -->
+    <div class="document-page">
+        <div class="watermark">LifeCV</div>
+        <h1 class="document-title" data-toc="Introducing LifeCV">1. Introducing LifeCV: More Than a Résumé</h1>
+        <p contenteditable="true">Your life is more than a list of jobs. The LifeCV is a revolutionary module in The Hub that allows you to create a comprehensive, dynamic, and holistic profile of your entire life. It captures not just your professional experience, but also your personal milestones, skills, family roles, community contributions, and personal development. It is the living story of you.</p>
+        
+        <h1 class="document-title" data-toc="Key Features">2. Key Features at a Glance</h1>
+        <p contenteditable="true">The LifeCV is designed to be a complete and authentic representation of who you are.</p>
+        
+        <h2 data-toc="Holistic Profile Building">2.1. Holistic Profile Building</h2>
+        <p contenteditable="true">Go beyond the standard CV. Document your education and career, but also add sections for personal projects, volunteer work, family governance roles, cultural heritage, and key life events. This creates a rich tapestry of your skills and experiences.</p>
+
+        <h2 data-toc="Dynamic & Shareable">2.2. Dynamic & Shareable</h2>
+        <p contenteditable="true">Your LifeCV is not a static document. Update it continuously as you learn and grow. You can then generate different versions for different purposes—a professional version for job applications, a personal version for legacy planning, or a community version for volunteer roles.</p>
+
+        <h2 data-toc="Skills & Competency Mapping">2.3. Skills & Competency Mapping</h2>
+        <p contenteditable="true">Identify and showcase skills gained from all areas of your life. The LifeCV helps you recognise that leadership skills can come from coaching a local team, and project management skills can come from planning a family reunion.</p>
+
+        <h2 data-toc="Legacy & Succession Planning">2.4. Legacy & Succession Planning</h2>
+        <p contenteditable="true">For families and businesses, the LifeCV is an invaluable tool for succession planning. It provides a deep understanding of the skills, experiences, and character of the next generation, ensuring a smooth and informed transition of leadership.</p>
+
+        <h1 class="document-title" data-toc="Who is it For?">3. Who is the LifeCV For?</h1>
+        <ul class="list-disc space-y-2">
+            <li><strong>Every Individual:</strong> To capture a true reflection of your life's journey and better understand your own skills and growth.</li>
+            <li><strong>Professionals & Job Seekers:</strong> To create powerful, tailored CVs that stand out by showcasing a wider range of competencies.</li>
+            <li><strong>Families:</strong> To create a lasting record of family members' lives, achievements, and stories for future generations.</li>
+            <li><strong>Community Leaders:</strong> To document their contributions and roles within their communities.</li>
+        </ul>
+
+        <div class="page-num"></div>
+    </div>
+
+    <!-- BACK PAGE -->
+    <div id="back-page" class="document-page bg-gray-800 text-white">
+        <div class="flex-grow flex flex-col justify-center items-center text-center">
+            <svg viewBox="0 0 100 100" class="salatiso-logo-svg mx-auto text-white">
+                <circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="8" fill="none"/>
+                <path d="M50 10 L 50 90 M10 50 L 90 50" stroke="#9ca3af" stroke-width="2"/>
+                <path d="M50 10 L 40 25 L 60 25 Z" fill="currentColor"/>
+            </svg>
+            <h2 class="text-4xl font-roboto-slab font-bold text-white mt-6">The Hub by Salatiso</h2>
+            <p class="text-lg text-gray-300 mt-2">Your digital homestead</p>
+        </div>
+        <div class="text-center text-gray-400 mt-auto">
+            <p>This document was generated using tools from The Hub by Salatiso.</p>
+            <p>For support, visit <a href="https://hub.salatiso.com" class="text-blue-400 underline">hub.salatiso.com</a></p>
+            <p>&copy; 2025 Salatiso (Pty) Ltd. All Rights Reserved.</p>
+        </div>
+        <div class="page-num"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const initialValues = {};
+            
+            document.querySelectorAll('[contenteditable]').forEach((el, i) => {
+                const id = `editable-${i}`;
+                el.id = id;
+                initialValues[id] = el.innerHTML;
+            });
+
+            document.getElementById('download-pdf').addEventListener('click', () => {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'mm', 'a4');
+                const pages = document.querySelectorAll('.document-page');
+                let processedPages = 0;
+                const pagesToProcess = Array.from(pages).filter(p => p.style.display !== 'none');
+                const loaderButton = document.getElementById('download-pdf');
+
+                loaderButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+                loaderButton.disabled = true;
+
+                if (pagesToProcess.length === 0) {
+                    alert("No visible pages to generate PDF from!");
+                    loaderButton.innerHTML = '<i class="fas fa-file-pdf"></i> Download PDF';
+                    loaderButton.disabled = false;
+                    return;
+                }
+
+                pagesToProcess.forEach((page, index) => {
+                    html2canvas(page, { scale: 2.5, windowWidth: page.scrollWidth, windowHeight: page.scrollHeight }).then(canvas => {
+                        const imgData = canvas.toDataURL('image/png');
+                        if (index > 0) {
+                            doc.addPage();
+                        }
+                        doc.addImage(imgData, 'PNG', 0, 0, 210, 297, undefined, 'FAST');
+                        if (++processedPages === pagesToProcess.length) {
+                            doc.save('LifeCV-Explainer.pdf');
+                            loaderButton.innerHTML = '<i class="fas fa-file-pdf"></i> Download PDF';
+                            loaderButton.disabled = false;
+                        }
+                    });
+                });
+            });
+
+            document.getElementById('reset-fields').addEventListener('click', () => {
+                if (confirm('Are you sure you want to reset all editable fields to their original content?')) {
+                    for (const id in initialValues) {
+                        document.getElementById(id).innerHTML = initialValues[id];
+                    }
+                }
+            });
+            
+            updatePageNumbers();
+            generateTOC();
+        });
+
+        function togglePage(pageId) {
+            const page = document.getElementById(pageId);
+            if (page) {
+                page.style.display = page.style.display === 'none' ? 'flex' : 'none';
+                updatePageNumbers();
+            }
+        }
+        function restorePages() {
+            document.querySelectorAll('.document-page').forEach(page => page.style.display = 'flex');
+            updatePageNumbers();
+        }
+
+        function updatePageNumbers() {
+            const visiblePages = Array.from(document.querySelectorAll('.document-page')).filter(p => p.style.display !== 'none');
+            visiblePages.forEach((page, idx) => {
+                let numEl = page.querySelector('.page-num');
+                if (numEl) {
+                    numEl.innerText = `Page ${idx + 1} of ${visiblePages.length}`;
+                }
+            });
+        }
+        
+        function generateTOC() {
+            const tocList = document.getElementById('toc-list');
+            if(!tocList) return;
+            tocList.innerHTML = '';
+            const headings = document.querySelectorAll('.document-page [data-toc]');
+            headings.forEach(h => {
+                const li = document.createElement('li');
+                li.textContent = h.getAttribute('data-toc');
+                tocList.appendChild(li);
+            });
+        }
+
+        function addDetailField() {
+            const container = document.getElementById('cover-details');
+            const newField = document.createElement('div');
+            newField.className = 'detail-item flex items-center mb-2';
+            newField.innerHTML = `
+                <strong contenteditable="true" class="editable w-1/3">[New Field]:</strong>
+                <span contenteditable="true" class="editable flex-grow">[Value]</span>
+                <span class="remove-btn text-red-500 ml-2" onclick="this.parentElement.remove()"><i class="fas fa-times-circle"></i></span>
+            `;
+            container.appendChild(newField);
+        }
+    </script>
+</body>
+</html>

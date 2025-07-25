@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Hub by Salatiso - Ecosystem Brochure</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700;900&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Manrope', sans-serif;
+            background-color: #e5e7eb;
+        }
+        .brochure-container {
+            width: 297mm;
+            height: 210mm;
+            margin: 2rem auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .panel {
+            padding: 2rem;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+        }
+        .panel-1 {
+            border-right: 1px dashed #d1d5db;
+        }
+        .panel-2 {
+            border-right: 1px dashed #d1d5db;
+        }
+        .panel h2 {
+            font-family: 'Roboto Slab', serif;
+            font-weight: 900;
+            color: #1e40af;
+            font-size: 1.75rem;
+            margin-bottom: 1rem;
+            border-bottom: 3px solid #3b82f6;
+            padding-bottom: 0.5rem;
+        }
+        .panel h3 {
+            font-family: 'Roboto Slab', serif;
+            font-weight: 700;
+            color: #1f2937;
+            font-size: 1.1rem;
+            margin-top: 1rem;
+            margin-bottom: 0.25rem;
+        }
+        .panel p {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #4b5563;
+        }
+        .panel ul {
+            font-size: 0.9rem;
+            color: #4b5563;
+        }
+        .editable {
+            background-color: #fefce8;
+            padding: 1px 3px;
+            border-radius: 3px;
+        }
+        .salatiso-logo-svg {
+            height: 60px;
+            width: 60px;
+        }
+        .qr-code {
+            width: 100px;
+            height: 100px;
+        }
+        @media print {
+            body { background-color: white; }
+            .brochure-container {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                box-shadow: none;
+            }
+            .panel-1, .panel-2 { border-right: 1px solid #d1d5db; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print text-center my-4">
+        <button onclick="window.print()" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow-md hover:bg-blue-700 transition">Print Brochure</button>
+    </div>
+    <div class="brochure-container">
+        <!-- Panel 1: Inside Flap -->
+        <div class="panel panel-1">
+            <h2 contenteditable="true">What is The Hub?</h2>
+            <p contenteditable="true">
+                The Hub is your secure **digital homestead**—a central platform designed to bring order, clarity, and control to all aspects of your life, family, and business.
+            </p>
+            <p contenteditable="true">
+                It's your private, online space to build your legacy, manage your assets, and plan for the future with confidence.
+            </p>
+            
+            <h3 contenteditable="true">For Your Family</h3>
+            <p contenteditable="true">
+                Organise household documents, manage finances, coordinate schedules, and build a lasting record of your family's story for generations to come.
+            </p>
+
+            <h3 contenteditable="true">For Your Business</h3>
+            <p contenteditable="true">
+                Streamline your operations with tools for HR, finance, legal compliance, and safety. Create professional documents and marketing materials to help your business grow.
+            </p>
+            <div class="mt-auto text-center">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://hub.salatiso.com" alt="QR Code" class="qr-code mx-auto">
+                <p class="text-xs mt-2 font-semibold">Scan to Get Started</p>
+            </div>
+        </div>
+
+        <!-- Panel 2: Center Panel (Back of Brochure when folded) -->
+        <div class="panel panel-2">
+            <h2 contenteditable="true">The Ecosystem</h2>
+            <p contenteditable="true">The Hub is your gateway to a powerful, integrated ecosystem of specialised modules that work together seamlessly:</p>
+            <ul class="list-disc list-inside space-y-1 mt-4">
+                <li contenteditable="true"><strong>DocuHelp:</strong> Secure Document Management</li>
+                <li contenteditable="true"><strong>FinHelp:</strong> Personal & Business Finance</li>
+                <li contenteditable="true"><strong>HRHelp:</strong> Career & Workforce Management</li>
+                <li contenteditable="true"><strong>LegalHelp:</strong> Legal Info & Advocacy</li>
+                <li contenteditable="true"><strong>SafetyHelp:</strong> OHS Compliance Tools</li>
+                <li contenteditable="true"><strong>Family Hub:</strong> Family Coordination</li>
+                <li contenteditable="true"><strong>LifeCV:</strong> Your Holistic Life Profile</li>
+                <li contenteditable="true"><strong>CommsHub:</strong> Marketing & Publications</li>
+                <li contenteditable="true"><strong>eKhaya:</strong> Home & Property Management</li>
+            </ul>
+             <p class="mt-4" contenteditable="true">
+                Each tool is powerful on its own, but together, they provide a complete solution for modern life.
+            </p>
+        </div>
+
+        <!-- Panel 3: Front Panel (Cover of Brochure when folded) -->
+        <div class="panel panel-3 bg-gray-50">
+            <div class="flex-grow flex flex-col items-center justify-center text-center">
+                <svg viewBox="0 0 100 100" class="salatiso-logo-svg h-24 w-24 mx-auto text-slate-800">
+                    <circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="8" fill="none"/>
+                    <path d="M50 10 L 50 90 M10 50 L 90 50" stroke="#4b5563" stroke-width="2"/>
+                    <path d="M50 10 L 40 25 L 60 25 Z" fill="currentColor"/>
+                </svg>
+                <h1 class="font-roboto-slab text-4xl font-black text-gray-800 mt-4" contenteditable="true">The Hub</h1>
+                <p class="text-lg text-gray-600" contenteditable="true">by Salatiso</p>
+                <p class="mt-8 text-2xl font-roboto-slab font-bold text-blue-800" contenteditable="true">Your Digital Homestead</p>
+            </div>
+            <div class="text-center text-sm text-gray-500">
+                <p contenteditable="true" class="font-semibold">[Your Company Name/Contact]</p>
+                <p contenteditable="true">[Your Website/Email]</p>
+                <p contenteditable="true">[Your Phone Number]</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

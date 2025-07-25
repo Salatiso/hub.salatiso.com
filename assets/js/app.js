@@ -51,9 +51,14 @@ document.addEventListener('DOMContentLoaded', () => {
     <header class="bg-white dark:bg-gray-800 shadow-sm p-4 flex justify-between items-center">
         <div class="flex items-center">
             <button id="menu-toggle" class="text-slate-600 dark:text-slate-300 hover:text-slate-900 lg:hidden mr-4"><i class="fas fa-bars text-xl"></i></button>
-            <div class="relative hidden sm:block">
-                <input type="text" placeholder="Search..." data-translate-key="search_placeholder" class="pl-10 pr-4 py-2 border rounded-lg w-64 bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            <div class="relative hidden sm:block" id="search-container">
+                <input type="text" id="search-input" placeholder="Search..." data-translate-key="search_placeholder" class="pl-10 pr-4 py-2 border rounded-lg w-64 bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <button id="search-button" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-indigo-600 transition-colors">
+                    <i class="fas fa-search"></i>
+                </button>
+                <div id="search-results" class="hidden absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-xl max-h-96 overflow-y-auto z-50">
+                    <!-- Search results will appear here -->
+                </div>
             </div>
         </div>
         <div class="flex items-center space-x-4">
@@ -104,6 +109,48 @@ document.addEventListener('DOMContentLoaded', () => {
     </header>
     `;
 
+    // --- 2. SEARCH DATABASE ---
+    const searchDatabase = [
+        // Pages
+        { title: "Dashboard", description: "Main overview of all your tools and data", url: "../modules/dashboard.html", type: "page", icon: "fas fa-home" },
+        { title: "LifeCV", description: "Manage your career, education, and life achievements", url: "../modules/life-cv.html", type: "page", icon: "fas fa-id-card" },
+        { title: "Family Hub", description: "Family planning, communication, and coordination", url: "../modules/family-hub.html", type: "page", icon: "fas fa-users" },
+        { title: "FinHelp", description: "Personal and business financial management", url: "../modules/finhelp.html", type: "page", icon: "fas fa-chart-pie" },
+        { title: "HRHelp", description: "Human resources and employment management", url: "../modules/hrhelp.html", type: "page", icon: "fas fa-briefcase" },
+        { title: "LegalHelp", description: "Legal document management and legal matter tracking", url: "../modules/legalhelp.html", type: "page", icon: "fas fa-gavel" },
+        { title: "DocuHelp", description: "Document creation, templates, and management", url: "../modules/docuhelp.html", type: "page", icon: "fas fa-file-alt" },
+        { title: "CommsHub", description: "Communication tools and messaging", url: "../modules/commshub.html", type: "page", icon: "fas fa-comments" },
+        { title: "Publications", description: "Access to publications and research materials", url: "../modules/publications.html", type: "page", icon: "fas fa-book-open" },
+        { title: "Training", description: "Educational courses and training materials", url: "../modules/training.html", type: "page", icon: "fas fa-chalkboard-teacher" },
+        { title: "Assessment", description: "Tool recommendation assessment", url: "../assessment.html", type: "page", icon: "fas fa-clipboard-check" },
+        { title: "Personal Quiz", description: "Holistic personal discovery quiz", url: "../quiz.html", type: "page", icon: "fas fa-brain" },
+        
+        // Features
+        { title: "Budget Tracking", description: "Track your income and expenses", url: "../modules/finhelp.html", type: "feature", icon: "fas fa-calculator" },
+        { title: "Career Timeline", description: "Document your career progression", url: "../modules/life-cv.html", type: "feature", icon: "fas fa-timeline" },
+        { title: "Family Calendar", description: "Shared family scheduling", url: "../modules/family-hub.html", type: "feature", icon: "fas fa-calendar" },
+        { title: "Legal Templates", description: "Pre-made legal document templates", url: "../modules/legalhelp.html", type: "feature", icon: "fas fa-file-contract" },
+        { title: "Invoice Generator", description: "Create professional invoices", url: "../modules/finhelp.html", type: "feature", icon: "fas fa-file-invoice" },
+        { title: "Skills Tracking", description: "Monitor your skill development", url: "../modules/life-cv.html", type: "feature", icon: "fas fa-chart-line" },
+        { title: "Goal Setting", description: "Set and track personal goals", url: "../modules/family-hub.html", type: "feature", icon: "fas fa-bullseye" },
+        { title: "Document Storage", description: "Secure document storage and organization", url: "../modules/docuhelp.html", type: "feature", icon: "fas fa-cloud" },
+        
+        // Tools
+        { title: "Tax Calculator", description: "Calculate your South African tax obligations", url: "../modules/finhelp.html", type: "tool", icon: "fas fa-percent" },
+        { title: "Contract Builder", description: "Build custom contracts and agreements", url: "../modules/legalhelp.html", type: "tool", icon: "fas fa-hammer" },
+        { title: "Resume Builder", description: "Create professional resumes", url: "../modules/life-cv.html", type: "tool", icon: "fas fa-file-alt" },
+        { title: "Expense Tracker", description: "Track daily expenses and spending patterns", url: "../modules/finhelp.html", type: "tool", icon: "fas fa-money-bill-wave" },
+        { title: "Time Tracker", description: "Track time spent on various activities", url: "../modules/hrhelp.html", type: "tool", icon: "fas fa-clock" },
+        { title: "Meeting Scheduler", description: "Schedule and manage meetings", url: "../modules/commshub.html", type: "tool", icon: "fas fa-calendar-plus" },
+        
+        // Help Topics
+        { title: "Constitutional Rights", description: "Learn about your constitutional rights in South Africa", url: "../modules/training.html", type: "help", icon: "fas fa-balance-scale" },
+        { title: "Financial Planning", description: "Guide to personal financial planning", url: "../modules/finhelp.html", type: "help", icon: "fas fa-piggy-bank" },
+        { title: "Legal Procedures", description: "Understanding legal processes and procedures", url: "../modules/legalhelp.html", type: "help", icon: "fas fa-gavel" },
+        { title: "Career Development", description: "Tips for advancing your career", url: "../modules/life-cv.html", type: "help", icon: "fas fa-rocket" },
+        { title: "Family Communication", description: "Improving family communication strategies", url: "../modules/family-hub.html", type: "help", icon: "fas fa-heart" }
+    ];
+
     // This function injects the HTML into the placeholders
     function loadComponents() {
         const sidebarPlaceholder = document.getElementById('sidebar-placeholder');
@@ -112,8 +159,124 @@ document.addEventListener('DOMContentLoaded', () => {
         if (headerPlaceholder) headerPlaceholder.innerHTML = headerHTML;
     }
     
+    // --- 3. SEARCH FUNCTIONALITY ---
+    function initializeSearch() {
+        const searchInput = document.getElementById('search-input');
+        const searchButton = document.getElementById('search-button');
+        const searchResults = document.getElementById('search-results');
+        
+        if (!searchInput || !searchButton || !searchResults) return;
+
+        let searchTimeout;
+
+        // Search function
+        function performSearch(query) {
+            if (!query || query.trim().length < 2) {
+                searchResults.classList.add('hidden');
+                return;
+            }
+
+            const normalizedQuery = query.toLowerCase().trim();
+            const results = searchDatabase.filter(item => 
+                item.title.toLowerCase().includes(normalizedQuery) ||
+                item.description.toLowerCase().includes(normalizedQuery)
+            ).slice(0, 8); // Limit to 8 results
+
+            displaySearchResults(results, normalizedQuery);
+        }
+
+        // Display search results
+        function displaySearchResults(results, query) {
+            if (results.length === 0) {
+                searchResults.innerHTML = `
+                    <div class="p-4 text-center text-gray-500 dark:text-gray-400">
+                        <i class="fas fa-search text-2xl mb-2"></i>
+                        <p>No results found for "${query}"</p>
+                    </div>
+                `;
+                searchResults.classList.remove('hidden');
+                return;
+            }
+
+            const resultsHTML = results.map(result => `
+                <a href="${result.url}" class="flex items-center p-3 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors border-b border-gray-100 dark:border-gray-600 last:border-b-0">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center mr-3">
+                        <i class="${result.icon} text-indigo-600 dark:text-indigo-400"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="text-sm font-semibold text-gray-900 dark:text-white truncate">${result.title}</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 truncate">${result.description}</p>
+                        <span class="inline-block mt-1 px-2 py-1 text-xs rounded-full ${getTypeColor(result.type)}">${capitalizeFirst(result.type)}</span>
+                    </div>
+                    <i class="fas fa-arrow-right text-gray-400 ml-2"></i>
+                </a>
+            `).join('');
+
+            searchResults.innerHTML = resultsHTML;
+            searchResults.classList.remove('hidden');
+        }
+
+        // Helper function to get type-specific colors
+        function getTypeColor(type) {
+            const colors = {
+                'page': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+                'feature': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+                'tool': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
+                'help': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
+            };
+            return colors[type] || 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+        }
+
+        // Helper function to capitalize first letter
+        function capitalizeFirst(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        // Event listeners
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                performSearch(e.target.value);
+            }, 300); // Debounce search
+        });
+
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                performSearch(e.target.value);
+            }
+            if (e.key === 'Escape') {
+                searchResults.classList.add('hidden');
+                searchInput.blur();
+            }
+        });
+
+        searchButton.addEventListener('click', () => {
+            performSearch(searchInput.value);
+        });
+
+        // Hide search results when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#search-container')) {
+                searchResults.classList.add('hidden');
+            }
+        });
+
+        // Show recent searches when input is focused (optional)
+        searchInput.addEventListener('focus', () => {
+            if (!searchInput.value.trim()) {
+                // Show popular/recent items
+                const popularItems = searchDatabase.filter(item => item.type === 'page').slice(0, 5);
+                displaySearchResults(popularItems, '');
+            }
+        });
+    }
+    
     // This function handles all event listeners for the components
     function setupEventListeners() {
+        // Initialize search first
+        initializeSearch();
+
         // Dropdown menus
         const userMenuButton = document.getElementById('user-menu-button');
         const userMenu = document.getElementById('user-menu');

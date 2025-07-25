@@ -2,8 +2,8 @@
 /* */
 /* FILE: assets/js/auth.js (REVISED AND FINAL)                                       */
 /* */
-/* PURPOSE: This file's ONLY job is to handle authentication logic. It IMPORTS       */
-/* the 'auth' service from firebase-config.js. It no longer redeclares anything.     */
+/* PURPOSE: This file handles authentication logic and now includes a check for      */
+/* terms and conditions acceptance after login.                                      */
 /* */
 /* ================================================================================= */
 import { 
@@ -15,134 +15,126 @@ import {
     signOut, 
     onAuthStateChanged 
 } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-// CRITICAL FIX: Import the 'auth' object from our single source of truth.
-import { auth } from './firebase-config.js';
+// CRITICAL FIX: Import the 'auth' and 'db' objects from our single source of truth.
+import { auth, db } from './firebase-config.js';
+
+
+// --- Helper function to check terms acceptance ---
+const checkTermsAndRedirect = async (user) => {
+    if (!user || user.isAnonymous) {
+        // For anonymous users, or if no user, go straight to dashboard.
+        // Or, you might decide anonymous users also need to see a version of terms.
+        // For now, we bypass for them.
+        window.location.href = './modules/dashboard.html';
+        return;
+    }
+
+    const userDocRef = doc(db, "users", user.uid);
+    const userDoc = await getDoc(userDocRef);
+
+    if (userDoc.exists() && userDoc.data().termsAccepted === true) {
+        // User has accepted terms, proceed to dashboard
+        window.location.href = './modules/dashboard.html';
+    } else {
+        // User has not accepted terms, redirect to terms page
+        window.location.href = './terms.html';
+    }
+};
+
 
 // --- This function runs on every page that includes this script ---
 const handleAuthProtection = () => {
-    // ** NEW **: A flag to ensure we only send the ready signal once.
     let firebaseReadyDispatched = false;
 
     onAuthStateChanged(auth, (user) => {
         const isProtectedPage = !!document.getElementById('app-container');
+        const isLoginPage = !!document.querySelector('.login-container');
         
         if (user) {
             // User is logged in.
-            if (isProtectedPage) {
+            if (isLoginPage) {
+                 // If user is on login page but already logged in, check terms and redirect
+                checkTermsAndRedirect(user);
+            } else if (isProtectedPage) {
                 const container = document.getElementById('app-container');
                 if(container) container.style.visibility = 'visible';
                 
                 const userEmailElement = document.getElementById('user-email');
-                if (userEmailElement) {
-                    userEmailElement.textContent = user.isAnonymous ? 'Guest User' : user.email;
+                if(userEmailElement) userEmailElement.textContent = user.email || 'Guest';
+
+                if (!firebaseReadyDispatched) {
+                    document.dispatchEvent(new CustomEvent('firebase-ready', { detail: { user } }));
+                    firebaseReadyDispatched = true;
                 }
             }
         } else {
-            // User is NOT logged in.
+            // User is not logged in.
             if (isProtectedPage) {
-                window.location.replace('../login.html'); 
+                // If on a protected page and not logged in, redirect to login
+                window.location.href = '../login.html';
             }
-        }
-
-        // ** NEW **: After the first auth check (whether user is logged in or not),
-        // we signal that Firebase auth is ready for other scripts to use.
-        if (!firebaseReadyDispatched) {
-            document.dispatchEvent(new CustomEvent('firebase-ready'));
-            firebaseReadyDispatched = true;
-            console.log('Auth state checked. "firebase-ready" event dispatched.');
         }
     });
 };
 
-// Run the protection logic on every page load.
-handleAuthProtection();
-
 // --- This logic ONLY runs on the login page ---
-if (document.getElementById('auth-form')) {
-    const authForm = document.getElementById('auth-form');
-    const formToggleLink = document.getElementById('form-toggle-link');
-    const submitButton = document.getElementById('submit-button');
-    const googleSignInBtn = document.getElementById('google-signin-btn');
-    const anonymousSignInBtn = document.getElementById('anonymous-signin-btn');
-    const messageBox = document.getElementById('message-box');
-    let isSignUp = false;
+if (document.querySelector('.login-container')) {
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const signInBtn = document.getElementById('sign-in-btn');
+    const signUpBtn = document.getElementById('sign-up-btn');
+    const googleSignInBtn = document.getElementById('google-sign-in-btn');
+    const anonymousSignInBtn = document.getElementById('anonymous-sign-in-btn');
+    const messageDiv = document.getElementById('message');
 
     const showMessage = (message, isError = false) => {
-        messageBox.textContent = message;
-        messageBox.className = `p-3 text-center text-sm rounded-lg ${isError ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`;
-        messageBox.classList.remove('hidden');
+        messageDiv.textContent = message;
+        messageDiv.className = isError ? 'error' : 'success';
     };
 
     const setButtonsDisabled = (disabled) => {
-        submitButton.disabled = disabled;
+        signInBtn.disabled = disabled;
+        signUpBtn.disabled = disabled;
         googleSignInBtn.disabled = disabled;
         anonymousSignInBtn.disabled = disabled;
     };
 
-    formToggleLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        isSignUp = !isSignUp;
-        document.getElementById('confirm-password-container').classList.toggle('hidden', !isSignUp);
-        document.getElementById('form-title').textContent = isSignUp ? 'Create a New Account' : 'Login to Your Digital Homestead';
-        submitButton.textContent = isSignUp ? 'Sign Up' : 'Sign In';
-        formToggleLink.textContent = isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up";
-        messageBox.classList.add('hidden');
+    const handleAuthAction = (authPromise) => {
+        showMessage('Please wait...');
+        setButtonsDisabled(true);
+        authPromise
+            .then(userCredential => {
+                // On successful login/signup, check terms
+                checkTermsAndRedirect(userCredential.user);
+            })
+            .catch(error => {
+                showMessage(error.message, true);
+                setButtonsDisabled(false);
+            });
+    };
+
+    signInBtn.addEventListener('click', () => {
+        const email = emailInput.value;
+        const password = passwordInput.value;
+        if (!email || !password) return showMessage('Please enter email and password.', true);
+        handleAuthAction(signInWithEmailAndPassword(auth, email, password));
     });
 
-    authForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const email = authForm['email'].value;
-        const password = authForm['password'].value;
-        const message = isSignUp ? 'Creating account...' : 'Signing in...';
-        showMessage(message);
-        setButtonsDisabled(true);
-
-        const redirectUrl = './modules/dashboard.html';
-
-        if (isSignUp) {
-            const confirmPassword = authForm['confirm-password'].value;
-            if (password !== confirmPassword) {
-                showMessage("Passwords do not match.", true);
-                setButtonsDisabled(false);
-                return;
-            }
-            createUserWithEmailAndPassword(auth, email, password)
-                .then(() => { window.location.href = redirectUrl; })
-                .catch(error => {
-                    showMessage(error.message, true);
-                    setButtonsDisabled(false);
-                });
-        } else {
-            signInWithEmailAndPassword(auth, email, password)
-                .then(() => { window.location.href = redirectUrl; })
-                .catch(error => {
-                    showMessage(error.message, true);
-                    setButtonsDisabled(false);
-                });
-        }
+    signUpBtn.addEventListener('click', () => {
+        const email = emailInput.value;
+        const password = passwordInput.value;
+        if (!email || !password) return showMessage('Please enter email and password.', true);
+        handleAuthAction(createUserWithEmailAndPassword(auth, email, password));
     });
 
     googleSignInBtn.addEventListener('click', () => {
-        showMessage('Connecting to Google...');
-        setButtonsDisabled(true);
-        signInWithPopup(auth, new GoogleAuthProvider())
-            .then(() => { window.location.href = './modules/dashboard.html'; })
-            .catch(error => {
-                showMessage(error.message, true);
-                setButtonsDisabled(false);
-            });
+        handleAuthAction(signInWithPopup(auth, new GoogleAuthProvider()));
     });
 
     anonymousSignInBtn.addEventListener('click', () => {
-        showMessage('Signing in as guest...');
-        setButtonsDisabled(true);
-        signInAnonymously(auth)
-            .then(() => { window.location.href = './modules/dashboard.html'; })
-            .catch(error => {
-                showMessage(error.message, true);
-                setButtonsDisabled(false);
-            });
+       handleAuthAction(signInAnonymously(auth));
     });
 }
 
@@ -152,3 +144,7 @@ if (document.getElementById('logout-button')) {
         signOut(auth).catch(error => console.error('Logout error:', error));
     });
 }
+
+// --- Run auth protection on script load ---
+handleAuthProtection();
+

@@ -154,6 +154,77 @@ main {
     @apply flex items-center justify-center h-full min-h-[400px];
 }
 
+/* Enhanced dropdown styling */
+.dropdown-menu {
+    transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+    transform-origin: top right;
+}
+
+.dropdown-menu.hidden {
+    opacity: 0;
+    transform: scale(0.95);
+    pointer-events: none;
+}
+
+.dropdown-menu:not(.hidden) {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Theme and language menu improvements */
+#theme-menu, #language-menu {
+    min-width: 200px;
+}
+
+#language-menu {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Smooth theme transitions */
+* {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Button hover effects */
+#theme-btn:hover, #language-btn:hover, #user-menu-button:hover {
+    transform: translateY(-1px);
+}
+
+/* Active theme indicator */
+.theme-option.active {
+    background-color: rgb(99 102 241 / 0.1);
+    color: rgb(99 102 241);
+}
+
+/* Language option styling */
+.language-option {
+    border-radius: 0.375rem;
+    margin: 0.125rem 0.5rem;
+}
+
+.language-option:hover {
+    transform: translateX(4px);
+}
+
+/* User avatar improvements */
+#user-avatar {
+    transition: transform 0.2s ease;
+}
+
+#user-avatar:hover {
+    transform: scale(1.05);
+}
+
+/* Mobile responsive improvements */
+@media (max-width: 768px) {
+    #theme-menu, #language-menu, #user-menu {
+        left: auto;
+        right: 0;
+        min-width: 180px;
+    }
+}
+
 /* Debugging command for Edge DevTools */
 [
     {

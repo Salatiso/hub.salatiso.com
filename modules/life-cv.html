@@ -67,7 +67,7 @@
                                     </div>
                                 </div>
                             </label>
-                            <input type="file" id="file-import-input" class="hidden" accept=".pdf,.doc,.docx,.txt">
+                            <input type="file" id="file-import-input" class="hidden" accept=".txt">
                         </div>
                     </div>
 
@@ -123,6 +123,9 @@
 
     <!-- Page-specific script (if needed) -->
     <script type="module" src="../assets/js/modules/life-cv.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
 
     <script>
         async function handleAiFileImport(event) {
@@ -205,9 +208,9 @@
                 Please return only valid JSON without any markdown formatting.`;
 
                 // You need to add your actual Gemini API key here
-                const apiKey = "YOUR_GEMINI_API_KEY_HERE"; // Replace with your actual API key
+                const apiKey = "AIzaSyCNvLRXRvgaHygRa2v_3IrhCsL1PmT05Wk"; // Replace with your actual API key
                 
-                if (!apiKey || apiKey === "YOUR_GEMINI_API_KEY_HERE") {
+                if (!apiKey || apiKey === "AIzaSyCNvLRXRvgaHygRa2v_3IrhCsL1PmT05Wk") {
                     throw new Error('API key not configured. Please add your Gemini API key.');
                 }
 

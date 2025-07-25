@@ -103,7 +103,7 @@ function setupDataListeners() {
     };
 
     Object.entries(collections).forEach(([cacheKey, collectionName]) => {
-        const q = query(collection(db, `users/${businessId}/hr/${collectionName}`), orderBy('createdAt', 'desc'));
+        const q = query(collection(db, `users/${businessId}/${collectionName}`), orderBy('createdAt', 'desc'));
         const unsub = onSnapshot(q, (snapshot) => {
             const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             caches[cacheKey](data);
@@ -1390,7 +1390,7 @@ async function handleFormSubmission(form) {
     }
 
     try {
-        const collectionRef = collection(db, `users/${businessId}/hr/${collectionName}`);
+        const collectionRef = collection(db, `users/${businessId}/${collectionName}`);
         if (docId) { // Update existing document
             await setDoc(doc(collectionRef, docId), data, { merge: true });
             showNotification('Record updated successfully!', 'success');

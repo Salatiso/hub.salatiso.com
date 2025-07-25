@@ -1,236 +1,227 @@
-export const translations = {
-    xh: {
-        // --- General & Common Terms ---
-        "common_loading": "Ukuchithwa...",
-        "common_error": "Kwenzeke impazamo. Nceda zama kwakhona.",
-        "common_save": "Gcina",
-        "common_cancel": "Rhoxisa",
-        "common_delete": "Cima",
-        "common_confirm": "Qinisekisa",
-        "common_download_pdf": "Khuphela i-PDF",
-        "common_new": "Entsha",
-        "common_edit": "Hlela",
-        "common_success": "Umsebenzi uphumelele",
-        "common_error_required_field": "Le ndawo iyafuneka",
-        "common_error_invalid_format": "Ifomathi ayilunganga",
+// File: /assets/js/translations/xh.js
+// Description: Xhosa translation strings for The Hub.
 
-        // --- Authentication Page ---
-        "auth_sign_in_title": "Ngena kwi-The Hub",
-        "auth_sign_up_title": "Dala i-Akhawunti Yakho",
-        "auth_email_label": "Idilesi ye-imeyile",
-        "auth_password_label": "Igama lokugqithisa",
-        "auth_confirm_password_label": "Qinisekisa Igama lokugqithisa",
-        "auth_sign_in_button": "Ngena",
-        "auth_sign_up_button": "Bhalisa",
-        "auth_toggle_to_signup": "Awunayo i-akhawunti? Bhalisa",
-        "auth_toggle_to_signin": "Sele unayo i-akhawunti? Ngena",
-        "auth_google_signin": "Ngena nge-Google",
-        "auth_anonymous_signin": "Qhubeka njenge-Guest",
-        "auth_error_invalid_credentials": "Iinkcukacha ezingasebenziyo. Nceda jonga i-imeyile yakho negama lokugqithisa.",
-        "auth_error_email_in_use": "I-akhawunti enale imeyile sele ikhona.",
-        "auth_error_password_mismatch": "Amagama okugqithisa awahambelani",
-
-        // --- Header Component ---
-        "header_ecosystem_menu": "I-Ecosystem",
-        "header_theme_switcher": "Tshintsha i-Theme",
-        "header_language_switcher": "Ulwimi",
-        "header_user_menu_profile": "Iprofayili Yam",
-        "header_user_menu_activity": "Umsebenzi Wami",
-        "header_user_menu_settings": "Iisethingi",
-        "header_user_menu_logout": "Phuma",
-
-        // --- Sidebar Component ---
-        "sidebar_overview": "Isishwankathelo",
-        "sidebar_lifecv": "i-Life-CV",
-        "sidebar_finhelp": "FinHelp",
-        "sidebar_familyhub": "FamilyHub",
-        "sidebar_commshub": "CommsHub",
-        "sidebar_training": "Uqeqesho",
-        "sidebar_publications": "Ushicilelo",
-        "sidebar_public_pages": "Amaphepha Oluntu",
-        "sidebar_lifesync": "LifeSync",
-        "sidebar_activity": "Umsebenzi",
-
-        // --- Footer Component ---
-        "footer_copyright": "© 2025 Salatiso Ecosystem",
-
-        // --- Dashboard Welcome ---
-        "welcome_back": "Wamkelekile kwakhona",
-        "welcome_message": "Hlola izixhobo zakho ze-ecosystem kwaye ulawule uhambo lwakho.",
-
-        // --- Overview Page ---
-        "page_overview_title": "Isishwankathelo se-Dashboard",
-        "page_overview_subtitle": "Nantsi isishwankathelo se-ecosystem yakho.",
-        "card_lifecv_title": "i-Life-CV",
-        "card_lifecv_desc": "Ipotifoliyo yakho eguqukayo, ephilayo. Ikhula njengoko ubandakanyeka kwi-ecosystem, ibamba izakhono zakho namava ngokuzenzekelayo.",
-        "card_lifecv_button": "Jonga i-Life-CV Yam",
-        "card_finhelp_title": "FinHelp",
-        "card_finhelp_desc": "Lawula umhlaba wakho wezemali. Lawula ii-asethi, landela iindleko, kwaye ulungiselele ikamva lakho lezemali ngokuzithemba.",
-        "card_finhelp_button": "Yiya kwi-FinHelp",
-        "card_familyhub_title": "FamilyHub",
-        "card_familyhub_desc": "Indawo esembindini yosapho lwakho lwezinto ezixabisekileyo, iinjongo, kunye nolwazi olubalulekileyo. Yomeleza ubudlelwane bosapho lwakho kwaye wakhe ilifa.",
-        "card_familyhub_button": "Vula i-FamilyHub",
-        "card_commshub_title": "CommsHub",
-        "card_commshub_desc": "Hlala unxibelelwano noluntu lwakho ngezixhobo zonxibelelwano ezingenamthungo.",
-        "card_commshub_button": "Yiya kwi-CommsHub",
-        "card_lifesync_title": "LifeSync",
-        "card_lifesync_desc": "Vumelanisa iinjongo zakho zobomi kunye nemisebenzi kwi-ecosystem.",
-        "card_lifesync_button": "Yiya kwi-LifeSync",
-
-        // --- Profile Page ---
-        "page_profile_title": "Iprofayili Yam",
-        "page_profile_subtitle": "Lawula ulwazi lwakho lobuqu lwe-The Hub.",
-        "form_profile_name_label": "Igama Elipheleleyo",
-        "form_profile_email_label": "Idilesi ye-imeyile",
-        "form_profile_email_note": "I-imeyile ayinakutshintshwa.",
-        "form_profile_save_button": "Gcina iProfayili",
-        "profile_save_success": "Iprofayili ihlaziywe ngempumelelo",
-        "profile_save_error": "Ayiphumelelanga ukuhlaziya iprofayili",
-
-        // --- Life-CV Module ---
-        "page_lifecv_title": "i-Life-CV",
-        "page_lifecv_subtitle": "Ipotifoliyo yakho eguqukayo yezakhono namava.",
-        "section_lifecv_summary": "Isishwankathelo Sobuqu",
-        "section_lifecv_skills": "Izakhono eziSisiseko",
-        "section_lifecv_experience": "Amava",
-        "section_lifecv_education": "Imfundo",
-        "section_lifecv_portfolio": "Ipotifoliyo",
-        "section_lifecv_contributions": "Igalelo",
-        "lifecv_add_entry_button": "Yongeza iNgeniso",
-        "lifecv_entry_type_label": "Uhlobo lweNgeniso",
-        "lifecv_entry_title_label": "Isihloko",
-        "lifecv_entry_description_label": "Inkcazo",
-        "lifecv_entry_date_label": "Umhla",
-        "lifecv_entry_tags_label": "Iithegi",
-        "lifecv_generate_pdf_button": "Khuphela i-PDF",
-        "lifecv_share_profile_button": "Yabelana ngeProfayili",
-        "lifecv_add_entry_success": "Ingeniso yongezwe ngempumelelo",
-        "lifecv_add_entry_error": "Ayiphumelelanga ukongeza ingeniso",
-        "lifecv_delete_entry_confirm": "Uqinisekile ukuba ufuna ukucima le ngeniso?",
-
-        // --- Activity Page ---
-        "page_activity_title": "Ilogi yoMsebenzi we-Ecosystem",
-        "activity_filter_label": "Hluza ngeModyuli",
-        "activity_date_label": "Umhla",
-        "activity_description_label": "Inkcazo",
-
-        // --- FinHelp Module ---
-        "page_finhelp_title": "FinHelp",
-        "page_finhelp_subtitle": "Lawula ubomi bakho bezezimali ngokuzithemba.",
-        "finhelp_assets_title": "Ii-asethi",
-        "finhelp_assets_add_button": "Yongeza i-Asethi",
-        "finhelp_assets_type_label": "Uhlobo lwe-Asethi",
-        "finhelp_assets_name_label": "Igama",
-        "finhelp_assets_value_label": "Ixabiso langoku",
-        "finhelp_assets_is_public_label": "Yenza i-Public",
-        "finhelp_assets_table_type": "Uhlobo",
-        "finhelp_assets_table_name": "Igama",
-        "finhelp_assets_table_value": "Ixabiso",
-        "finhelp_assets_table_public": "I-Public",
-        "finhelp_assets_edit_button": "Hlela",
-        "finhelp_assets_delete_button": "Cima",
-        "finhelp_assets_delete_confirm": "Uqinisekile ukuba ufuna ukucima le asethi?",
-        "finhelp_assets_add_success": "I-asethi yongezwe ngempumelelo",
-        "finhelp_assets_add_error": "Ayiphumelelanga ukongeza i-asethi",
-        // ... (remaining FinHelp terms to be translated similarly)
-
-        // --- FamilyHub Module ---
-        "page_familyhub_title": "FamilyHub",
-        "page_familyhub_subtitle": "Cwangcisa kwaye womeleze usapho lwakho.",
-        "familyhub_create_family_button": "Dala uSapho",
-        "familyhub_family_name_label": "Igama loSapho",
-        "familyhub_family_values_label": "Iimfundiso zoSapho",
-        "familyhub_invite_members_label": "Mema amaLungu",
-        "familyhub_roles_admin": "Umlawuli",
-        "familyhub_roles_chairperson": "Usihlalo",
-        "familyhub_roles_executive": "Isigqeba",
-        "familyhub_roles_guardian": "Umgcini",
-        "familyhub_roles_member": "Ilungu",
-        // ... (remaining FamilyHub terms to be translated similarly)
-
-        // --- CommsHub Module ---
-        "page_commshub_title": "CommsHub",
-        "page_commshub_subtitle": "Hlala unxibelelwano noluntu lwakho.",
-        // ... (remaining CommsHub terms to be translated similarly)
-
-        // --- Training Module ---
-        "page_training_title": "Uqeqesho",
-        "page_training_subtitle": "Fikelela kwaye ulawule izixhobo zoqeqesho.",
-        // ... (remaining Training terms to be translated similarly)
-
-        // --- Publications Module ---
-        "page_publications_title": "Ushicilelo",
-        "page_publications_subtitle": "Lawula ushicilelo lwakho.",
-        // ... (remaining Publications terms to be translated similarly)
-
-        // --- Public Pages Module ---
-        "page_public_pages_title": "Amaphepha Oluntu",
-        "page_public_pages_subtitle": "Dala kwaye ulawule amaphepha ajongene noluntu.",
-        // ... (remaining Public Pages terms to be translated similarly)
-
-        // --- LifeSync Module ---
-        "page_lifesync_title": "LifeSync",
-        "page_lifesync_subtitle": "Vumelanisa iinjongo zakho zobomi kunye nemisebenzi.",
-        // ... (remaining LifeSync terms to be translated similarly)
-
-        // --- SafetyHelp Module ---
-        "page_safetyhelp_title": "SafetyHelp",
-        "page_safetyhelp_subAmaphepha Oluntu",
-        "page_public_pages_subtitle": "Dala kwaye ulawule amaphepha ajongene noluntu.",
-        // ... (remaining Public Pages terms to be translated similarly)
-
-        // --- LifeSync Module ---
-        "page_lifesync_title": "LifeSync",
-        "page_lifesync_subtitle": "Vumelanisa iinjongo zakho zobomi kunye nemisebenzi.",
-        // ... (remaining LifeSync terms to be translated similarly)
-
-        // --- SafetyHelp Module ---
-        "page_safetyhelp_title": "SafetyHelp",
-        "page_safetyhelp_subtitle": "Fikelela izixhobo zokhuseleko kunye nezixhobo.",
-        // ... (remaining SafetyHelp terms to be translated similarly)
-
-        // --- LegalHelp Module ---
-        "page_legalhelp_title": "LegalHelp",
-        "page_legalhelp_subtitle": "Lawula amaxwebhu omthetho kunye nezicelo.",
-        // ... (remaining LegalHelp terms to be translated similarly)
-
-        // --- HRHelp Module ---
-        "page_hrhelp_title": "HRHelp",
-        "page_hrhelp_subtitle": "Lawula imisebenzi enxulumene ne-HR kunye neerekhodi.",
-        // ... (remaining HRHelp terms to be translated similarly)
-
-        // --- DocuHelp Module ---
-        "page_docuhelp_title": "DocuHelp",
-        "page_docuhelp_subtitle": "Cwangcisa kwaye ulawule amaxwebhu akho.",
-        // ... (remaining DocuHelp terms to be translated similarly)
-
-        // --- eKhaya Module ---
-        "page_ekhaya_title": "eKhaya",
-        "page_ekhaya_subtitle": "Lawula uluhlu lweepropati zakho.",
-        // ... (remaining eKhaya terms to be translated similarly)
-
-        // --- Flamea Module ---
-        "page_flamea_title": "Flamea",
-        "page_flamea_subtitle": "Bandakanya kwiinzame zoluntu.",
-        // ... (remaining Flamea terms to be translated similarly)
-
-        // --- FamilyValue Module ---
-        "page_familyvalue_title": "FamilyValue",
-        "page_familyvalue_subtitle": "Lawula ulawulo losapho kunye negalelo.",
-        // ... (remaining FamilyValue terms to be translated similarly)
-
-        // --- Ecosystem Links ---
-        "ecosystem_safetyhelp": "SafetyHelp",
-        "ecosystem_legalhelp": "LegalHelp",
-        "ecosystem_finhelp": "FinHelp",
-        "ecosystem_hrhelp": "HRHelp",
-        "ecosystem_docuhelp": "DocuHelp",
-        "ecosystem_sazilife": "sazi.life",
-        "ecosystem_ekhaya": "eKhaya",
-        "ecosystem_flamea": "Flamea",
-        "ecosystem_familyvalue": "FamilyValue",
-        "ecosystem_lifesync": "LifeSync",
-
-        // For remaining terms, use online resources like Glosbe (https://glosbe.com/en/xh) to find translations, ensuring context-appropriateness.
-    }
+export default {
+    // App
+    'app_title': 'The Hub',
+    
+    // Navigation
+    'nav_dashboard': 'Ideshibhodi',
+    'nav_lifecv': 'LifeCV',
+    'nav_family': 'Ihabhu Yosapho',
+    'nav_finhelp': 'FinHelp',
+    'nav_hrhelp': 'HRHelp',
+    'nav_legalhelp': 'LegalHelp',
+    'nav_docuhelp': 'DocuHelp',
+    'nav_commshub': 'CommsHub',
+    'nav_publications': 'Ushicilelo',
+    'nav_training': 'Uqeqesho',
+    'nav_assessment': 'Uvavanyo',
+    'nav_quiz': 'Imibuzo Epheleleyo',
+    
+    // Header
+    'search_placeholder': 'Phendla...',
+    'theme_light': 'Umxholo oKhanyayo',
+    'theme_dark': 'Umxholo oMnyama',
+    'theme_system': 'Inkqubo',
+    'user_profile': 'Iprofayile Yam',
+    'user_signout': 'Phuma',
+    
+    // Footer
+    'footer_copyright': '© 2025 Salatiso. Onke Amalungelo Agciniwe.',
+    
+    // Common
+    'loading': 'Iyalayisha...',
+    'error': 'Impazamo',
+    'success': 'Impumelelo',
+    'cancel': 'Rhoxisa',
+    'save': 'Gcina',
+    'delete': 'Cima',
+    'edit': 'Hlela',
+    'add': 'Yongeza',
+    'close': 'Vala',
+    
+    // Index Page
+    'index_welcome': 'Wamkelekile kwi Hub',
+    'index_subtitle': 'Ikhaya lakho ledijithali, nge Salatiso.',
+    'index_description': 'Indawo ephakathi yazo zonke izixhobo zeSalatiso. Lawula imali yakho, cwangcisa usapho lwakho, kwaye wakhe iLifeCV yakho ebanzi.',
+    'index_login_signup': 'Ngena / Bhalisa',
+    'index_find_tool': 'Fumana Isixhobo Sakho',
+    'index_explore_hub': 'Jonga i-Hub',
+    'index_our_philosophy': 'Ifilosofi Yethu',
+    'index_philosophy_description': 'Fumana uhambo lwe "Phila, Funda, Khokela" emva kweHub.',
+    'index_find_tool_description': 'Phendula imibuzo embalwa ukufumana isiqalo esifanelekileyo kuwe.',
+    'index_holistic_quiz': 'Imibuzo Epheleleyo',
+    'index_quiz_description': 'Qalisa uhambo lokuzifumanisa kwaye wakhe iLifeCV yakho.',
+    'index_get_in_touch': 'Qhagamshelana Nathi',
+    'index_contact_description': 'Unemibuzo okanye ingxelo? Singathanda ukuva kuwe.',
+    
+    // Login Page
+    'login_title': 'Ngena kwiKhaya Lakho leDijithali',
+    'login_email': 'Idilesi ye-imeyile',
+    'login_password': 'Igama lokugqitha',
+    'login_confirm_password': 'Qinisekisa igama lokugqitha',
+    'login_sign_in': 'Ngena',
+    'login_sign_up': 'Bhalisa',
+    'login_no_account': 'Awunayo iakhawunti? Bhalisa',
+    'login_or_continue_with': 'Okanye qhubeka nge',
+    'login_google': 'Ngena ngeGoogle',
+    'login_guest': 'Qhubeka njengoNdwendwe',
+    'login_ecosystem_access': 'Iakhawunti yakho ikunika ufikelelo kwi-ecosystem epheleleyo:',
+    'login_safetyhelp': 'SafetyHelp',
+    'login_legalhelp': 'LegalHelp',
+    'login_finhelp': 'FinHelp',
+    'login_hrhelp': 'HRHelp',
+    'login_docuhelp': 'DocuHelp',
+    'login_sazi_life': 'sazi.life',
+    'login_ekhaya': 'eKhaya',
+    'login_flamea': 'Flamea',
+    'login_familyvalue': 'FamilyValue',
+    'login_lifesync': 'LifeSync',
+    'login_go_to_hub': 'Yiya kwi Hub',
+    
+    // Quiz
+    'quiz_title': 'Imibuzo Yokuzifumanisa Epheleleyo',
+    'quiz_description': 'Phendula le mibuzo ukuze ufumane ukuqonda malunga nokuthambekela kwakho kobuqu nobomsebenzi.',
+    'quiz_start': 'Qala Imibuzo',
+    'quiz_complete': 'Imibuzo Igqityiwe!',
+    'quiz_results_saved': 'Iziphumo zakho zigcinwe kwiprofayile yakho.',
+    'quiz_retake': 'Phinda Imibuzo',
+    
+    // Assessment
+    'assessment_primary_goal': 'Yeyiphi eyona njongo yakho iphambili namhlanje?',
+    'assessment_organize_personal_family': 'Ukucwangcisa ubomi bam kunye nosapho',
+    'assessment_manage_finances_business': 'Ukulawula imali yam okanye ishishini',
+    'assessment_build_profile_skills': 'Ukwakha iprofayile yam yobungcali nezakhono',
+    'assessment_handle_legal_document': 'Ukuphatha uxwebhu olusemthethweni',
+    'assessment_family_attention': 'Nguwuphi umba wobomi bosapho ofuna ingqwalasela kakhulu?',
+    'assessment_connect_partner': 'Ukudibana neqabane lam kwinqanaba elinzulu',
+    'assessment_create_parenting_plan': 'Ukwenza isicwangciso esisemthethweni sokuba ngumzali',
+    'assessment_organize_family_structure': 'Ukucwangcisa ulwakhiwo losapho lwethu namalungu',
+    'assessment_finances_focus': 'Ngaba ugxile kwimali yobuqu okanye yeshishini?',
+    'assessment_personal_budgeting': 'Eyobuqu: Ukwenza uhlahlo lwabiwo-mali nokulandelela iindleko',
+    'assessment_business_invoicing': 'Eyeshishini: Ukwenza ii-invoyisi kubathengi nokulandelela amatyala',
+    'assessment_both_holistic': 'Zombini: Ndifuna umbono opheleleyo',
+    'assessment_professional_objective': 'Yeyiphi eyona njongo yakho yobungcali?',
+    'assessment_create_cv': 'Ukwenza iCV ebanzi yazo zonke izakhono zam',
+    'assessment_plan_development': 'Ukucwangcisa uphuhliso lwam kunye neenjongo',
+    'assessment_learn_skills': 'Ukufunda izakhono ezitsha ngezifundo ze-intanethi',
+    'assessment_assistance_needed': 'Loluphi uhlobo loncedo olufunayo?',
+    'assessment_generate_document': 'Kufuneka ndenze uxwebhu olusemthethweni njenge-affidavit',
+    'assessment_track_legal_case': 'Kufuneka ndilandelele iziganeko zetyala lasemthethweni',
+    'assessment_create_parenting_plan': 'Kufuneka ndenze isicwangciso sokuba ngumzali esinobulungisa',
+    'assessment_recommendation': 'Sicebisa ukuba uqale nge:',
+    'assessment_start_over': 'Qala Phantsi',
+    
+    // Quiz Database (Level 1 - Foundations of Self)
+    'quiz_level_1_title': 'Iziseko Zobuqu',
+    'quiz_level_1_description': 'Ukuqonda isimbo sakho kunye nezinto ozikhethayo.',
+    'quiz_category_personal_style': 'Isimbo soBuqu',
+    'quiz_q1': 'Xa ndijongene nengxaki entsonkothileyo, ndikhetha uku:',
+    'quiz_q1_a1': 'Hlalutya idatha kunye neenyani',
+    'quiz_q1_a2': 'Cinga ngezisombululo zobuchule',
+    'quiz_q1_a3': 'Cwangcisa isicwangciso senyathelo ngenyathelo',
+    'quiz_q1_a4': 'Sebenzisana neqela',
+    'quiz_q2': 'Indawo yam yokusebenza efanelekileyo yile:',
+    'quiz_q2_a1': 'Ecwangcisiweyo nekulindelekileyo',
+    'quiz_q2_a2': 'Enamandla nesheshayo',
+    'quiz_q2_a3': 'Ezolileyo neyokuzimela',
+    'quiz_q2_a4': 'Eyentlalo nentsebenziswano',
+    'quiz_q3': 'Ndiziva ndanelisekile kakhulu xa:',
+    'quiz_q3_a1': 'Ndifikelela usukelo olunzima, olunokulinganiswa',
+    'quiz_q3_a2': 'Ndenza into entsha neyoqobo',
+    'quiz_q3_a3': 'Ndizisa ucwangco kwimeko enesiphithiphithi',
+    'quiz_q3_a4': 'Ndinceda kwaye ndixhasa abanye',
+    'quiz_q4': 'Ndifunda kakuhle ngoku:',
+    'quiz_q4_a1': 'Funda kwaye ndifundisise ndedwa',
+    'quiz_q4_a2': 'Yenza kwaye ndilinge',
+    'quiz_q4_a3': 'Mamela ingcali',
+    'quiz_q4_a4': 'Xoxa nabanye',
+    'quiz_q5': 'Xa ndisenza isigqibo, ndithembele kakhulu kwi:',
+    'quiz_q5_a1': 'Ingqiqo nesizathu',
+    'quiz_q5_a2': 'Intuition kunye nemvakalelo yamathumbu',
+    'quiz_q5_a3': 'Amava adlulileyo',
+    'quiz_q5_a4': 'Ingcebiso evela kubantu abathembekileyo',
+    'quiz_category_financial_habits': 'Imikhwa yezeMali (Iziseko)',
+    'quiz_q6': 'Xa ndifumana imali, into yokuqala endiyicingayo kuku:',
+    'quiz_q6_a1': 'Gcina inxalenye yayo',
+    'quiz_q6_a2': 'Yisebenzisele into endiyifunayo',
+    'quiz_q6_a3': 'Hlawula amatyala',
+    'quiz_q6_a4': 'Yenzela uhlahlo lwabiwo-mali',
+    'quiz_q7': 'Imvakalelo yam malunga nomngcipheko wezemali yile:',
+    'quiz_q7_a1': 'Kuphephe ngazo zonke iindleko',
+    'quiz_q7_a2': 'Ukuzimisela ukuthatha umngcipheko obaliweyo wenzuzo enokubakho',
+    'quiz_q7_a3': 'Ndonwabela iimeko ezinomngcipheko omkhulu, nomvuzo omkhulu',
+    'quiz_q7_a4': 'Andicingi kakhulu ngayo',
+    'quiz_q8': 'Uhlahlo lwabiwo-mali luvakala ngathi:',
+    'quiz_q8_a1': 'Isithintelo kwinkululeko yam',
+    'quiz_q8_a2': 'Imephu yendlela eya kwiinjongo zam zemali',
+    'quiz_q8_a3': 'Umsebenzi oyimfuneko kodwa odinisayo',
+    'quiz_q8_a4': 'Into endingazange ndiyizame',
+    'quiz_q9': 'Xa kufikwa ekongeni, ndi:',
+    'quiz_q9_a1': 'Ngqinelana kakhulu',
+    'quiz_q9_a2': 'Ndilungile ngamanye amaxesha',
+    'quiz_q9_a3': 'Ndiyatsala nzima ukungqinelana',
+    'quiz_q9_a4': 'Okwangoku andongi',
+    'quiz_q10': 'Ucwangciso lwezemali lwexesha elide (umz. umhlalaphantsi) yinto endi:',
+    'quiz_q10_a1': 'Ndinayo isicwangciso esicacileyo sayo',
+    'quiz_q10_a2': 'Ndicinga ngayo kodwa andikaqali',
+    'quiz_q10_a3': 'Ndiyifumana isoyikisa',
+    'quiz_q10_a4': 'Ndikholelwa ukuba kusekude kakhulu ukuba ndikhathazeke ngayo',
+    
+    // Quiz Database (Level 2 - Building Your Homestead)
+    'quiz_level_2_title': 'Ukwakha Ikhaya Lakho',
+    'quiz_level_2_description': 'Ukuhlola indlela olawula ngayo ubutyebi bakho kunye nobudlelwane.',
+    'quiz_category_career_skills': 'Umsebenzi Nezakhono',
+    'quiz_q11': 'Ndibona umsebenzi wam ikakhulu njenge:',
+    'quiz_q11_a1': 'Umthombo wengeniso',
+    'quiz_q11_a2': 'Indlela yokukhula komntu kunye nokufunda',
+    'quiz_q11_a3': 'Indlela yokwenza impembelelo kwihlabathi',
+    'quiz_q11_a4': 'Uluhlu lweeprojekthi ezinomdla',
+    'quiz_q12': 'Xa ndifunda isakhono esitsha somsebenzi, ndikhuthazwa kakhulu yi:',
+    'quiz_q12_a1': 'Amathuba omvuzo ophezulu',
+    'quiz_q12_a2': 'Umceli mngeni wokwazi into entsha',
+    'quiz_q12_a3': 'Indlela enceda ngayo iqela lam okanye inkampani iphumelele',
+    'quiz_q12_a4': 'Ukusetyenziswa kwayo kwiiprojekthi zam zobuqu',
+    'quiz_q13': 'Inxalenye ebaluleke kakhulu yeLifeCV yam yile:',
+    'quiz_q13_a1': 'Iimfuno ezisesikweni nemfundo',
+    'quiz_q13_a2': 'Ingxelo yamava obungcali',
+    'quiz_q13_a3': 'Ipotifoliyo yeeprojekthi ezigqityiweyo',
+    'quiz_q13_a4': 'Uluhlu lwezakhono ezisebenzayo',
+    'quiz_q14': 'Ingxelo ngomsebenzi wam yinto endi:',
+    'quiz_q14_a1': 'Ndiyifuna ngenkuthalo ukuphucula',
+    'quiz_q14_a2': 'Ndiyayixabisa xa inikwe ngendlela eyakhayo',
+    'quiz_q14_a3': 'Ngamanye amaxesha ndiyifumana kunzima ukuyiva',
+    'quiz_q14_a4': 'Kunqabile ukuba ndiyifumane',
+    'quiz_q15': 'Inethiwekhi yam yobungcali yile:',
+    'quiz_q15_a1': 'Inkulu kwaye igcinwa ngenkuthalo',
+    'quiz_q15_a2': 'Ncinci kodwa yomelele',
+    'quiz_q15_a3': 'Into ekufuneka ndisebenze kuyo',
+    'quiz_q15_a4': 'Ikakhulu kwi-intanethi',
+    'quiz_category_family_relationships': 'Usapho Nobudlelwane',
+    'quiz_q16': 'Kwisakhiwo sosapho, eyona nto ibalulekileyo yile:',
+    'quiz_q16_a1': 'Ukunyaniseka',
+    'quiz_q16_a2': 'Inyaniso',
+    'quiz_q16_a3': 'Ukuzimela',
+    'quiz_q16_a4': 'Inkxaso efanayo',
+    'quiz_q17': 'Xa kuvela ungquzulwano neqabane, inyathelo lam lokuqala kuku:',
+    'quiz_q17_a1': 'Thatha ixesha lokucinga',
+    'quiz_q17_a2': 'Thetha ngayo kwangoko',
+    'quiz_q17_a3': 'Zama ukufumana isisombululo esikhawulezayo',
+    'quiz_q17_a4': 'Cela icebiso kumhlobo othembekileyo',
+    'quiz_q18': 'Indima yam kusapho ihlala i:',
+    'quiz_q18_a1': 'Umbhoneleli',
+    'quiz_q18_a2': 'Umnakekeli',
+    'quiz_q18_a3': 'Umcebisi/umcwangcisi',
+    'quiz_q18_a4': 'Umxolelanisi',
+    'quiz_q19': 'Ukwabelana ngolwazi lwezemali neqabane kufanele kube:',
+    'quiz_q19_a1': 'Ngokungafihlisiyo ngokupheleleyo (iincwadi ezivuliweyo)',
+    'quiz_q19_a2': 'Kwabelwana ngesiseko sokufuna ukwazi',
+    'quiz_q19_a3': 'Kugcinwe ngokwahlukileyo ubukhulu becala',
+    'quiz_q19_a4': 'Into ekufuneka kuxoxwe ngayo kwaye kuvunyelwane ngayo',
+    'quiz_q20': 'Usapho oluyimpumelelo lolo:',
+    'quiz_q20_a1': 'Lufumana ukhuseleko lwezemali',
+    'quiz_q20_a2': 'Lonwabile kwaye lunxibelelene ngokweemvakalelo',
+    'quiz_q20_a3': 'Luxhasa izithethe nelifa',
+    'quiz_q20_a4': 'Luxhasa ukukhula komntu ngamnye'
 };

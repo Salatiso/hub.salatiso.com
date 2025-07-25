@@ -3,32 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>familyvalue Poster</title>
+    <title>Family Hub Poster</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@900&family=Manrope:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@900&family=Manrope:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Manrope', sans-serif; }
-        .poster { width: 210mm; height: 297mm; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 3rem; text-align: center; background-color: #5b21b6; color: white; }
-        h1, .font-brand { font-family: 'Roboto Slab', serif; font-weight: 900; }
+        body {
+            font-family: 'Manrope', sans-serif;
+            background-color: #d1d5db;
+        }
+        .poster-container {
+            width: 210mm; /* A4 Width */
+            height: 297mm; /* A4 Height */
+            margin: 2rem auto;
+            background-color: #1f2937; /* Dark Blue-Gray Background */
+            color: white;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        .poster-header {
+            padding: 2rem;
+            text-align: center;
+        }
+        .poster-body {
+            flex-grow: 1;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .poster-footer {
+            padding: 2rem;
+            background-color: rgba(0,0,0,0.2);
+        }
+        .logo-main {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 1rem;
+        }
+        .headline {
+            font-family: 'Roboto Slab', serif;
+            font-weight: 900;
+            font-size: 4.5rem;
+            line-height: 1.1;
+            color: #ffffff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        .subheadline {
+            font-size: 1.5rem;
+            color: #d1d5db;
+            margin-top: 1rem;
+            max-width: 80%;
+        }
+        .features-list {
+            margin-top: 3rem;
+            font-size: 1.1rem;
+        }
+        .features-list i {
+            color: #3b82f6; /* Light Blue */
+        }
+        .editable {
+            background-color: rgba(254, 252, 232, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px dashed #fefce8;
+        }
+         .qr-code-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .qr-code {
+            width: 100px;
+            height: 100px;
+            background: white;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        /* Decorative background element */
+        .poster-container::before {
+            content: '';
+            position: absolute;
+            top: 20%;
+            left: -200px;
+            width: 400px;
+            height: 400px;
+            background: #1e40af;
+            border-radius: 50%;
+            opacity: 0.1;
+            z-index: 0;
+        }
+         @media print {
+            body { background-color: white; }
+            .poster-container {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                box-shadow: none;
+            }
+            .no-print { display: none; }
+        }
     </style>
 </head>
-<body class="bg-gray-200 p-8">
-    <div class="poster mx-auto shadow-2xl">
-        <div class="w-full">
-            <h1 class="text-7xl text-violet-300">The Unseen Work is</h1>
-            <h1 class="text-7xl text-white mt-2">Now the Most Valued.</h1>
+<body>
+    <div class="no-print text-center my-4">
+        <button onclick="window.print()" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow-md hover:bg-blue-700 transition">Print Poster (A4)</button>
+    </div>
+
+    <div class="poster-container">
+        <div class="poster-header">
+            <svg viewBox="0 0 100 100" class="h-16 w-16 mx-auto text-white">
+                <circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="8" fill="none"/>
+                <path d="M50 10 L 50 90 M10 50 L 90 50" stroke="#9ca3af" stroke-width="2"/>
+                <path d="M50 10 L 40 25 L 60 25 Z" fill="currentColor"/>
+            </svg>
+            <p class="font-bold text-xl mt-2">The Hub by Salatiso</p>
         </div>
-        <div class="w-full my-8">
-            <p class="text-3xl text-violet-200">Your family is your first company. Manage it with the respect it deserves. Recognize every contribution, from cooking a meal to building a business.</p>
+
+        <div class="poster-body">
+            <h1 class="text-8xl font-black font-roboto-slab text-blue-400" contenteditable="true">Family Hub</h1>
+            <h2 class="subheadline" contenteditable="true">
+                Organise Your Schedules. Strengthen Your Bonds.
+            </h2>
+            <ul class="features-list text-left space-y-3">
+                <li contenteditable="true"><i class="fas fa-calendar-alt mr-3"></i>Coordinate everyone with a shared family calendar.</li>
+                <li contenteditable="true"><i class="fas fa-tasks mr-3"></i>Manage household chores and family to-do lists.</li>
+                <li contenteditable="true"><i class="fas fa-lock mr-3"></i>Securely store and share important family documents.</li>
+            </ul>
         </div>
-        <div class="w-full">
-            <div class="flex items-center justify-center gap-4">
-                <i class="fas fa-users text-6xl text-violet-300"></i>
-                <p class="text-6xl font-brand">familyvalue</p>
+
+        <div class="poster-footer">
+            <div class="qr-code-container">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://hub.salatiso.com/modules/family-hub.html" alt="QR Code" class="qr-code">
+                <div>
+                    <p class="font-bold text-lg" contenteditable="true">Scan to Connect Your Family</p>
+                    <p class="text-blue-300" contenteditable="true">hub.salatiso.com</p>
+                </div>
             </div>
-            <p class="text-3xl font-bold text-white mt-6">salatiso.com/familyvalue</p>
-            <p class="text-lg text-violet-200 mt-2">Part of The Hub by Salatiso</p>
         </div>
     </div>
+
 </body>
 </html>

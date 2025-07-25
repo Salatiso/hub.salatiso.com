@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ - The Hub by Salatiso</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700;900&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- PDF Generation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --brand-color: #1e40af; /* Deep Blue */
+            --brand-color-light: #3b82f6; /* Lighter Blue */
+            --text-main: #1f2937; /* Dark Gray */
+            --text-light: #6b7280; /* Medium Gray */
+            --bg-main: #f3f4f6; /* Light Gray Background */
+            --bg-page: #ffffff; /* White Page */
+        }
+        body {
+            font-family: 'Manrope', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.7;
+        }
+        .document-page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 1.5rem auto;
+            background-color: var(--bg-page);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 15mm 20mm;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .document-title {
+            font-family: 'Roboto Slab', serif;
+            color: var(--brand-color);
+            font-weight: 900;
+            border-bottom: 4px solid var(--brand-color-light);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        h1, h2, h3, h4 {
+            font-family: 'Roboto Slab', serif;
+            font-weight: 700;
+            color: #111827;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        h1 { font-size: 2.25rem; }
+        h2 { font-size: 1.75rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.25rem; }
+        h3 { font-size: 1.25rem; font-weight: bold; }
+        p { margin-bottom: 1rem; }
+        .editable { background-color: #fefce8; padding: 2px 4px; border-radius: 3px; outline-color: var(--brand-color-light); }
+        .page-num { position: absolute; bottom: 10mm; right: 20mm; font-size: 0.8rem; color: var(--text-light); }
+        .watermark {
+            position: absolute;
+            opacity: 0.05;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 6rem;
+            font-weight: bold;
+            color: var(--brand-color);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .sidebar {
+            position: fixed;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: var(--bg-page);
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 1rem;
+            z-index: 1000;
+        }
+        .sidebar button {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            border-radius: 6px;
+            background-color: #f3f4f6;
+            color: #374151;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: 1px solid #e5e7eb;
+        }
+        .sidebar button:hover { background-color: var(--brand-color); color: white; }
+        .sidebar button i { margin-right: 0.75rem; width: 20px; text-align: center; }
+        .sidebar .divider { height: 1px; background-color: #e5e7eb; margin: 1rem 0; }
+        .salatiso-logo-svg {
+            height: 80px;
+            width: 80px;
+        }
+        .faq-item {
+            margin-bottom: 1.5rem;
+        }
+        @media print {
+            body { background-color: white; }
+            .sidebar { display: none !important; }
+            .document-page { margin: 0; box-shadow: none; border: none; }
+            .editable { background-color: transparent !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- INTERACTIVE SIDEBAR -->
+    <div class="sidebar">
+        <h3 class="font-bold text-center mb-4 text-lg">Controls</h3>
+        <button onclick="window.print()"><i class="fas fa-print"></i> Print</button>
+        <button id="download-pdf"><i class="fas fa-file-pdf"></i> Download PDF</button>
+        <button id="reset-fields"><i class="fas fa-undo"></i> Reset Fields</button>
+        <div class="divider"></div>
+        <button onclick="restorePages()"><i class="fas fa-eye"></i> Show All</button>
+    </div>
+
+    <!-- MAIN CONTENT PAGE -->
+    <div class="document-page">
+        <div class="watermark">FAQ</div>
+        <div class="flex items-center gap-4 mb-4">
+            <svg viewBox="0 0 100 100" class="salatiso-logo-svg h-16 w-16 text-slate-800">
+                <circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="8" fill="none"/>
+                <path d="M50 10 L 50 90 M10 50 L 90 50" stroke="#4b5563" stroke-width="2"/>
+                <path d="M50 10 L 40 25 L 60 25 Z" fill="currentColor"/>
+            </svg>
+            <div>
+                 <h1 class="document-title !border-none !mb-0 !pb-0">Frequently Asked Questions</h1>
+                 <p class="text-gray-500">Your questions, answered.</p>
+            </div>
+        </div>
+        
+        <h2 data-toc="General Questions">General Questions</h2>
+        <div class="faq-item">
+            <h3 contenteditable="true">What is The Hub by Salatiso?</h3>
+            <p contenteditable="true">The Hub is your secure, central dashboard for managing all the important aspects of your life, family, and business. It's a "digital homestead" that connects you to a powerful ecosystem of tools for documents (DocuHelp), finance (FinHelp), HR (HRHelp), and much more.</p>
+        </div>
+        <div class="faq-item">
+            <h3 contenteditable="true">Who is The Hub for?</h3>
+            <p contenteditable="true">It's for everyone. Whether you're an individual planning your future, a family building a legacy, an entrepreneur launching a business, or an established company seeking efficiency, The Hub has tools to help you.</p>
+        </div>
+
+        <h2 data-toc="Account & Security">Account & Security</h2>
+        <div class="faq-item">
+            <h3 contenteditable="true">Is my data safe and private?</h3>
+            <p contenteditable="true">Yes. Security and privacy are fundamental to our design. Your data is stored securely, and we are committed to protecting your privacy. We will never sell your personal data. Please see our full Privacy Policy for details.</p>
+        </div>
+         <div class="faq-item">
+            <h3 contenteditable="true">Can I delete my account?</h3>
+            <p contenteditable="true">Yes, you can delete your account at any time. When you do, all of your personal data and created content will be permanently removed from our systems.</p>
+        </div>
+
+        <h2 data-toc="Using the Tools">Using the Tools</h2>
+        <div class="faq-item">
+            <h3 contenteditable="true">Do I need to be an expert to use these tools?</h3>
+            <p contenteditable="true">Not at all. Our tools are designed to be powerful yet user-friendly. We provide templates, guides, and assessments to help you get started, no matter your level of experience.</p>
+        </div>
+        <div class="faq-item">
+            <h3 contenteditable="true">Can I share documents or collaborate with others?</h3>
+            <p contenteditable="true">Yes. Many of our tools, especially within DocuHelp and Family Hub, are built for collaboration. You can securely share documents and control who has permission to view or edit them.</p>
+        </div>
+
+        <h2 data-toc="Future Plans">Future Plans & Pricing</h2>
+        <div class="faq-item">
+            <h3 contenteditable="true">Is The Hub free to use?</h3>
+            <p contenteditable="true">Currently, the entire ecosystem is in a free beta testing period. We want your feedback to make it as good as possible. In the future, we will introduce subscription and payment models, but we are committed to having powerful free tiers available forever.</p>
+        </div>
+        <div class="faq-item">
+            <h3 contenteditable="true">How can I give feedback?</h3>
+            <p contenteditable="true">We would love to hear from you! Please use the "Feedback" or "Support" link within The Hub to share your thoughts, ideas, or report any issues.</p>
+        </div>
+
+        <div class="page-num"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const initialValues = {};
+            
+            document.querySelectorAll('[contenteditable]').forEach((el, i) => {
+                const id = `editable-${i}`;
+                el.id = id;
+                initialValues[id] = el.innerHTML;
+            });
+
+            document.getElementById('download-pdf').addEventListener('click', () => {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'mm', 'a4');
+                const pages = document.querySelectorAll('.document-page');
+                let processedPages = 0;
+                const pagesToProcess = Array.from(pages).filter(p => p.style.display !== 'none');
+                const loaderButton = document.getElementById('download-pdf');
+
+                loaderButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+                loaderButton.disabled = true;
+
+                if (pagesToProcess.length === 0) {
+                    alert("No visible pages to generate PDF from!");
+                    loaderButton.innerHTML = '<i class="fas fa-file-pdf"></i> Download PDF';
+                    loaderButton.disabled = false;
+                    return;
+                }
+
+                pagesToProcess.forEach((page, index) => {
+                    html2canvas(page, { scale: 2.5, windowWidth: page.scrollWidth, windowHeight: page.scrollHeight }).then(canvas => {
+                        const imgData = canvas.toDataURL('image/png');
+                        if (index > 0) {
+                            doc.addPage();
+                        }
+                        doc.addImage(imgData, 'PNG', 0, 0, 210, 297, undefined, 'FAST');
+                        if (++processedPages === pagesToProcess.length) {
+                            doc.save('The-Hub-FAQ.pdf');
+                            loaderButton.innerHTML = '<i class="fas fa-file-pdf"></i> Download PDF';
+                            loaderButton.disabled = false;
+                        }
+                    });
+                });
+            });
+
+            document.getElementById('reset-fields').addEventListener('click', () => {
+                if (confirm('Are you sure you want to reset all editable fields to their original content?')) {
+                    for (const id in initialValues) {
+                        document.getElementById(id).innerHTML = initialValues[id];
+                    }
+                }
+            });
+            
+            updatePageNumbers();
+        });
+
+        function togglePage(pageId) {
+            const page = document.getElementById(pageId);
+            if (page) {
+                page.style.display = page.style.display === 'none' ? 'flex' : 'none';
+                updatePageNumbers();
+            }
+        }
+        function restorePages() {
+            document.querySelectorAll('.document-page').forEach(page => page.style.display = 'flex');
+            updatePageNumbers();
+        }
+
+        function updatePageNumbers() {
+            const visiblePages = Array.from(document.querySelectorAll('.document-page')).filter(p => p.style.display !== 'none');
+            visiblePages.forEach((page, idx) => {
+                let numEl = page.querySelector('.page-num');
+                if (numEl) {
+                    numEl.innerText = `Page ${idx + 1} of ${visiblePages.length}`;
+                }
+            });
+        }
+        
+    </script>
+</body>
+</html>

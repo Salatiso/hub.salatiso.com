@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resources - The Hub by Salatiso</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700;900&family=Manrope:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Dark mode styles from index.html */
+        .dark { color-scheme: dark; }
+        .dark body { background-color: #1f2937; color: #f9fafb; }
+        .dark .bg-gray-100 { background-color: #111827; }
+        .dark .bg-white { background-color: #374151; }
+        .dark .text-gray-800 { color: #f9fafb; }
+        .dark .text-gray-600 { color: #d1d5db; }
+        .dark .hover\:bg-gray-50:hover { background-color: #4b5563; }
+        .resource-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .resource-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="flex items-center space-x-2">
+                <svg viewBox="0 0 100 100" class="h-10 w-10 text-slate-800 dark:text-white">
+                    <circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="8" fill="none"/>
+                    <path d="M50 10 L 50 90 M10 50 L 90 50" stroke="#4b5563" stroke-width="2"/>
+                    <path d="M50 10 L 40 25 L 60 25 Z" fill="currentColor"/>
+                </svg>
+                <span class="text-2xl font-bold font-roboto-slab text-gray-800">The Hub</span>
+            </a>
+            <div class="hidden md:flex items-center space-x-6">
+                <a href="index.html" class="text-gray-600 hover:text-blue-600">Home</a>
+                <a href="about.html" class="text-gray-600 hover:text-blue-600">About</a>
+                <a href="resources.html" class="text-blue-600 font-bold">Resources</a>
+                <a href="contact.html" class="text-gray-600 hover:text-blue-600">Contact</a>
+                <a href="login.html" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">Login</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="bg-white">
+            <div class="container mx-auto px-6 py-16 text-center">
+                <h1 class="text-4xl md:text-5xl font-extrabold font-roboto-slab text-gray-800 leading-tight">Spreading the Word</h1>
+                <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
+                    These resources are designed to be shared. Use them as informational explainers to help others improve their lives, take accountability, and build their own digital homesteads.
+                </p>
+            </div>
+        </div>
+
+        <div class="py-12">
+            <div id="resources-gallery" class="container mx-auto px-6">
+                </div>
+        </div>
+    </main>
+
+    <footer class="bg-white">
+        <div class="container mx-auto px-6 py-8 text-center text-gray-600">
+            <p>&copy; 2025 The Hub by Salatiso. All Rights Reserved.</p>
+        </div>
+    </footer>
+    
+    <script type="module" src="assets/js/resources.js"></script>
+</body>
+</html>

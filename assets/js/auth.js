@@ -1,150 +1,254 @@
 /* ================================================================================= */
-/* */
-/* FILE: assets/js/auth.js (REVISED AND FINAL)                                       */
-/* */
-/* PURPOSE: This file handles authentication logic and now includes a check for      */
-/* terms and conditions acceptance after login.                                      */
-/* */
+/* FILE: assets/js/auth.js (CORRECTED LOGIN FLOW)                                    */
+/* PURPOSE: Handles authentication with proper terms acceptance flow                 */
 /* ================================================================================= */
-import { 
-    createUserWithEmailAndPassword, 
-    signInWithEmailAndPassword, 
-    signInWithPopup,
-    GoogleAuthProvider,
-    signInAnonymously,
-    signOut, 
-    onAuthStateChanged 
-} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-// CRITICAL FIX: Import the 'auth' and 'db' objects from our single source of truth.
 import { auth, db } from './firebase-config.js';
+import { 
+    signInWithEmailAndPassword, 
+    createUserWithEmailAndPassword, 
+    signInWithPopup, 
+    GoogleAuthProvider, 
+    signInAnonymously,
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { 
+    doc, 
+    getDoc, 
+    setDoc, 
+    serverTimestamp 
+} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-
-// --- Helper function to check terms acceptance ---
-const checkTermsAndRedirect = async (user) => {
-    if (!user || user.isAnonymous) {
-        // For anonymous users, or if no user, go straight to dashboard.
-        // Or, you might decide anonymous users also need to see a version of terms.
-        // For now, we bypass for them.
-        window.location.href = './modules/dashboard.html';
-        return;
+class AuthManager {
+    constructor() {
+        this.isSignUpMode = false;
+        this.init();
     }
 
-    const userDocRef = doc(db, "users", user.uid);
-    const userDoc = await getDoc(userDocRef);
-
-    if (userDoc.exists() && userDoc.data().termsAccepted === true) {
-        // User has accepted terms, proceed to dashboard
-        window.location.href = './modules/dashboard.html';
-    } else {
-        // User has not accepted terms, redirect to terms page
-        window.location.href = './terms.html';
+    init() {
+        this.bindEvents();
+        this.setupAuthStateListener();
     }
-};
 
-
-// --- This function runs on every page that includes this script ---
-const handleAuthProtection = () => {
-    let firebaseReadyDispatched = false;
-
-    onAuthStateChanged(auth, (user) => {
-        const isProtectedPage = !!document.getElementById('app-container');
-        const isLoginPage = !!document.querySelector('.login-container');
-        
-        if (user) {
-            // User is logged in.
-            if (isLoginPage) {
-                 // If user is on login page but already logged in, check terms and redirect
-                checkTermsAndRedirect(user);
-            } else if (isProtectedPage) {
-                const container = document.getElementById('app-container');
-                if(container) container.style.visibility = 'visible';
-                
-                const userEmailElement = document.getElementById('user-email');
-                if(userEmailElement) userEmailElement.textContent = user.email || 'Guest';
-
-                if (!firebaseReadyDispatched) {
-                    document.dispatchEvent(new CustomEvent('firebase-ready', { detail: { user } }));
-                    firebaseReadyDispatched = true;
-                }
+    bindEvents() {
+        // Form submission
+        document.getElementById('auth-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (this.isSignUpMode) {
+                this.handleSignUp();
+            } else {
+                this.handleSignIn();
             }
+        });
+
+        // Toggle between sign in and sign up
+        document.getElementById('form-toggle-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            this.toggleForm();
+        });
+
+        // Google sign in
+        document.getElementById('google-signin-btn').addEventListener('click', () => {
+            this.handleGoogleSignIn();
+        });
+
+        // Anonymous sign in
+        document.getElementById('anonymous-signin-btn').addEventListener('click', () => {
+            this.handleAnonymousSignIn();
+        });
+    }
+
+    toggleForm() {
+        this.isSignUpMode = !this.isSignUpMode;
+        const formTitle = document.getElementById('form-title');
+        const submitButton = document.getElementById('submit-button');
+        const toggleLink = document.getElementById('form-toggle-link');
+        const confirmPasswordContainer = document.getElementById('confirm-password-container');
+
+        if (this.isSignUpMode) {
+            formTitle.textContent = 'Create Your Account';
+            submitButton.textContent = 'Sign Up';
+            toggleLink.textContent = 'Already have an account? Sign In';
+            confirmPasswordContainer.classList.remove('hidden');
+            document.getElementById('confirm-password').required = true;
         } else {
-            // User is not logged in.
-            if (isProtectedPage) {
-                // If on a protected page and not logged in, redirect to login
-                window.location.href = '../login.html';
-            }
+            formTitle.textContent = 'Login to Your Digital Homestead';
+            submitButton.textContent = 'Sign In';
+            toggleLink.textContent = "Don't have an account? Sign Up";
+            confirmPasswordContainer.classList.add('hidden');
+            document.getElementById('confirm-password').required = false;
         }
-    });
-};
+    }
 
-// --- This logic ONLY runs on the login page ---
-if (document.querySelector('.login-container')) {
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-    const signInBtn = document.getElementById('sign-in-btn');
-    const signUpBtn = document.getElementById('sign-up-btn');
-    const googleSignInBtn = document.getElementById('google-sign-in-btn');
-    const anonymousSignInBtn = document.getElementById('anonymous-sign-in-btn');
-    const messageDiv = document.getElementById('message');
+    async handleSignIn() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
 
-    const showMessage = (message, isError = false) => {
-        messageDiv.textContent = message;
-        messageDiv.className = isError ? 'error' : 'success';
-    };
+        try {
+            this.showMessage('Signing in...', 'info');
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            await this.handleSuccessfulAuth(userCredential.user);
+        } catch (error) {
+            this.showMessage(this.getErrorMessage(error), 'error');
+        }
+    }
 
-    const setButtonsDisabled = (disabled) => {
-        signInBtn.disabled = disabled;
-        signUpBtn.disabled = disabled;
-        googleSignInBtn.disabled = disabled;
-        anonymousSignInBtn.disabled = disabled;
-    };
+    async handleSignUp() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm-password').value;
 
-    const handleAuthAction = (authPromise) => {
-        showMessage('Please wait...');
-        setButtonsDisabled(true);
-        authPromise
-            .then(userCredential => {
-                // On successful login/signup, check terms
-                checkTermsAndRedirect(userCredential.user);
-            })
-            .catch(error => {
-                showMessage(error.message, true);
-                setButtonsDisabled(false);
-            });
-    };
+        if (password !== confirmPassword) {
+            this.showMessage('Passwords do not match', 'error');
+            return;
+        }
 
-    signInBtn.addEventListener('click', () => {
-        const email = emailInput.value;
-        const password = passwordInput.value;
-        if (!email || !password) return showMessage('Please enter email and password.', true);
-        handleAuthAction(signInWithEmailAndPassword(auth, email, password));
-    });
+        if (password.length < 6) {
+            this.showMessage('Password must be at least 6 characters', 'error');
+            return;
+        }
 
-    signUpBtn.addEventListener('click', () => {
-        const email = emailInput.value;
-        const password = passwordInput.value;
-        if (!email || !password) return showMessage('Please enter email and password.', true);
-        handleAuthAction(createUserWithEmailAndPassword(auth, email, password));
-    });
+        try {
+            this.showMessage('Creating account...', 'info');
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            await this.handleSuccessfulAuth(userCredential.user, true);
+        } catch (error) {
+            this.showMessage(this.getErrorMessage(error), 'error');
+        }
+    }
 
-    googleSignInBtn.addEventListener('click', () => {
-        handleAuthAction(signInWithPopup(auth, new GoogleAuthProvider()));
-    });
+    async handleGoogleSignIn() {
+        try {
+            this.showMessage('Signing in with Google...', 'info');
+            const provider = new GoogleAuthProvider();
+            const userCredential = await signInWithPopup(auth, provider);
+            await this.handleSuccessfulAuth(userCredential.user);
+        } catch (error) {
+            this.showMessage(this.getErrorMessage(error), 'error');
+        }
+    }
 
-    anonymousSignInBtn.addEventListener('click', () => {
-       handleAuthAction(signInAnonymously(auth));
-    });
+    async handleAnonymousSignIn() {
+        try {
+            this.showMessage('Continuing as guest...', 'info');
+            const userCredential = await signInAnonymously(auth);
+            await this.handleSuccessfulAuth(userCredential.user);
+        } catch (error) {
+            this.showMessage(this.getErrorMessage(error), 'error');
+        }
+    }
+
+    async handleSuccessfulAuth(user, isNewUser = false) {
+        try {
+            // Check if user has accepted terms
+            const hasAcceptedTerms = await this.checkTermsAcceptance(user.uid);
+            
+            if (!hasAcceptedTerms) {
+                // Redirect to terms page
+                this.showMessage('Redirecting to terms of service...', 'success');
+                setTimeout(() => {
+                    window.location.href = './terms.html';
+                }, 1000);
+                return;
+            }
+
+            // User has accepted terms, proceed to dashboard
+            this.showMessage('Login successful! Redirecting...', 'success');
+            setTimeout(() => {
+                window.location.href = './modules/dashboard.html';
+            }, 1000);
+
+        } catch (error) {
+            console.error('Error checking terms acceptance:', error);
+            // If there's an error, redirect to terms to be safe
+            window.location.href = './terms.html';
+        }
+    }
+
+    async checkTermsAcceptance(userId) {
+        try {
+            const userDoc = await getDoc(doc(db, 'users', userId));
+            return userDoc.exists() && userDoc.data().termsAccepted === true;
+        } catch (error) {
+            console.error('Error checking terms acceptance:', error);
+            return false; // Default to false if error
+        }
+    }
+
+    setupAuthStateListener() {
+        onAuthStateChanged(auth, (user) => {
+            if (user && window.location.pathname.includes('login.html')) {
+                // User is signed in and on login page, check terms
+                this.handleSuccessfulAuth(user);
+            }
+        });
+    }
+
+    showMessage(message, type) {
+        const messageBox = document.getElementById('message-box');
+        messageBox.textContent = message;
+        messageBox.className = `p-3 text-center text-sm rounded-lg ${this.getMessageClasses(type)}`;
+        messageBox.classList.remove('hidden');
+
+        if (type === 'error') {
+            setTimeout(() => {
+                messageBox.classList.add('hidden');
+            }, 5000);
+        }
+    }
+
+    getMessageClasses(type) {
+        switch (type) {
+            case 'success':
+                return 'bg-green-100 text-green-800 border border-green-300';
+            case 'error':
+                return 'bg-red-100 text-red-800 border border-red-300';
+            case 'info':
+                return 'bg-blue-100 text-blue-800 border border-blue-300';
+            default:
+                return 'bg-gray-100 text-gray-800 border border-gray-300';
+        }
+    }
+
+    getErrorMessage(error) {
+        switch (error.code) {
+            case 'auth/user-not-found':
+                return 'No account found with this email address';
+            case 'auth/wrong-password':
+                return 'Incorrect password';
+            case 'auth/email-already-in-use':
+                return 'An account with this email already exists';
+            case 'auth/weak-password':
+                return 'Password is too weak';
+            case 'auth/invalid-email':
+                return 'Invalid email address';
+            case 'auth/popup-closed-by-user':
+                return 'Sign-in cancelled';
+            case 'auth/network-request-failed':
+                return 'Network error. Please check your connection';
+            default:
+                return error.message || 'An error occurred during authentication';
+        }
+    }
 }
 
-// --- This logic ONLY runs on pages with a logout button ---
-if (document.getElementById('logout-button')) {
-    document.getElementById('logout-button').addEventListener('click', () => {
-        signOut(auth).catch(error => console.error('Logout error:', error));
-    });
-}
+// Initialize the auth manager when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    new AuthManager();
+});
 
-// --- Run auth protection on script load ---
-handleAuthProtection();
+// Export function to accept terms (used by terms.html)
+export async function acceptTerms(userId) {
+    try {
+        await setDoc(doc(db, 'users', userId), {
+            termsAccepted: true,
+            termsAcceptedAt: serverTimestamp(),
+            lastLogin: serverTimestamp()
+        }, { merge: true });
+        return true;
+    } catch (error) {
+        console.error('Error accepting terms:', error);
+        return false;
+    }
+}
 

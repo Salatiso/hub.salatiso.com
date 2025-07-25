@@ -3,64 +3,181 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About The Hub | Our Philosophy</title>
+    <title data-translate-key="about_page_title">About The Hub | Our Philosophy</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Roboto+Slab:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Roboto Slab', serif; background-color: #F3F4F6; }
-        .brand-montserrat { font-family: 'Montserrat', sans-serif; }
-        .brand-orange { color: #FF8C00; }
-        .swiper-container { width: 100%; height: 100%; max-height: 520px; padding-top: 20px; padding-bottom: 50px; }
-        .swiper-slide { background-position: center; background-size: cover; width: 320px; height: 480px; }
-        .flip-card { background-color: transparent; width: 100%; height: 100%; perspective: 1000px; cursor: pointer; }
-        .flip-card-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.8s; transform-style: preserve-3d; }
-        .flip-card.is-flipped .flip-card-inner { transform: rotateY(180deg); }
-        .flip-card-front, .flip-card-back { position: absolute; width: 100%; height: 100%; -webkit-backface-visibility: hidden; backface-visibility: hidden; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; }
-        .flip-card-front { background-color: #fff; color: #1E3A8A; }
-        .flip-card-back { background-color: #1E3A8A; color: #fff; transform: rotateY(180deg); justify-content: space-around; }
-        .swiper-button-next, .swiper-button-prev { color: #007BFF; }
+        /* Dark mode styles */
+        .dark {
+            color-scheme: dark;
+        }
+        .dark body {
+            background-color: #1f2937;
+            color: #f9fafb;
+        }
+        .dark .bg-gray-100 {
+            background-color: #1f2937;
+        }
+        .dark .bg-white {
+            background-color: #374151;
+        }
+        .dark .text-gray-800 {
+            color: #f9fafb;
+        }
+        .dark .text-gray-600 {
+            color: #d1d5db;
+        }
+        .dark .text-gray-700 {
+            color: #e5e7eb;
+        }
+        .dark .text-gray-500 {
+            color: #9ca3af;
+        }
+        .dark .border-gray-300 {
+            border-color: #4b5563;
+        }
+        .dark .border-gray-200 {
+            border-color: #4b5563;
+        }
+
+        body { 
+            font-family: 'Roboto Slab', serif; 
+            background-color: #F3F4F6; 
+        }
+        .brand-montserrat { 
+            font-family: 'Montserrat', sans-serif; 
+        }
+        .brand-orange { 
+            color: #FF8C00; 
+        }
+        
+        /* Logo hover animation */
+        .salatiso-logo-svg {
+            transition: all 0.3s ease;
+        }
+        .logo-container:hover .salatiso-logo-svg {
+            transform: rotate(5deg) scale(1.05);
+        }
+        
+        /* Swiper styles */
+        .swiper-container { 
+            width: 100%; 
+            height: 100%; 
+            max-height: 520px; 
+            padding-top: 20px; 
+            padding-bottom: 50px; 
+        }
+        .swiper-slide { 
+            background-position: center; 
+            background-size: cover; 
+            width: 320px; 
+            height: 480px; 
+        }
+        .flip-card { 
+            background-color: transparent; 
+            width: 100%; 
+            height: 100%; 
+            perspective: 1000px; 
+            cursor: pointer; 
+        }
+        .flip-card-inner { 
+            position: relative; 
+            width: 100%; 
+            height: 100%; 
+            text-align: center; 
+            transition: transform 0.8s; 
+            transform-style: preserve-3d; 
+        }
+        .flip-card.is-flipped .flip-card-inner { 
+            transform: rotateY(180deg); 
+        }
+        .flip-card-front, .flip-card-back { 
+            position: absolute; 
+            width: 100%; 
+            height: 100%; 
+            -webkit-backface-visibility: hidden; 
+            backface-visibility: hidden; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 1.5rem; 
+        }
+        .flip-card-front { 
+            background-color: #fff; 
+            color: #1E3A8A; 
+        }
+        .flip-card-back { 
+            background-color: #1E3A8A; 
+            color: #fff; 
+            transform: rotateY(180deg); 
+            justify-content: space-around; 
+        }
+        .swiper-button-next, .swiper-button-prev { 
+            color: #007BFF; 
+        }
+        
+        /* Dark mode for cards */
+        .dark .flip-card-front {
+            background-color: #374151;
+            color: #f9fafb;
+        }
+        .dark .flip-card-back {
+            background-color: #1e40af;
+        }
     </style>
 </head>
-<body>
+<body class="bg-gray-100">
 
     <div class="container mx-auto px-4 py-12">
         <header class="text-center mb-12">
-            <h1 class="brand-montserrat text-4xl md:text-5xl font-black text-blue-800">The Hub by <span class="brand-orange">Salatiso</span></h1>
-            <h2 class="text-2xl text-gray-600 mt-2">Our Journey & Your Empowerment</h2>
+            <!-- Logo Section -->
+            <div class="logo-container mb-8">
+                <svg viewBox="0 0 100 100" class="salatiso-logo-svg h-16 w-16 md:h-20 md:w-20 mx-auto text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                    <circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="8" fill="none"/>
+                    <path d="M50 10 L 50 90 M10 50 L 90 50" stroke="#4b5563" stroke-width="2"/>
+                    <path d="M50 10 L 40 25 L 60 25 Z" fill="currentColor"/>
+                </svg>
+            </div>
+            
+            <h1 class="brand-montserrat text-4xl md:text-5xl font-black text-blue-800 dark:text-blue-400" data-translate-key="about_main_title">The Hub by <span class="brand-orange">Salatiso</span></h1>
+            <h2 class="text-2xl text-gray-600 dark:text-gray-400 mt-2" data-translate-key="about_subtitle">Our Journey & Your Empowerment</h2>
         </header>
 
         <section class="max-w-4xl mx-auto text-center mb-16">
-            <p class="text-lg text-gray-700 leading-relaxed">
+            <p class="text-lg text-gray-700 dark:text-gray-300 leading-relaxed" data-translate-key="about_intro">
                 The Hub wasn't built overnight. It's the culmination of a lifelong journey from experience to empowerment, guided by a simple yet powerful philosophy that begins not in an office, but under a tree in the Transkei.
             </p>
         </section>
 
         <!-- Live. Learn. Lead. Section -->
         <section class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto mb-20">
-            <div class="bg-white p-8 rounded-lg shadow-lg text-center">
+            <div class="bg-white dark:bg-gray-700 p-8 rounded-lg shadow-lg text-center">
                 <div class="text-5xl font-black brand-montserrat text-blue-200 mb-4">1</div>
-                <h3 class="text-2xl font-bold brand-montserrat text-blue-800">Live</h3>
-                <p class="text-gray-600 mt-2">The journey begins in the real world—navigating family, community, and professional life. This raw, lived experience is the irreplaceable foundation upon which all true knowledge is built.</p>
+                <h3 class="text-2xl font-bold brand-montserrat text-blue-800 dark:text-blue-400" data-translate-key="live_title">Live</h3>
+                <p class="text-gray-600 dark:text-gray-300 mt-2" data-translate-key="live_description">The journey begins in the real world—navigating family, community, and professional life. This raw, lived experience is the irreplaceable foundation upon which all true knowledge is built.</p>
             </div>
-            <div class="bg-white p-8 rounded-lg shadow-lg text-center">
+            <div class="bg-white dark:bg-gray-700 p-8 rounded-lg shadow-lg text-center">
                 <div class="text-5xl font-black brand-montserrat text-blue-200 mb-4">2</div>
-                <h3 class="text-2xl font-bold brand-montserrat text-blue-800">Learn</h3>
-                <p class="text-gray-600 mt-2">Experience is distilled into wisdom. Books and learning platforms are created to record and transmit this hard-won knowledge, creating a base for others to build upon.</p>
+                <h3 class="text-2xl font-bold brand-montserrat text-blue-800 dark:text-blue-400" data-translate-key="learn_title">Learn</h3>
+                <p class="text-gray-600 dark:text-gray-300 mt-2" data-translate-key="learn_description">Experience is distilled into wisdom. Books and learning platforms are created to record and transmit this hard-won knowledge, creating a base for others to build upon.</p>
             </div>
-            <div class="bg-white p-8 rounded-lg shadow-lg text-center">
+            <div class="bg-white dark:bg-gray-700 p-8 rounded-lg shadow-lg text-center">
                 <div class="text-5xl font-black brand-montserrat text-blue-200 mb-4">3</div>
-                <h3 class="text-2xl font-bold brand-montserrat text-blue-800">Lead</h3>
-                <p class="text-gray-600 mt-2">Knowledge must lead to action. This phase is about leadership through building enabling tools that empower people to help themselves, turning theory into practice.</p>
+                <h3 class="text-2xl font-bold brand-montserrat text-blue-800 dark:text-blue-400" data-translate-key="lead_title">Lead</h3>
+                <p class="text-gray-600 dark:text-gray-300 mt-2" data-translate-key="lead_description">Knowledge must lead to action. This phase is about leadership through building enabling tools that empower people to help themselves, turning theory into practice.</p>
             </div>
         </section>
 
         <!-- Carousel Section -->
-        <section class="bg-white py-16 rounded-lg shadow-xl">
+        <section class="bg-white dark:bg-gray-800 py-16 rounded-lg shadow-xl">
              <div class="text-center mb-10">
-                <h2 class="text-3xl md:text-4xl font-black text-blue-800 brand-montserrat">Your Journey Starts Here</h2>
-                <p class="text-md text-gray-600 max-w-2xl leading-relaxed mx-auto mt-2">
+                <h2 class="text-3xl md:text-4xl font-black text-blue-800 dark:text-blue-400 brand-montserrat" data-translate-key="journey_starts_title">Your Journey Starts Here</h2>
+                <p class="text-md text-gray-600 dark:text-gray-300 max-w-2xl leading-relaxed mx-auto mt-2" data-translate-key="journey_starts_description">
                     The Hub provides the tools. Your LifeCV will record your journey. Explore the ecosystem and begin today.
                 </p>
             </div>
@@ -74,7 +191,7 @@
         </section>
         
         <div class="mt-12 text-center">
-            <a href="index.html" class="inline-block bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors text-lg">
+            <a href="index.html" class="inline-block bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors text-lg" data-translate-key="go_to_hub_btn">
                 Go to The Hub
             </a>
         </div>
@@ -85,15 +202,67 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const ecosystemData = [
-                { id: 'finhelp', title: 'FinHelp', icon: 'fas fa-chart-pie', color: 'text-green-500', summary: 'Master your finances, from budgeting and asset tracking to tax readiness.', details: 'Take control of your financial destiny. FinHelp provides the tools to build a comprehensive view of your financial health, empowering you to make informed decisions for your future.', cta: { text: 'Explore FinHelp', link: '#' } },
-                { id: 'familyhub', title: 'FamilyHub', icon: 'fas fa-users', color: 'text-purple-500', summary: 'Organize your family, value every contribution, and build a shared legacy.', details: 'The FamilyHub is a private digital intranet for your family. It helps you collaborate, assign roles, and formally recognize the value of every member\'s contribution, both financial and non-financial.', cta: { text: 'Explore FamilyHub', link: '#' } },
-                { id: 'lifecv', title: 'LifeCV', icon: 'fas fa-id-card', color: 'text-indigo-500', summary: 'A dynamic, verifiable portfolio of your life\'s achievements, skills, and experiences.', details: 'Your LifeCV is the central pillar of The Hub. It proves your competence through your actions, automatically updated by your engagement across all our platforms.', cta: { text: 'Explore LifeCV', link: '#' } },
-                { id: 'safetyhelp', title: 'SafetyHelp', icon: 'fas fa-shield-alt', color: 'brand-orange', summary: 'Simplify OHS compliance with AI-powered tools and expert resources.', details: 'Navigate the complexities of occupational health and safety with ease. Generate compliant documents, manage incidents, and ensure a safe working environment for everyone.', cta: { text: 'Visit SafetyHelp', link: 'https://safetyfirst.help', target: '_blank' } },
-                { id: 'legalhelp', title: 'LegalHelp', icon: 'fas fa-gavel', color: 'text-blue-500', summary: 'Access and understand South African legislation with a powerful, searchable database.', details: 'Demystify the law. LegalHelp provides a comprehensive, easy-to-navigate resource for all South African legislation, empowering you with the knowledge to protect your rights.', cta: { text: 'Visit LegalHelp', link: 'https://salatiso.com/legalhelp/', target: '_blank' } },
-                { id: 'flamea', title: 'Flamea', icon: 'fas fa-fire', color: 'text-red-500', summary: 'A platform dedicated to building boys into men, and men into fathers and leaders.', details: 'Flamea focuses on holistic development, providing resources and community for men at every stage of life, fostering responsibility, accountability, and leadership.', cta: { text: 'Visit Flamea', link: 'https://flamea.org', target: '_blank' } },
+                { 
+                    id: 'finhelp', 
+                    title: 'FinHelp', 
+                    icon: 'fas fa-chart-pie', 
+                    color: 'text-green-500', 
+                    summary: 'Master your finances, from budgeting and asset tracking to tax readiness.', 
+                    details: 'Take control of your financial destiny. FinHelp provides the tools to build a comprehensive view of your financial health, empowering you to make informed decisions for your future.', 
+                    cta: { text: 'Explore FinHelp', link: 'modules/finhelp.html' } 
+                },
+                { 
+                    id: 'familyhub', 
+                    title: 'FamilyHub', 
+                    icon: 'fas fa-users', 
+                    color: 'text-purple-500', 
+                    summary: 'Organize your family, value every contribution, and build a shared legacy.', 
+                    details: 'The FamilyHub is a private digital intranet for your family. It helps you collaborate, assign roles, and formally recognize the value of every member\'s contribution, both financial and non-financial.', 
+                    cta: { text: 'Explore FamilyHub', link: 'modules/family-hub.html' } 
+                },
+                { 
+                    id: 'lifecv', 
+                    title: 'LifeCV', 
+                    icon: 'fas fa-id-card', 
+                    color: 'text-indigo-500', 
+                    summary: 'A dynamic, verifiable portfolio of your life\'s achievements, skills, and experiences.', 
+                    details: 'Your LifeCV is the central pillar of The Hub. It proves your competence through your actions, automatically updated by your engagement across all our platforms.', 
+                    cta: { text: 'Explore LifeCV', link: 'modules/life-cv.html' } 
+                },
+                { 
+                    id: 'safetyhelp', 
+                    title: 'SafetyHelp', 
+                    icon: 'fas fa-shield-alt', 
+                    color: 'text-orange-500', 
+                    summary: 'Simplify OHS compliance with AI-powered tools and expert resources.', 
+                    details: 'Navigate the complexities of occupational health and safety with ease. Generate compliant documents, manage incidents, and ensure a safe working environment for everyone.', 
+                    cta: { text: 'Visit SafetyHelp', link: 'https://safetyfirst.help', target: '_blank' } 
+                },
+                { 
+                    id: 'legalhelp', 
+                    title: 'LegalHelp', 
+                    icon: 'fas fa-gavel', 
+                    color: 'text-blue-500', 
+                    summary: 'Access and understand South African legislation with a powerful, searchable database.', 
+                    details: 'Demystify the law. LegalHelp provides a comprehensive, easy-to-navigate resource for all South African legislation, empowering you with the knowledge to protect your rights.', 
+                    cta: { text: 'Visit LegalHelp', link: 'https://salatiso.com/legalhelp/', target: '_blank' } 
+                },
+                { 
+                    id: 'flamea', 
+                    title: 'Flamea', 
+                    icon: 'fas fa-fire', 
+                    color: 'text-red-500', 
+                    summary: 'A platform dedicated to building boys into men, and men into fathers and leaders.', 
+                    details: 'Flamea focuses on holistic development, providing resources and community for men at every stage of life, fostering responsibility, accountability, and leadership.', 
+                    cta: { text: 'Visit Flamea', link: 'https://flamea.org', target: '_blank' } 
+                },
             ];
 
             const carouselWrapper = document.getElementById('carousel-wrapper');
+            
+            // Clear any existing content
+            carouselWrapper.innerHTML = '';
+            
             ecosystemData.forEach(item => {
                 const slide = document.createElement('div');
                 slide.className = 'swiper-slide';
@@ -103,14 +272,14 @@
                             <div class="flip-card-front">
                                 <i class="${item.icon} ${item.color} text-6xl mb-6"></i>
                                 <h3 class="brand-montserrat font-black text-3xl">${item.title}</h3>
-                                <p class="text-gray-500 mt-3">${item.summary}</p>
+                                <p class="text-gray-500 dark:text-gray-400 mt-3">${item.summary}</p>
                             </div>
                             <div class="flip-card-back">
                                 <div>
                                     <h3 class="font-bold text-xl mb-3 text-white">${item.title}</h3>
                                     <p class="text-sm">${item.details}</p>
                                 </div>
-                                <a href="${item.cta.link}" target="${item.cta.target || '_self'}" class="bg-white text-blue-800 py-2 px-4 rounded-full font-bold mt-4 hover:bg-gray-200">${item.cta.text}</a>
+                                <a href="${item.cta.link}" target="${item.cta.target || '_self'}" class="bg-white text-blue-800 py-2 px-4 rounded-full font-bold mt-4 hover:bg-gray-200 transition-colors">${item.cta.text}</a>
                             </div>
                         </div>
                     </div>
@@ -118,22 +287,63 @@
                 carouselWrapper.appendChild(slide);
             });
 
+            // Add click handlers for flip cards
             document.querySelectorAll('.flip-card').forEach(card => {
-                card.addEventListener('click', () => card.classList.toggle('is-flipped'));
+                card.addEventListener('click', (e) => {
+                    // Prevent flipping if clicking on a link
+                    if (e.target.tagName === 'A') return;
+                    card.classList.toggle('is-flipped');
+                });
             });
 
-            new Swiper('.swiper-container', {
+            // Initialize Swiper
+            const swiper = new Swiper('.swiper-container', {
                 effect: 'coverflow',
                 grabCursor: true,
                 centeredSlides: true,
                 slidesPerView: 'auto',
                 loop: true,
-                autoplay: { delay: 5000, disableOnInteraction: false },
-                coverflowEffect: { rotate: 0, stretch: 80, depth: 250, modifier: 1, slideShadows: false },
-                navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+                autoplay: { 
+                    delay: 5000, 
+                    disableOnInteraction: false 
+                },
+                coverflowEffect: { 
+                    rotate: 0, 
+                    stretch: 80, 
+                    depth: 250, 
+                    modifier: 1, 
+                    slideShadows: false 
+                },
+                navigation: { 
+                    nextEl: '.swiper-button-next', 
+                    prevEl: '.swiper-button-prev' 
+                },
+                breakpoints: {
+                    640: {
+                        slidesPerView: 1,
+                        spaceBetween: 20,
+                    },
+                    768: {
+                        slidesPerView: 2,
+                        spaceBetween: 40,
+                    },
+                    1024: {
+                        slidesPerView: 'auto',
+                        spaceBetween: 50,
+                    },
+                }
+            });
+
+            // Pause autoplay on hover
+            const swiperContainer = document.querySelector('.swiper-container');
+            swiperContainer.addEventListener('mouseenter', () => {
+                swiper.autoplay.stop();
+            });
+            swiperContainer.addEventListener('mouseleave', () => {
+                swiper.autoplay.start();
             });
         });
-    
-        <script type="module" src="assets/js/public-page-enhancer.js"></script>
+    </script>
+    <script type="module" src="assets/js/public-page-enhancer.js"></script>
 </body>
 </html>

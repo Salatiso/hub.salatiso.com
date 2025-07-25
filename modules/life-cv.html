@@ -123,5 +123,166 @@
 
     <!-- Page-specific script (if needed) -->
     <script type="module" src="../assets/js/modules/life-cv.js"></script>
+
+    <script>
+        async function handleAiFileImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Show processing overlay
+            const overlay = document.getElementById('ai-processing-overlay');
+            overlay.style.display = 'flex';
+
+            try {
+                let fileContent = '';
+                
+                // Handle different file types
+                if (file.type === 'application/pdf') {
+                    // For PDF files, you'll need a PDF parsing library
+                    alert('PDF processing requires additional setup. Please use .txt files for now.');
+                    throw new Error('PDF processing not implemented');
+                } else if (file.type.includes('word') || file.name.endsWith('.docx') || file.name.endsWith('.doc')) {
+                    // For Word documents, you'll need a document parsing library
+                    alert('Word document processing requires additional setup. Please use .txt files for now.');
+                    throw new Error('Word document processing not implemented');
+                } else {
+                    // Handle text files
+                    fileContent = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => resolve(e.target.result);
+                        reader.onerror = (e) => reject(e);
+                        reader.readAsText(file);
+                    });
+                }
+
+                if (!fileContent.trim()) {
+                    throw new Error('No content could be extracted from the file');
+                }
+
+                // Create a more detailed prompt for the AI
+                const prompt = `Extract CV/resume information from the following text and convert it to JSON format matching this structure:
+                {
+                    "personal": {
+                        "fullName": "",
+                        "email": "",
+                        "phone": "",
+                        "address": "",
+                        "linkedIn": "",
+                        "website": ""
+                    },
+                    "summary": {
+                        "summary": ""
+                    },
+                    "experience": [
+                        {
+                            "jobTitle": "",
+                            "company": "",
+                            "location": "",
+                            "startDate": "",
+                            "endDate": "",
+                            "description": ""
+                        }
+                    ],
+                    "education": [
+                        {
+                            "qualification": "",
+                            "institution": "",
+                            "year": "",
+                            "grade": ""
+                        }
+                    ],
+                    "skills": [
+                        {
+                            "skillName": "",
+                            "level": ""
+                        }
+                    ]
+                }
+                
+                Text to extract from:
+                ${fileContent}
+                
+                Please return only valid JSON without any markdown formatting.`;
+
+                // You need to add your actual Gemini API key here
+                const apiKey = "YOUR_GEMINI_API_KEY_HERE"; // Replace with your actual API key
+                
+                if (!apiKey || apiKey === "YOUR_GEMINI_API_KEY_HERE") {
+                    throw new Error('API key not configured. Please add your Gemini API key.');
+                }
+
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                
+                const payload = {
+                    contents: [{
+                        parts: [{
+                            text: prompt
+                        }]
+                    }]
+                };
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('API Error Response:', errorText);
+                    throw new Error(`API Error: ${response.status} - ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                
+                if (!result.candidates || !result.candidates[0] || !result.candidates[0].content) {
+                    throw new Error('Invalid response format from AI service');
+                }
+                
+                const text = result.candidates[0].content.parts[0].text;
+                
+                // Clean the response to get valid JSON
+                const cleanedJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
+                
+                let importedData;
+                try {
+                    importedData = JSON.parse(cleanedJson);
+                } catch (parseError) {
+                    console.error('JSON Parse Error:', parseError);
+                    console.error('Raw AI Response:', text);
+                    throw new Error('AI returned invalid JSON format');
+                }
+
+                // Merge with existing data
+                const mergedData = { ...lifeCvData, ...importedData };
+                await updateDocument('users', currentUser.uid, { 'lifeCv': mergedData });
+                
+                // Refresh the UI
+                await loadLifeCvData();
+                renderLifeCv();
+                
+                alert("AI has successfully imported data from your file!");
+
+            } catch (error) {
+                console.error("AI Import Error:", error);
+                let errorMessage = "The AI could not process your document. ";
+                
+                if (error.message.includes('API key')) {
+                    errorMessage += "API key not configured.";
+                } else if (error.message.includes('Invalid response')) {
+                    errorMessage += "AI service returned an invalid response.";
+                } else if (error.message.includes('JSON')) {
+                    errorMessage += "AI returned invalid data format.";
+                } else {
+                    errorMessage += "Please check the file format and try again.";
+                }
+                
+                alert(errorMessage);
+            } finally {
+                overlay.style.display = 'none';
+                event.target.value = ''; // Reset file input
+            }
+        }
+    </script>
 </body>
 </html>

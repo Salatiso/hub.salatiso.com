@@ -1149,16 +1149,16 @@ function renderEmployeeRelations() {
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <div>
-                        <p class="text-xs text-slate-500">Date</p>
-                        <p class="font-medium text-slate-800">${formatDate(action.date)}</p>
+                        <p class="text-xs text-slate-500">Date Issued</p>
+                        <p class="font-medium text-slate-800">${formatDate(action.dateIssued)}</p>
                     </div>
                     <div>
-                        <p class="text-xs text-slate-500">Reported By</p>
-                        <p class="font-medium text-slate-800">${action.reportedBy || 'N/A'}</p>
+                        <p class="text-xs text-slate-500">Issued By</p>
+                        <p class="font-medium text-slate-800">${action.issuedBy}</p>
                     </div>
                     <div>
-                        <p class="text-xs text-slate-500">Status</p>
-                        <p class="font-medium text-slate-800">${action.status}</p>
+                        <p class="text-xs text-slate-500">Follow-up Date</p>
+                        <p class="font-medium text-slate-800">${formatDate(action.followUpDate)}</p>
                     </div>
                 </div>
                 
@@ -1172,8 +1172,8 @@ function renderEmployeeRelations() {
                 </div>
             </div>
         `;
-    }).join('');
-    
+    }).join('') || '<p class="text-center text-slate-500 py-8">No disciplinary actions recorded.</p>';
+
     contentArea.innerHTML = `
         <div>
             <div class="flex justify-between items-center mb-6">
@@ -1182,33 +1182,90 @@ function renderEmployeeRelations() {
                     <p class="text-slate-500">Manage grievances and disciplinary actions.</p>
                 </div>
                 <div class="flex space-x-2">
-                    <button data-modal-toggle="add-grievance-modal" class="btn-primary">
-                        <i class="fas fa-plus mr-2"></i>File Grievance
+                    <button data-modal-toggle="add-grievance-modal" class="btn-secondary">
+                        <i class="fas fa-clipboard-list mr-2"></i>File Grievance
                     </button>
-                    <button data-modal-toggle="add-disciplinary-action-modal" class="btn-primary">
-                        <i class="fas fa-plus mr-2"></i>New Disciplinary Action
+                    <button data-modal-toggle="disciplinary-action-modal" class="btn-primary">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>Disciplinary Action
                     </button>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Grievances -->
-                <div class="bg-white p-4 rounded-lg shadow-md">
-                    <h3 class="font-bold text-lg text-slate-800 mb-4">Grievances</h3>
-                    <div class="space-y-4">
-                        ${grievancesHtml || '<p class="text-center text-slate-500 py-4">No grievances filed.</p>'}
+            <!-- Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="bg-red-50 border border-red-200 p-4 rounded-lg">
+                    <div class="flex items-center">
+                        <div class="bg-red-500 text-white rounded-full p-2 mr-3">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <div>
+                            <p class="text-2xl font-bold text-red-800">${grievancesCache.filter(g => g.status === 'Open').length}</p>
+                            <p class="text-sm text-red-600">Open Grievances</p>
+                        </div>
                     </div>
                 </div>
-                <!-- Disciplinary Actions -->
-                <div class="bg-white p-4 rounded-lg shadow-md">
-                    <h3 class="font-bold text-lg text-slate-800 mb-4">Disciplinary Actions</h3>
-                    <div class="space-y-4">
-                        ${disciplinaryHtml || '<p class="text-center text-slate-500 py-4">No disciplinary actions recorded.</p>'}
+                <div class="bg-amber-50 border border-amber-200 p-4 rounded-lg">
+                    <div class="flex items-center">
+                        <div class="bg-amber-500 text-white rounded-full p-2 mr-3">
+                            <i class="fas fa-gavel"></i>
+                        </div>
+                        <div>
+                            <p class="text-2xl font-bold text-amber-800">${disciplinaryCache.length}</p>
+                            <p class="text-sm text-amber-600">Disciplinary Actions</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-green-50 border border-green-200 p-4 rounded-lg">
+                    <div class="flex items-center">
+                        <div class="bg-green-500 text-white rounded-full p-2 mr-3">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div>
+                            <p class="text-2xl font-bold text-green-800">${grievancesCache.filter(g => g.status === 'Resolved').length}</p>
+                            <p class="text-sm text-green-600">Resolved Cases</p>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Tabs -->
+            <div class="mb-6">
+                <nav class="flex space-x-1 bg-slate-100 p-1 rounded-lg">
+                    <button class="relations-tab active px-4 py-2 rounded-md bg-white shadow-sm font-medium text-sm" data-tab="grievances">
+                        Grievances (${grievancesCache.length})
+                    </button>
+                    <button class="relations-tab px-4 py-2 rounded-md font-medium text-sm text-slate-600 hover:text-slate-900" data-tab="disciplinary">
+                        Disciplinary (${disciplinaryCache.length})
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Content Sections -->
+            <div id="grievances-section" class="space-y-6">
+                ${grievancesHtml || '<p class="text-center text-slate-500 py-8">No grievances filed yet.</p>'}
+            </div>
+            
+            <div id="disciplinary-section" class="space-y-6 hidden">
+                ${disciplinaryHtml}
+            </div>
         </div>
     `;
+
+    // Add tab switching functionality
+    document.querySelectorAll('.relations-tab').forEach(tab => {
+        tab.addEventListener('click', (e) => {
+            document.querySelectorAll('.relations-tab').forEach(t => {
+                t.classList.remove('active', 'bg-white', 'shadow-sm');
+                t.classList.add('text-slate-600');
+            });
+            e.target.classList.add('active', 'bg-white', 'shadow-sm');
+            e.target.classList.remove('text-slate-600');
+            
+            const tabType = e.target.dataset.tab;
+            document.getElementById('grievances-section').classList.toggle('hidden', tabType !== 'grievances');
+            document.getElementById('disciplinary-section').classList.toggle('hidden', tabType !== 'disciplinary');
+        });
+    });
 }
 
 // Add these helper functions before the module renderers

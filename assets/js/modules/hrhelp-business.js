@@ -499,6 +499,11 @@ function renderPeople() {
 
 function filterEmployeesByType(type) {
     const tbody = document.getElementById('employees-table-body');
+    if (!tbody) {
+        console.error('Employee table body not found');
+        return;
+    }
+    
     const filteredEmployees = type === 'all' ? employeesCache : employeesCache.filter(e => e.employmentType === type);
     
     const employeesHtml = filteredEmployees.map(emp => {
@@ -1426,10 +1431,15 @@ function showNotification(message, type = 'info') {
 // --- HELPER FUNCTIONS ---
 function formatDate(dateInput) {
     if (!dateInput) return 'N/A';
-    // Handles Firestore Timestamps and date strings
-    const date = dateInput.toDate ? dateInput.toDate() : new Date(dateInput);
-    if (isNaN(date)) return 'N/A';
-    return date.toLocaleDateString('en-ZA'); // South African format YYYY/MM/DD
+    
+    try {
+        const date = dateInput.toDate ? dateInput.toDate() : new Date(dateInput);
+        if (isNaN(date.getTime())) return 'N/A';
+        return date.toLocaleDateString('en-ZA');
+    } catch (error) {
+        console.error('Date formatting error:', error);
+        return 'N/A';
+    }
 }
 
 function formatRelativeTime(date) {
@@ -1491,8 +1501,18 @@ function getOnboardingTasks(employee) {
 
 async function populateForm(modalId, docId) {
     const form = document.getElementById(modalId)?.querySelector('form');
-    if (!form) return;
+    if (!form) {
+        console.error(`Form not found in modal: ${modalId}`);
+        return;
+    }
     form.reset();
+
+    // Add null check for hidden input
+    const hiddenInput = form.querySelector('input[name="id"]');
+    if (!hiddenInput) {
+        console.error('Hidden ID input not found in form');
+        return;
+    }
 
     let collectionName = '';
     let cache;
@@ -1876,7 +1896,3 @@ function getModalHTML() {
         </div>
     `;
 }
-```// filepath: e:\Google Drive\@Work\Web Development\GitHub\hub.salatiso.com\assets\js\modules\hrhelp-business.js
-/* ================================================================================= */
-/* FILE: assets/js/modules/hrhelp-business.js */
-/* ================================================================================= */

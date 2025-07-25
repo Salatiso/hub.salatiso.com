@@ -3,27 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Hub by Salatiso | Your Digital Homestead</title>
+    <title data-translate-key="page_title_home">The Hub by Salatiso | Your Digital Homestead</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="icon" href="data:,">
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700;900&family=Manrope:wght@400;700;800&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Dark mode styles */
+        .dark {
+            color-scheme: dark;
+        }
+        .dark body {
+            background-color: #1f2937;
+            color: #f9fafb;
+        }
+        .dark .bg-gray-100 {
+            background-color: #1f2937;
+        }
+        .dark .bg-white {
+            background-color: #374151;
+        }
+        .dark .text-gray-800 {
+            color: #f9fafb;
+        }
+        .dark .text-gray-600 {
+            color: #d1d5db;
+        }
+        .dark .text-gray-700 {
+            color: #e5e7eb;
+        }
+        .dark .border-gray-300 {
+            border-color: #4b5563;
+        }
+        .dark .border-gray-200 {
+            border-color: #4b5563;
+        }
+    </style>
 </head>
 <body class="bg-gray-100">
     <div class="min-h-screen flex flex-col items-center justify-center p-4">
         <div class="max-w-4xl w-full">
             <div class="text-center">
-                <h1 class="text-4xl md:text-5xl font-extrabold text-gray-800 font-poppins">Welcome to The Hub</h1>
-                <p class="text-xl text-gray-600 mt-4">Your digital homestead, by Salatiso.</p>
-                <p class="mt-6 text-gray-700 max-w-2xl mx-auto">
+                <h1 class="text-4xl md:text-5xl font-extrabold text-gray-800 font-poppins" data-translate-key="welcome_title">Welcome to The Hub</h1>
+                <p class="text-xl text-gray-600 mt-4" data-translate-key="welcome_subtitle">Your digital homestead, by Salatiso.</p>
+                <p class="mt-6 text-gray-700 max-w-2xl mx-auto" data-translate-key="welcome_description">
                     The central point for all Salatiso ecosystem tools. Manage your finances, organize your family, and build your comprehensive LifeCV.
                 </p>
                 <div class="mt-10 flex flex-col sm:flex-row justify-center items-center gap-4">
-                    <a href="login.html" class="w-full sm:w-auto bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors text-lg">
+                    <a href="login.html" class="w-full sm:w-auto bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors text-lg" data-translate-key="login_signup_btn">
                         Login / Sign Up
                     </a>
-                    <a href="assessment.html" class="w-full sm:w-auto bg-white text-blue-600 font-bold py-3 px-8 rounded-lg hover:bg-gray-50 border border-gray-300 transition-colors text-lg">
+                    <a href="assessment.html" class="w-full sm:w-auto bg-white text-blue-600 font-bold py-3 px-8 rounded-lg hover:bg-gray-50 border border-gray-300 transition-colors text-lg" data-translate-key="find_tool_btn">
                         Find Your Tool
                     </a>
                 </div>
@@ -31,37 +62,36 @@
 
             <!-- NEW: Explore The Hub Section -->
             <div class="mt-16 pt-10 border-t border-gray-200">
-                <h2 class="text-2xl font-bold text-center text-gray-800 mb-8">Explore The Hub</h2>
+                <h2 class="text-2xl font-bold text-center text-gray-800 mb-8" data-translate-key="explore_hub_title">Explore The Hub</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <!-- About Us Card -->
                     <a href="about.html" class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow text-center">
                         <i class="fas fa-info-circle text-3xl text-blue-500 mb-3"></i>
-                        <h3 class="font-bold text-lg text-gray-800">Our Philosophy</h3>
-                        <p class="text-sm text-gray-600 mt-1">Discover the "Live, Learn, Lead" journey behind The Hub.</p>
+                        <h3 class="font-bold text-lg text-gray-800" data-translate-key="philosophy_title">Our Philosophy</h3>
+                        <p class="text-sm text-gray-600 mt-1" data-translate-key="philosophy_description">Discover the "Live, Learn, Lead" journey behind The Hub.</p>
                     </a>
                     <!-- Assessment Card -->
                     <a href="assessment.html" class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow text-center">
                         <i class="fas fa-map-signs text-3xl text-green-500 mb-3"></i>
-                        <h3 class="font-bold text-lg text-gray-800">Find Your Tool</h3>
-                        <p class="text-sm text-gray-600 mt-1">Answer a few questions to find the perfect starting point for you.</p>
+                        <h3 class="font-bold text-lg text-gray-800" data-translate-key="find_tool_title">Find Your Tool</h3>
+                        <p class="text-sm text-gray-600 mt-1" data-translate-key="find_tool_description">Answer a few questions to find the perfect starting point for you.</p>
                     </a>
                     <!-- Quiz Card -->
                     <a href="quiz.html" class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow text-center">
                         <i class="fas fa-brain text-3xl text-purple-500 mb-3"></i>
-                        <h3 class="font-bold text-lg text-gray-800">Holistic Quiz</h3>
-                        <p class="text-sm text-gray-600 mt-1">Begin the journey of self-discovery and build your LifeCV.</p>
+                        <h3 class="font-bold text-lg text-gray-800" data-translate-key="quiz_title">Holistic Quiz</h3>
+                        <p class="text-sm text-gray-600 mt-1" data-translate-key="quiz_description">Begin the journey of self-discovery and build your LifeCV.</p>
                     </a>
                     <!-- Contact Card -->
                     <a href="contact.html" class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow text-center">
                         <i class="fas fa-envelope text-3xl text-orange-500 mb-3"></i>
-                        <h3 class="font-bold text-lg text-gray-800">Get In Touch</h3>
-                        <p class="text-sm text-gray-600 mt-1">Have questions or feedback? We'd love to hear from you.</p>
+                        <h3 class="font-bold text-lg text-gray-800" data-translate-key="contact_title">Get In Touch</h3>
+                        <p class="text-sm text-gray-600 mt-1" data-translate-key="contact_description">Have questions or feedback? We'd love to hear from you.</p>
                     </a>
                 </div>
             </div>
         </div>
     </div>
-    <!-- NO FIREBASE SCRIPTS ARE LOADED HERE -->
-    <script type="module" src="assets/js/main.js"></script>
+    <script type="module" src="assets/js/public-page-enhancer.js"></script>
 </body>
 </html>

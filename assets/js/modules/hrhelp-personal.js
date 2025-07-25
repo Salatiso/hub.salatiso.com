@@ -173,10 +173,10 @@ function navigateTo(view) {
     // Update sidebar active state
     navLinks.forEach(link => {
         link.classList.toggle('active', link.dataset.view === view);
-        link.classList.toggle('bg-teal-700', link.dataset.view === view);
+        link.classList.toggle('bg-indigo-600', link.dataset.view === view);
         link.classList.toggle('text-white', link.dataset.view === view);
-        link.classList.toggle('text-teal-100', link.dataset.view !== view);
-        link.classList.toggle('hover:bg-teal-500', link.dataset.view !== view);
+        link.classList.toggle('text-indigo-100', link.dataset.view !== view);
+        link.classList.toggle('hover:bg-indigo-500', link.dataset.view !== view);
     });
 
     contentArea.innerHTML = '<div class="text-center p-10"><i class="fas fa-spinner fa-spin fa-3x text-teal-500"></i></div>'; // Loading indicator
@@ -190,6 +190,21 @@ function navigateTo(view) {
             break;
         case 'goals':
             renderMyGoals();
+            break;
+        case 'skills':
+            renderSkills();
+            break;
+        case 'experience':
+            renderExperience();
+            break;
+        case 'education':
+            renderEducation();
+            break;
+        case 'portfolio':
+            renderPortfolio();
+            break;
+        case 'contributions':
+            renderContributions();
             break;
         case 'kids':
             renderKidsCorner();
@@ -215,7 +230,7 @@ function renderDashboard() {
     contentArea.innerHTML = `
         <div id="dashboard-content">
             <div class="mb-8">
-                <h1 class="text-3xl font-bold text-slate-800">My Career Dashboard</h1>
+                <h1 class="text-3xl font-bold text-slate-800">Personal Career Hub</h1>
                 <p class="text-slate-500">Your lifelong journey of growth and learning starts here.</p>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -260,8 +275,8 @@ function renderMyLifeCV() {
         <div id="lifecv-content">
             <div class="flex justify-between items-center mb-6">
                 <div>
-                    <h1 class="text-3xl font-bold text-slate-800">My LifeCV</h1>
-                    <p class="text-slate-500">Capture every step of your journey, formal and informal.</p>
+                    <h1 class="text-3xl font-bold text-slate-800">Learning & Development</h1>
+                    <p class="text-slate-500">Capture every step of your learning journey, formal and informal.</p>
                 </div>
                 <button data-modal-toggle="add-lifecv-modal" class="btn-primary flex items-center">
                     <i class="fas fa-plus mr-2"></i> Add Entry
@@ -284,7 +299,7 @@ function renderMyGoals() {
     document.getElementById('main-content-area-personal').innerHTML = `
         <div id="goals-content">
             <div class="flex justify-between items-center mb-6">
-                <h1 class="text-3xl font-bold text-slate-800">My Goals</h1>
+                <h1 class="text-3xl font-bold text-slate-800">Career Goals</h1>
                 <button data-modal-toggle="add-goal-modal" class="btn-primary flex items-center">
                     <i class="fas fa-plus mr-2"></i> Set New Goal
                 </button>
@@ -450,12 +465,17 @@ function getPersonalWorkspaceHTML() {
     return `
         <div class="flex h-full bg-slate-100">
             <!-- Sidebar Navigation -->
-            <div id="personal-sidebar" class="w-64 bg-teal-600 text-white flex-shrink-0 flex flex-col">
-                <div class="p-6 text-2xl font-bold">My Hub</div>
+            <div id="personal-sidebar" class="w-64 bg-indigo-700 text-white flex-shrink-0 flex flex-col">
+                <div class="p-6 text-2xl font-bold">Personal Career Hub</div>
                 <nav class="flex-grow px-4 space-y-2">
                     <a href="#" class="nav-link flex items-center px-4 py-3 rounded-lg" data-view="dashboard"><i class="fas fa-home w-8 text-center"></i>Dashboard</a>
-                    <a href="#" class="nav-link flex items-center px-4 py-3 rounded-lg" data-view="lifecv"><i class="fas fa-book-reader w-8 text-center"></i>My LifeCV</a>
-                    <a href="#" class="nav-link flex items-center px-4 py-3 rounded-lg" data-view="goals"><i class="fas fa-bullseye w-8 text-center"></i>My Goals</a>
+                    <a href="#" class="nav-link flex items-center px-4 py-3 rounded-lg" data-view="lifecv"><i class="fas fa-book-reader w-8 text-center"></i>Learning & Development</a>
+                    <a href="#" class="nav-link flex items-center px-4 py-3 rounded-lg" data-view="goals"><i class="fas fa-bullseye w-8 text-center"></i>Career Goals</a>
+                    <a href="#" class="nav-link flex items-center px-4 py-3 rounded-lg" data-view="skills"><i class="fas fa-cogs w-8 text-center"></i>Skills</a>
+                    <a href="#" class="nav-link flex items-center px-4 py-3 rounded-lg" data-view="experience"><i class="fas fa-briefcase w-8 text-center"></i>Experience</a>
+                    <a href="#" class="nav-link flex items-center px-4 py-3 rounded-lg" data-view="education"><i class="fas fa-graduation-cap w-8 text-center"></i>Education</a>
+                    <a href="#" class="nav-link flex items-center px-4 py-3 rounded-lg" data-view="portfolio"><i class="fas fa-folder-open w-8 text-center"></i>Portfolio</a>
+                    <a href="#" class="nav-link flex items-center px-4 py-3 rounded-lg" data-view="contributions"><i class="fas fa-hands-helping w-8 text-center"></i>Contributions</a>
                     <a href="#" class="nav-link flex items-center px-4 py-3 rounded-lg" data-view="kids"><i class="fas fa-child w-8 text-center"></i>Kid's Corner</a>
                     <a href="#" class="nav-link flex items-center px-4 py-3 rounded-lg" data-view="resources"><i class="fas fa-book-open w-8 text-center"></i>Resource Hub</a>
                     <a href="#" class="nav-link flex items-center px-4 py-3 rounded-lg" data-view="settings"><i class="fas fa-cog w-8 text-center"></i>Settings</a>

@@ -129,21 +129,59 @@ function setupDataListeners() {
         const collectionPath = `users/${businessId}/${collectionName}`;
         console.log(`Setting up listener for collection: ${collectionPath}`);
         
-        const q = query(collection(db, collectionPath), orderBy('createdAt', 'desc'));
+        // Create a query that will work even if some documents don't have createdAt field
+        let q;
+        try {
+            // First try to get all documents without ordering
+            q = query(collection(db, collectionPath));
+            console.log(`Created query for collection: ${collectionPath}`);
+        } catch (error) {
+            console.error(`Error creating query for ${collectionPath}:`, error);
+            return;
+        }
+        
         const unsub = onSnapshot(q, (snapshot) => {
-            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            console.log(`Received ${data.length} documents from ${collectionPath}`);
-            caches[cacheKey](data);
-            
-            // Log the updated cache
-            if (cacheKey === 'employees') {
-                console.log(`Updated employeesCache with ${employeesCache.length} employees`);
-                console.log('First few employees:', employeesCache.slice(0, 3));
+            try {
+                // Get all documents from the snapshot
+                const data = snapshot.docs.map(doc => {
+                    const docData = doc.data();
+                    return { id: doc.id, ...docData };
+                });
+                
+                console.log(`Received ${data.length} documents from ${collectionPath}`);
+                
+                // Add timestamp for documents that don't have one
+                const dataWithTimestamps = data.map(item => {
+                    if (!item.createdAt) {
+                        console.log(`Document ${item.id} missing createdAt field, adding default timestamp`);
+                        return { ...item, createdAt: { toMillis: () => Date.now() } };
+                    }
+                    return item;
+                });
+                
+                // Update the cache with the data
+                caches[cacheKey](dataWithTimestamps);
+                
+                // Log the updated cache
+                if (cacheKey === 'employees') {
+                    console.log(`Updated employeesCache with ${employeesCache.length} employees`);
+                    if (employeesCache.length > 0) {
+                        console.log('First few employees:', employeesCache.slice(0, 3).map(emp => ({
+                            id: emp.id,
+                            name: `${emp.firstName || ''} ${emp.lastName || ''}`,
+                            email: emp.email || 'No email'
+                        })));
+                    } else {
+                        console.warn('No employees found in the cache after update');
+                    }
+                }
+                
+                const activeView = document.querySelector('.nav-link.active')?.dataset.view || 'dashboard';
+                console.log(`Re-rendering view: ${activeView}`);
+                navigateTo(activeView, true); // Re-render the current view with new data
+            } catch (error) {
+                console.error(`Error processing data from ${collectionPath}:`, error);
             }
-            
-            const activeView = document.querySelector('.nav-link.active')?.dataset.view || 'dashboard';
-            console.log(`Re-rendering view: ${activeView}`);
-            navigateTo(activeView, true); // Re-render the current view with new data
         }, (error) => console.error(`Error fetching ${collectionName}:`, error));
         unsubscribers.push(unsub);
     });
@@ -446,42 +484,82 @@ function renderPeople() {
     let employeesHtml;
     if (employeesCache.length > 0) {
         console.log('Generating HTML for employees');
-        employeesHtml = employeesCache.map(emp => {
-            const statusColor = getStatusColor(emp.status || 'Active');
-            return `
-                <tr class="hover:bg-slate-50">
-                    <td class="p-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="w-10 h-10 rounded-full bg-indigo-500 text-white flex items-center justify-center mr-3 font-bold">
-                                ${emp.firstName?.charAt(0) || ''}${emp.lastName?.charAt(0) || ''}
+        try {
+            employeesHtml = employeesCache.map((emp, index) => {
+                // Log detailed info for debugging
+                if (index < 3) {
+                    console.log(`Rendering employee ${index}:`, {
+                        id: emp.id,
+                        firstName: emp.firstName || 'MISSING',
+                        lastName: emp.lastName || 'MISSING',
+                        email: emp.email || 'MISSING',
+                        jobTitle: emp.jobTitle || 'MISSING',
+                        employmentType: emp.employmentType || 'MISSING',
+                        status: emp.status || 'MISSING',
+                        startDate: emp.startDate || 'MISSING'
+                    });
+                }
+                
+                // Ensure we have at least minimal data to display
+                if (!emp.id || (!emp.firstName && !emp.lastName)) {
+                    console.warn(`Employee with ID ${emp.id || 'unknown'} has incomplete data`);
+                    return `
+                        <tr class="hover:bg-slate-50 bg-yellow-50">
+                            <td class="p-4 whitespace-nowrap" colspan="6">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 rounded-full bg-yellow-500 text-white flex items-center justify-center mr-3 font-bold">
+                                        !
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold text-slate-800">Incomplete Employee Data (ID: ${emp.id || 'unknown'})</div>
+                                        <div class="text-sm text-slate-500">This record may need to be updated</div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }
+                
+                const statusColor = getStatusColor(emp.status || 'Active');
+                return `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full bg-indigo-500 text-white flex items-center justify-center mr-3 font-bold">
+                                    ${emp.firstName?.charAt(0) || ''}${emp.lastName?.charAt(0) || ''}
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-slate-800">${emp.firstName || ''} ${emp.lastName || ''}</div>
+                                    <div class="text-sm text-slate-500">${emp.email || 'No email'}</div>
+                                </div>
                             </div>
-                            <div>
-                                <div class="font-semibold text-slate-800">${emp.firstName} ${emp.lastName}</div>
-                                <div class="text-sm text-slate-500">${emp.email}</div>
+                        </td>
+                        <td class="p-4 whitespace-nowrap text-slate-600">${emp.jobTitle || 'N/A'}</td>
+                        <td class="p-4 whitespace-nowrap text-slate-600">${emp.employmentType || 'N/A'}</td>
+                        <td class="p-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusColor}">
+                                ${emp.status || 'Active'}
+                            </span>
+                        </td>
+                        <td class="p-4 whitespace-nowrap text-slate-600">${formatDate(emp.startDate) || 'N/A'}</td>
+                        <td class="p-4 whitespace-nowrap text-right">
+                            <div class="flex space-x-2 justify-end">
+                                <button data-action="view-employee" data-id="${emp.id}" class="text-indigo-600 hover:text-indigo-900" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button data-modal-toggle="add-employee-modal" data-edit-id="${emp.id}" class="text-slate-400 hover:text-slate-600" title="Edit Employee">
+                                    <i class="fas fa-edit"></i>
+                                </button>
                             </div>
-                        </div>
-                    </td>
-                    <td class="p-4 whitespace-nowrap text-slate-600">${emp.jobTitle || 'N/A'}</td>
-                    <td class="p-4 whitespace-nowrap text-slate-600">${emp.employmentType || 'N/A'}</td>
-                    <td class="p-4 whitespace-nowrap">
-                        <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusColor}">
-                            ${emp.status || 'Active'}
-                        </span>
-                    </td>
-                    <td class="p-4 whitespace-nowrap text-slate-600">${formatDate(emp.startDate) || 'N/A'}</td>
-                    <td class="p-4 whitespace-nowrap text-right">
-                        <div class="flex space-x-2 justify-end">
-                            <button data-action="view-employee" data-id="${emp.id}" class="text-indigo-600 hover:text-indigo-900" title="View Details">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button data-modal-toggle="add-employee-modal" data-edit-id="${emp.id}" class="text-slate-400 hover:text-slate-600" title="Edit Employee">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `;
-        }).join('');
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            console.log(`Generated HTML for ${employeesCache.length} employees`);
+        } catch (error) {
+            console.error('Error generating employee HTML:', error);
+            employeesHtml = '<tr><td colspan="6" class="text-center p-8 text-red-500">Error rendering employees. Check console for details.</td></tr>';
+        }
     } else {
         employeesHtml = '<tr><td colspan="6" class="text-center p-8 text-slate-500">No employees found. Add your first employee to get started.</td></tr>';
     }
@@ -554,50 +632,93 @@ function renderPeople() {
 }
 
 function filterEmployeesByType(type) {
+    console.log(`Filtering employees by type: ${type}`);
+    
     const tbody = document.getElementById('employees-table-body');
     if (!tbody) {
         console.error('Employee table body not found');
         return;
     }
     
-    const filteredEmployees = type === 'all' ? employeesCache : employeesCache.filter(e => e.employmentType === type);
+    // Handle the case where employmentType might be missing
+    const filteredEmployees = type === 'all'
+        ? employeesCache
+        : employeesCache.filter(e => {
+            if (!e.employmentType && type === 'N/A') {
+                return true; // Show employees with missing type in a special "N/A" category
+            }
+            return e.employmentType === type;
+        });
     
-    const employeesHtml = filteredEmployees.map(emp => {
-        const statusColor = getStatusColor(emp.status || 'Active');
-        return `
-            <tr class="hover:bg-slate-50">
-                <td class="p-4 whitespace-nowrap">
-                    <div class="flex items-center">
-                        <div class="w-10 h-10 rounded-full bg-indigo-500 text-white flex items-center justify-center mr-3 font-bold">
-                            ${emp.firstName?.charAt(0) || ''}${emp.lastName?.charAt(0) || ''}
-                        </div>
-                        <div>
-                            <div class="font-semibold text-slate-800">${emp.firstName} ${emp.lastName}</div>
-                            <div class="text-sm text-slate-500">${emp.email}</div>
-                        </div>
-                    </div>
-                </td>
-                <td class="p-4 whitespace-nowrap text-slate-600">${emp.jobTitle || 'N/A'}</td>
-                <td class="p-4 whitespace-nowrap text-slate-600">${emp.employmentType || 'N/A'}</td>
-                <td class="p-4 whitespace-nowrap">
-                    <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusColor}">
-                        ${emp.status || 'Active'}
-                    </span>
-                </td>
-                <td class="p-4 whitespace-nowrap text-slate-600">${formatDate(emp.startDate) || 'N/A'}</td>
-                <td class="p-4 whitespace-nowrap text-right">
-                    <div class="flex space-x-2 justify-end">
-                        <button data-action="view-employee" data-id="${emp.id}" class="text-indigo-600 hover:text-indigo-900" title="View Details">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button data-modal-toggle="add-employee-modal" data-edit-id="${emp.id}" class="text-slate-400 hover:text-slate-600" title="Edit Employee">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `;
-    }).join('') || '<tr><td colspan="6" class="text-center p-8 text-slate-500">No employees found for this type.</td></tr>';
+    console.log(`Filtered to ${filteredEmployees.length} employees of type ${type}`);
+    
+    let employeesHtml;
+    
+    try {
+        if (filteredEmployees.length === 0) {
+            employeesHtml = '<tr><td colspan="6" class="text-center p-8 text-slate-500">No employees found for this type.</td></tr>';
+        } else {
+            employeesHtml = filteredEmployees.map(emp => {
+                // Ensure we have at least minimal data to display
+                if (!emp.id || (!emp.firstName && !emp.lastName)) {
+                    console.warn(`Employee with ID ${emp.id || 'unknown'} has incomplete data`);
+                    return `
+                        <tr class="hover:bg-slate-50 bg-yellow-50">
+                            <td class="p-4 whitespace-nowrap" colspan="6">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 rounded-full bg-yellow-500 text-white flex items-center justify-center mr-3 font-bold">
+                                        !
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold text-slate-800">Incomplete Employee Data (ID: ${emp.id || 'unknown'})</div>
+                                        <div class="text-sm text-slate-500">This record may need to be updated</div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }
+                
+                const statusColor = getStatusColor(emp.status || 'Active');
+                return `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full bg-indigo-500 text-white flex items-center justify-center mr-3 font-bold">
+                                    ${emp.firstName?.charAt(0) || ''}${emp.lastName?.charAt(0) || ''}
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-slate-800">${emp.firstName || ''} ${emp.lastName || ''}</div>
+                                    <div class="text-sm text-slate-500">${emp.email || 'No email'}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-4 whitespace-nowrap text-slate-600">${emp.jobTitle || 'N/A'}</td>
+                        <td class="p-4 whitespace-nowrap text-slate-600">${emp.employmentType || 'N/A'}</td>
+                        <td class="p-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusColor}">
+                                ${emp.status || 'Active'}
+                            </span>
+                        </td>
+                        <td class="p-4 whitespace-nowrap text-slate-600">${formatDate(emp.startDate) || 'N/A'}</td>
+                        <td class="p-4 whitespace-nowrap text-right">
+                            <div class="flex space-x-2 justify-end">
+                                <button data-action="view-employee" data-id="${emp.id}" class="text-indigo-600 hover:text-indigo-900" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button data-modal-toggle="add-employee-modal" data-edit-id="${emp.id}" class="text-slate-400 hover:text-slate-600" title="Edit Employee">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    } catch (error) {
+        console.error('Error generating filtered employee HTML:', error);
+        employeesHtml = '<tr><td colspan="6" class="text-center p-8 text-red-500">Error rendering employees. Check console for details.</td></tr>';
+    }
     
     tbody.innerHTML = employeesHtml;
 }

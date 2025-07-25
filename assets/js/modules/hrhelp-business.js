@@ -1565,92 +1565,147 @@ async function populateForm(modalId, docId) {
         case 'add-employee-modal': collectionName = 'employees'; cache = employeesCache; break;
         case 'add-position-modal': collectionName = 'recruitment'; cache = recruitmentCache; break;
         case 'add-training-modal': collectionName = 'training'; cache = trainingCache; break;
-                    </div>
-                    <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="people">
-                        <i class="fas fa-users mr-3"></i>People
-                    </a>
-                    <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="recruitment">
-                        <i class="fas fa-user-plus mr-3"></i>Recruitment
-                    </a>
-                    <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="onboarding">
-                        <i class="fas fa-clipboard-check mr-3"></i>Onboarding
-                    </a>
-                    
-                    <div class="px-6 mt-6 mb-4">
-                        <h3 class="text-xs font-semibold text-indigo-300 uppercase tracking-wider">Performance & Development</h3>
-                    </div>
-                    <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="performance">
-                        <i class="fas fa-chart-line mr-3"></i>Performance
-                    </a>
-                    <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="training">
-                        <i class="fas fa-graduation-cap mr-3"></i>Training
-                    </a>
-                    
-                    <div class="px-6 mt-6 mb-4">
-                        <h3 class="text-xs font-semibold text-indigo-300 uppercase tracking-wider">Compensation & Benefits</h3>
-                    </div>
-                    <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="compensation">
-                        <i class="fas fa-dollar-sign mr-3"></i>Compensation
-                    </a>
-                    <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="benefits">
-                        <i class="fas fa-heart mr-3"></i>Benefits
-                    </a>
-                    <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="leave">
-                        <i class="fas fa-calendar-alt mr-3"></i>Leave Management
-                    </a>
-                    
-                    <div class="px-6 mt-6 mb-4">
-                        <h3 class="text-xs font-semibold text-indigo-300 uppercase tracking-wider">Employee Relations</h3>
-                    </div>
-                    <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="employee-relations">
-                        <i class="fas fa-handshake mr-3"></i>Relations
-                    </a>
-                    <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="compliance">
-                        <i class="fas fa-shield-alt mr-3"></i>Compliance
-                    </a>
-                    
-                    <div class="px-6 mt-6 mb-4">
-                        <h3 class="text-xs font-semibold text-indigo-300 uppercase tracking-wider">Operations</h3>
-                    </div>
-                    <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="payroll">
-                        <i class="fas fa-calculator mr-3"></i>Payroll
-                    </a>
-                    <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="termination">
-                        <i class="fas fa-user-times mr-3"></i>Termination
-                    </a>
-                </nav>
-            </div>
+        case 'add-compensation-modal': collectionName = 'compensation'; cache = compensationCache; break;
+        case 'add-benefit-modal': collectionName = 'benefits'; cache = benefitsCache; break;
+        case 'add-leave-modal': collectionName = 'leaveRequests'; cache = leaveRequestsCache; break;
+        case 'add-grievance-modal': collectionName = 'grievances'; cache = grievancesCache; break;
+        case 'disciplinary-action-modal': collectionName = 'disciplinary'; cache = disciplinaryCache; break;
+        case 'termination-modal': collectionName = 'termination'; cache = terminationCache; break;
+        case 'performance-review-modal': collectionName = 'performance'; cache = performanceCache; break;
+    }
 
-            <!-- Main Content -->
-            <div class="flex-1 flex flex-col overflow-hidden">
-                <!-- Header -->
-                <header class="bg-white shadow-sm border-b border-slate-200 px-6 py-4">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <h1 class="text-2xl font-bold text-slate-800">HR Management System</h1>
-                        </div>
-                        <div class="flex items-center space-x-4">
-                            <button class="p-2 text-slate-400 hover:text-slate-600">
-                                <i class="fas fa-bell"></i>
-                            </button>
-                            <button class="p-2 text-slate-400 hover:text-slate-600">
-                                <i class="fas fa-cog"></i>
-                            </button>
-                            <div class="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center">
-                                <span class="text-white text-sm font-medium">${currentUser?.email?.charAt(0).toUpperCase() || 'U'}</span>
-                            </div>
-                        </div>
-                    </div>
-                </header>
+    if (!collectionName) {
+        console.error('Unknown modal ID:', modalId);
+        return;
+    }
 
-                <!-- Content Area -->
-                <main class="flex-1 overflow-y-auto p-6" id="main-content-area">
-                    <div class="text-center p-10">
-                        <i class="fas fa-spinner fa-spin fa-3x text-indigo-500"></i>
-                        <p class="mt-4 text-slate-500">Loading...</p>
-                    </div>
-                </main>
+    const docData = cache.find(item => item.id === docId);
+    if (!docData) {
+        console.error('Document not found in cache:', docId);
+        return;
+    }
+
+    // Populate form fields
+    Object.keys(docData).forEach(key => {
+        const field = form.querySelector(`[name="${key}"]`);
+        if (field) {
+            if (field.tagName === 'SELECT') {
+                field.value = docData[key] || '';
+            } else {
+                field.value = docData[key] !== null ? docData[key] : '';
+            }
+        }
+    });
+
+    // Special handling for multi-select and checkbox fields
+    if (modalId === 'add-training-modal' && Array.isArray(docData.participants)) {
+        const participantIds = docData.participants.map(p => p.id);
+        const participantFields = form.querySelectorAll('select[name="participants"] option');
+        participantFields.forEach(option => {
+            option.selected = participantIds.includes(option.value);
+        });
+    }
+}
+
+function getBusinessWorkspaceHTML() {
+    return `
+        <!-- Sidebar -->
+        <div class="bg-indigo-700 text-white w-64 min-h-screen py-8 px-4 fixed z-30">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-xl font-bold">HRHelp Business</h2>
+                <button id="sidebar-toggle" class="text-white focus:outline-none">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
+            
+            <nav>
+                <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="dashboard">
+                    <i class="fas fa-tachometer-alt mr-3"></i>Dashboard
+                </a>
+                <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="people">
+                    <i class="fas fa-users mr-3"></i>People
+                </a>
+                <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="recruitment">
+                    <i class="fas fa-user-plus mr-3"></i>Recruitment
+                </a>
+                <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="onboarding">
+                    <i class="fas fa-clipboard-check mr-3"></i>Onboarding
+                </a>
+                
+                <div class="px-6 mt-6 mb-4">
+                    <h3 class="text-xs font-semibold text-indigo-300 uppercase tracking-wider">Performance & Development</h3>
+                </div>
+                <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="performance">
+                    <i class="fas fa-chart-line mr-3"></i>Performance
+                </a>
+                <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="training">
+                    <i class="fas fa-graduation-cap mr-3"></i>Training
+                </a>
+                
+                <div class="px-6 mt-6 mb-4">
+                    <h3 class="text-xs font-semibold text-indigo-300 uppercase tracking-wider">Compensation & Benefits</h3>
+                </div>
+                <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="compensation">
+                    <i class="fas fa-dollar-sign mr-3"></i>Compensation
+                </a>
+                <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="benefits">
+                    <i class="fas fa-heart mr-3"></i>Benefits
+                </a>
+                <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="leave">
+                    <i class="fas fa-calendar-alt mr-3"></i>Leave Management
+                </a>
+                
+                <div class="px-6 mt-6 mb-4">
+                    <h3 class="text-xs font-semibold text-indigo-300 uppercase tracking-wider">Employee Relations</h3>
+                </div>
+                <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="employee-relations">
+                    <i class="fas fa-handshake mr-3"></i>Relations
+                </a>
+                <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="compliance">
+                    <i class="fas fa-shield-alt mr-3"></i>Compliance
+                </a>
+                
+                <div class="px-6 mt-6 mb-4">
+                    <h3 class="text-xs font-semibold text-indigo-300 uppercase tracking-wider">Operations</h3>
+                </div>
+                <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="payroll">
+                    <i class="fas fa-calculator mr-3"></i>Payroll
+                </a>
+                <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="termination">
+                    <i class="fas fa-user-times mr-3"></i>Termination
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Header -->
+            <header class="bg-white shadow-sm border-b border-slate-200 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <h1 class="text-2xl font-bold text-slate-800">HR Management System</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button class="p-2 text-slate-400 hover:text-slate-600">
+                            <i class="fas fa-bell"></i>
+                        </button>
+                        <button class="p-2 text-slate-400 hover:text-slate-600">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                        <div class="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center">
+                            <span class="text-white text-sm font-medium">${currentUser?.email?.charAt(0).toUpperCase() || 'U'}</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <main class="flex-1 overflow-y-auto p-6" id="main-content-area">
+                <div class="text-center p-10">
+                    <i class="fas fa-spinner fa-spin fa-3x text-indigo-500"></i>
+                    <p class="mt-4 text-slate-500">Loading...</p>
+                </div>
+            </main>
         </div>
 
         <!-- Add modal containers -->

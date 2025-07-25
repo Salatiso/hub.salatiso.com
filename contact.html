@@ -3,19 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact Us | The Hub</title>
+    <title data-translate-key="contact_page_title">Contact Us | The Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="icon" href="data:,">
+    <style>
+        /* Dark mode styles */
+        .dark { color-scheme: dark; }
+        .dark body { background-color: #1f2937; color: #f9fafb; }
+        .dark .bg-gray-100 { background-color: #1f2937; }
+        .dark .bg-white { background-color: #374151; }
+        .dark .text-gray-800 { color: #f9fafb; }
+        .dark .text-gray-500 { color: #d1d5db; }
+        .dark .text-gray-700 { color: #e5e7eb; }
+        .dark .border-gray-300 { border-color: #4b5563; }
+    </style>
 </head>
 <body class="bg-gray-100">
-
-    <!-- This page is public, so it doesn't need the full dashboard shell -->
     <div class="min-h-screen flex flex-col items-center justify-center p-4">
         <div class="w-full max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8">
             <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold text-gray-800">Contact Us</h1>
-                <p class="text-gray-500 mt-2">We'd love to hear from you. Reach out with any questions or feedback.</p>
+                <h1 class="text-3xl font-bold text-gray-800" data-translate-key="contact_heading">Contact Us</h1>
+                <p class="text-gray-500 mt-2" data-translate-key="contact_subheading">We'd love to hear from you. Reach out with any questions or feedback.</p>
             </div>
 
             <form action="https://formsubmit.co/admin@salatiso.com" method="POST" class="space-y-6">
@@ -26,38 +36,38 @@
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label for="name" class="block text-sm font-medium text-gray-700">Full Name</label>
+                        <label for="name" class="block text-sm font-medium text-gray-700" data-translate-key="contact_name_label">Full Name</label>
                         <input type="text" name="name" id="name" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                     </div>
                     <div>
-                        <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
+                        <label for="email" class="block text-sm font-medium text-gray-700" data-translate-key="contact_email_label">Email Address</label>
                         <input type="email" name="email" id="email" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                     </div>
                 </div>
 
                 <div>
-                    <label for="subject" class="block text-sm font-medium text-gray-700">Subject</label>
+                    <label for="subject" class="block text-sm font-medium text-gray-700" data-translate-key="contact_subject_label">Subject</label>
                     <input type="text" name="subject" id="subject" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
 
                 <div>
-                    <label for="message" class="block text-sm font-medium text-gray-700">Message</label>
+                    <label for="message" class="block text-sm font-medium text-gray-700" data-translate-key="contact_message_label">Message</label>
                     <textarea name="message" id="message" rows="4" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
                 </div>
 
                 <div class="text-center">
-                    <button type="submit" class="w-full md:w-auto inline-flex justify-center py-3 px-8 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                    <button type="submit" class="w-full md:w-auto inline-flex justify-center py-3 px-8 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors" data-translate-key="contact_send_btn">
                         Send Message
                     </button>
                 </div>
             </form>
-                <div class="mt-12 text-center">
-            <a href="index.html" class="inline-block bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors text-lg">
-                Go to The Hub
-            </a>
+            <div class="mt-12 text-center">
+                <a href="index.html" class="inline-block bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors text-lg" data-translate-key="go_to_hub_btn">
+                    Go to The Hub
+                </a>
             </div>
         </div>
     </div>
-
+    <script type="module" src="assets/js/public-page-enhancer.js"></script>
 </body>
 </html>

@@ -1145,4 +1145,129 @@ function renderEmployeeRelations() {
                     </span>
                 </div>
                 
-                <p class="text-sm text-slate-600 mb-4"// filepath: e:\Google Drive\@Work\Web Development\GitHub\hub.salatiso.com\assets\js\modules\hrhelp-business.js
+                <p class="text-sm text-slate-600 mb-4">${action.description}</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div>
+                        <p class="text-xs text-slate-500">Date</p>
+                        <p class="font-medium text-slate-800">${formatDate(action.date)}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500">Reported By</p>
+                        <p class="font-medium text-slate-800">${action.reportedBy || 'N/A'}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500">Status</p>
+                        <p class="font-medium text-slate-800">${action.status}</p>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-2">
+                    <button data-action="view-disciplinary" data-id="${action.id}" class="btn-secondary text-sm">
+                        View Details
+                    </button>
+                    <button data-action="update-disciplinary" data-id="${action.id}" class="btn-primary text-sm">
+                        Update
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    contentArea.innerHTML = `
+        <div>
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-800">Employee Relations</h1>
+                    <p class="text-slate-500">Manage grievances and disciplinary actions.</p>
+                </div>
+                <div class="flex space-x-2">
+                    <button data-modal-toggle="add-grievance-modal" class="btn-primary">
+                        <i class="fas fa-plus mr-2"></i>File Grievance
+                    </button>
+                    <button data-modal-toggle="add-disciplinary-action-modal" class="btn-primary">
+                        <i class="fas fa-plus mr-2"></i>New Disciplinary Action
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Grievances -->
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <h3 class="font-bold text-lg text-slate-800 mb-4">Grievances</h3>
+                    <div class="space-y-4">
+                        ${grievancesHtml || '<p class="text-center text-slate-500 py-4">No grievances filed.</p>'}
+                    </div>
+                </div>
+                <!-- Disciplinary Actions -->
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <h3 class="font-bold text-lg text-slate-800 mb-4">Disciplinary Actions</h3>
+                    <div class="space-y-4">
+                        ${disciplinaryHtml || '<p class="text-center text-slate-500 py-4">No disciplinary actions recorded.</p>'}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Add these helper functions before the module renderers
+function formatDate(dateString) {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString();
+}
+
+function formatRelativeTime(dateString) {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = now - date;
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    
+    if (days === 0) return 'Today';
+    if (days === 1) return 'Yesterday';
+    if (days < 7) return `${days} days ago`;
+    if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
+    return `${Math.floor(days / 30)} months ago`;
+}
+
+function getStatusColor(status) {
+    const colors = {
+        'Open': 'bg-green-100 text-green-800',
+        'In Progress': 'bg-yellow-100 text-yellow-800',
+        'Filled': 'bg-purple-100 text-purple-800',
+        'Closed': 'bg-slate-100 text-slate-800',
+        'Active': 'bg-green-100 text-green-800',
+        'Completed': 'bg-blue-100 text-blue-800'
+    };
+    return colors[status] || 'bg-slate-100 text-slate-800';
+}
+
+function getRatingColor(rating) {
+    const colors = {
+        'Exceeds Expectations': 'bg-green-100 text-green-800',
+        'Meets Expectations': 'bg-blue-100 text-blue-800',
+        'Below Expectations': 'bg-yellow-100 text-yellow-800',
+        'Needs Improvement': 'bg-red-100 text-red-800'
+    };
+    return colors[rating] || 'bg-slate-100 text-slate-800';
+}
+
+function calculateOnboardingProgress(employee) {
+    // Simple calculation - you can enhance this
+    const tasks = getOnboardingTasks(employee);
+    const completed = tasks.filter(task => task.completed).length;
+    return Math.round((completed / tasks.length) * 100);
+}
+
+function getOnboardingTasks(employee) {
+    // Default onboarding tasks
+    return [
+        { id: 'contract', name: 'Contract Signed', completed: !!employee.contractSigned },
+        { id: 'documents', name: 'Documents Collected', completed: !!employee.documentsCollected },
+        { id: 'equipment', name: 'Equipment Assigned', completed: !!employee.equipmentAssigned },
+        { id: 'access', name: 'System Access', completed: !!employee.systemAccess },
+        { id: 'orientation', name: 'Orientation Complete', completed: !!employee.orientationComplete },
+        { id: 'training', name: 'Initial Training', completed: !!employee.initialTraining }
+    ];
+}

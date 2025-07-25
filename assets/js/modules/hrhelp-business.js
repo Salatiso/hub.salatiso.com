@@ -1428,7 +1428,7 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-/* Add to your CSS file */
+/* Add to your CSS file:
 .modal-container {
     @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden;
 }
@@ -1472,6 +1472,7 @@ function showNotification(message, type = 'info') {
 .btn-danger {
     @apply bg-red-600 hover:bg-red-700 text-white;
 }
+*/
 
 // --- HELPER FUNCTIONS ---
 function formatDate(dateInput) {

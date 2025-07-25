@@ -109,6 +109,18 @@ function attachEventListeners() {
             navigateTo(navLink.dataset.view);
         } else if (modalToggle) {
             const modalId = modalToggle.dataset.modalToggle;
+            const presetType = modalToggle.dataset.presetType;
+            
+            // Pre-fill form if preset type is specified
+            if (presetType && modalId === 'add-lifecv-modal') {
+                setTimeout(() => {
+                    const typeSelect = document.getElementById('lifecv-type');
+                    if (typeSelect) {
+                        typeSelect.value = presetType;
+                    }
+                }, 50);
+            }
+            
             document.getElementById(modalId)?.classList.remove('hidden');
         } else if (modalClose) {
             const modalId = modalClose.dataset.modalClose;
@@ -454,8 +466,32 @@ async function handleAddChild(form) {
 }
 
 async function handleAddGoal(form) {
-    // Placeholder for future implementation
-    showNotification("Goal setting will be available soon!", "info");
+    const formData = new FormData(form);
+    const goalData = {
+        title: formData.get('goal-title'),
+        description: formData.get('goal-description'),
+        targetDate: formData.get('target-date'),
+        category: formData.get('goal-category'),
+        milestones: formData.get('milestones') ? formData.get('milestones').split('\n').filter(m => m.trim()) : [],
+        status: 'active',
+        progress: 0,
+        createdAt: new Date().toISOString()
+    };
+
+    if (!goalData.title) {
+        showNotification("Goal title is required.", "error");
+        return;
+    }
+
+    try {
+        await addDoc(collection(db, 'users', currentUser.uid, 'goals'), goalData);
+        showNotification("Goal added successfully!", "success");
+        form.reset();
+        document.getElementById('add-goal-modal').classList.add('hidden');
+    } catch (error) {
+        console.error("Error adding goal: ", error);
+        showNotification("Failed to add goal. Please try again.", "error");
+    }
 }
 
 
@@ -629,13 +665,44 @@ function getAddChildModalHTML() {
 
 function getAddGoalModalHTML() {
     return `
-        <div id="add-goal-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-lg">
-                 <h2 class="text-2xl font-bold text-slate-800 mb-6">Set a New Goal</h2>
-                 <p class="text-slate-500 text-center">Goal setting feature is coming soon!</p>
-                 <div class="flex justify-end mt-6">
-                    <button type="button" data-modal-close="add-goal-modal" class="btn-secondary">Close</button>
-                 </div>
+        <div id="add-goal-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-2xl max-h-full overflow-y-auto">
+                <h2 class="text-2xl font-bold text-slate-800 mb-6">Set a New Goal</h2>
+                <form id="add-goal-form" class="space-y-4">
+                    <div>
+                        <label class="form-label" for="goal-title">Goal Title</label>
+                        <input class="input" id="goal-title" name="goal-title" type="text" required placeholder="e.g., Learn Spanish, Get Promoted, Start a Business">
+                    </div>
+                    <div>
+                        <label class="form-label" for="goal-category">Category</label>
+                        <select class="input" id="goal-category" name="goal-category">
+                            <option value="career">Career</option>
+                            <option value="education">Education</option>
+                            <option value="personal">Personal Development</option>
+                            <option value="health">Health & Wellness</option>
+                            <option value="financial">Financial</option>
+                            <option value="creative">Creative</option>
+                            <option value="relationship">Relationships</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label" for="goal-description">Description</label>
+                        <textarea class="input" id="goal-description" name="goal-description" rows="3" placeholder="Describe your goal and why it's important to you..."></textarea>
+                    </div>
+                    <div>
+                        <label class="form-label" for="target-date">Target Date</label>
+                        <input class="input" id="target-date" name="target-date" type="date">
+                    </div>
+                    <div>
+                        <label class="form-label" for="milestones">Milestones (one per line)</label>
+                        <textarea class="input" id="milestones" name="milestones" rows="4" placeholder="Research language learning apps&#10;Complete basic course&#10;Have first conversation&#10;Take proficiency test"></textarea>
+                    </div>
+                    <div class="flex justify-end mt-8 space-x-4">
+                        <button type="button" data-modal-close="add-goal-modal" class="btn-secondary">Cancel</button>
+                        <button type="submit" class="btn-primary">Set Goal</button>
+                    </div>
+                </form>
             </div>
         </div>
     `;

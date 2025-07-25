@@ -1,75 +1,405 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resources - The Hub by Salatiso</title>
+    <title data-translate-key="resources_page_title">Resources | The Hub by Salatiso</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="assets/css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700;900&family=Manrope:wght@400;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:,">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700;900&family=Manrope:wght@400;700;800&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
     <style>
-        /* Dark mode styles from index.html */
-        .dark { color-scheme: dark; }
-        .dark body { background-color: #1f2937; color: #f9fafb; }
-        .dark .bg-gray-100 { background-color: #111827; }
-        .dark .bg-white { background-color: #374151; }
-        .dark .text-gray-800 { color: #f9fafb; }
-        .dark .text-gray-600 { color: #d1d5db; }
-        .dark .hover\:bg-gray-50:hover { background-color: #4b5563; }
-        .resource-card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        /* Dark mode styles */
+        .dark {
+            color-scheme: dark;
         }
-        .resource-card:hover {
+        .dark body {
+            background-color: #1f2937;
+            color: #f9fafb;
+        }
+        .dark .bg-gray-100 {
+            background-color: #1f2937;
+        }
+        .dark .bg-white {
+            background-color: #374151;
+        }
+        .dark .text-gray-800 {
+            color: #f9fafb;
+        }
+        .dark .text-gray-600 {
+            color: #d1d5db;
+        }
+        .dark .text-gray-700 {
+            color: #e5e7eb;
+        }
+        .dark .text-gray-500 {
+            color: #9ca3af;
+        }
+        .dark .border-gray-300 {
+            border-color: #4b5563;
+        }
+        .dark .border-gray-200 {
+            border-color: #4b5563;
+        }
+        
+        /* Logo hover animation */
+        .salatiso-logo-svg {
+            transition: all 0.3s ease;
+        }
+        .logo-container:hover .salatiso-logo-svg {
+            transform: rotate(5deg) scale(1.05);
+        }
+
+        /* Category and resource card animations */
+        .category-card, .resource-card {
+            transition: all 0.3s ease;
+        }
+        .category-card:hover, .resource-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        /* Category toggle styles */
+        .category-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .category-content.expanded {
+            max-height: 2000px;
+        }
+
+        /* Resource grid animations */
+        .resource-item {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+        .resource-item.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
     </style>
 </head>
 <body class="bg-gray-100">
-
-    <header class="bg-white shadow-md sticky top-0 z-50">
-        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="index.html" class="flex items-center space-x-2">
-                <svg viewBox="0 0 100 100" class="h-10 w-10 text-slate-800 dark:text-white">
-                    <circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="8" fill="none"/>
-                    <path d="M50 10 L 50 90 M10 50 L 90 50" stroke="#4b5563" stroke-width="2"/>
-                    <path d="M50 10 L 40 25 L 60 25 Z" fill="currentColor"/>
-                </svg>
-                <span class="text-2xl font-bold font-roboto-slab text-gray-800">The Hub</span>
-            </a>
-            <div class="hidden md:flex items-center space-x-6">
-                <a href="index.html" class="text-gray-600 hover:text-blue-600">Home</a>
-                <a href="about.html" class="text-gray-600 hover:text-blue-600">About</a>
-                <a href="resources.html" class="text-blue-600 font-bold">Resources</a>
-                <a href="contact.html" class="text-gray-600 hover:text-blue-600">Contact</a>
-                <a href="login.html" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">Login</a>
-            </div>
-        </nav>
-    </header>
-
-    <main>
-        <div class="bg-white">
-            <div class="container mx-auto px-6 py-16 text-center">
-                <h1 class="text-4xl md:text-5xl font-extrabold font-roboto-slab text-gray-800 leading-tight">Spreading the Word</h1>
-                <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
+    <div class="min-h-screen flex flex-col items-center justify-center p-4">
+        <div class="max-w-6xl w-full">
+            <!-- Header Section -->
+            <div class="text-center mb-16">
+                <!-- Logo Section -->
+                <div class="logo-container mb-8">
+                    <svg viewBox="0 0 100 100" class="salatiso-logo-svg h-20 w-20 md:h-24 md:w-24 mx-auto text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                        <circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="8" fill="none"/>
+                        <path d="M50 10 L 50 90 M10 50 L 90 50" stroke="#4b5563" stroke-width="2"/>
+                        <path d="M50 10 L 40 25 L 60 25 Z" fill="currentColor"/>
+                    </svg>
+                </div>
+                
+                <h1 class="text-4xl md:text-5xl font-extrabold text-gray-800 dark:text-gray-200 font-poppins" data-translate-key="resources_title">Spreading the Word</h1>
+                <p class="text-xl text-gray-600 dark:text-gray-400 mt-4" data-translate-key="resources_subtitle">Resources designed to be shared</p>
+                <p class="mt-6 text-gray-700 dark:text-gray-300 max-w-3xl mx-auto" data-translate-key="resources_description">
                     These resources are designed to be shared. Use them as informational explainers to help others improve their lives, take accountability, and build their own digital homesteads.
                 </p>
             </div>
-        </div>
 
-        <div class="py-12">
-            <div id="resources-gallery" class="container mx-auto px-6">
+            <!-- Quick Access Section -->
+            <div class="mb-16">
+                <h2 class="text-2xl font-bold text-center text-gray-800 dark:text-gray-200 mb-8" data-translate-key="quick_access_title">Quick Access</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Login/Get Started Card -->
+                    <a href="login.html" class="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow text-center">
+                        <i class="fas fa-sign-in-alt text-3xl text-blue-500 mb-3"></i>
+                        <h3 class="font-bold text-lg text-gray-800 dark:text-gray-200" data-translate-key="get_started_title">Get Started</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1" data-translate-key="get_started_description">Login or sign up to access your digital homestead.</p>
+                    </a>
+                    
+                    <!-- Our Philosophy Card -->
+                    <a href="about.html" class="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow text-center">
+                        <i class="fas fa-lightbulb text-3xl text-orange-500 mb-3"></i>
+                        <h3 class="font-bold text-lg text-gray-800 dark:text-gray-200" data-translate-key="philosophy_title">Our Philosophy</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1" data-translate-key="philosophy_description">Discover the "Live, Learn, Lead" journey behind The Hub.</p>
+                    </a>
+                    
+                    <!-- Hub Overview Card -->
+                    <a href="index.html" class="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow text-center">
+                        <i class="fas fa-home text-3xl text-green-500 mb-3"></i>
+                        <h3 class="font-bold text-lg text-gray-800 dark:text-gray-200" data-translate-key="hub_overview_title">Hub Overview</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1" data-translate-key="hub_overview_description">Return to the main hub and explore all available tools.</p>
+                    </a>
                 </div>
-        </div>
-    </main>
+            </div>
 
-    <footer class="bg-white">
-        <div class="container mx-auto px-6 py-8 text-center text-gray-600">
-            <p>&copy; 2025 The Hub by Salatiso. All Rights Reserved.</p>
+            <!-- Resource Categories Section -->
+            <div class="space-y-8" id="resource-categories">
+                <!-- Categories will be dynamically loaded here -->
+            </div>
         </div>
-    </footer>
+    </div>
     
-    <script type="module" src="assets/js/resources.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Resource data organized by categories
+            const resourceCategories = [
+                {
+                    id: 'personal-development',
+                    title: 'Personal Development',
+                    icon: 'fas fa-user-graduate',
+                    color: 'text-blue-500',
+                    description: 'Tools and resources for personal growth and self-improvement.',
+                    resources: [
+                        {
+                            title: 'LifeCV Builder',
+                            description: 'Create your comprehensive life portfolio.',
+                            icon: 'fas fa-id-card',
+                            color: 'text-indigo-500',
+                            link: 'modules/life-cv.html',
+                            tags: ['CV', 'Portfolio', 'Career']
+                        },
+                        {
+                            title: 'Holistic Quiz',
+                            description: 'Discover your personal and professional inclinations.',
+                            icon: 'fas fa-brain',
+                            color: 'text-purple-500',
+                            link: 'quiz.html',
+                            tags: ['Assessment', 'Self-Discovery', 'Quiz']
+                        },
+                        {
+                            title: 'Goal Setting Framework',
+                            description: 'Structure your aspirations with proven methodologies.',
+                            icon: 'fas fa-target',
+                            color: 'text-red-500',
+                            link: 'modules/training.html',
+                            tags: ['Goals', 'Planning', 'Achievement']
+                        }
+                    ]
+                },
+                {
+                    id: 'financial-wellness',
+                    title: 'Financial Wellness',
+                    icon: 'fas fa-chart-line',
+                    color: 'text-green-500',
+                    description: 'Master your finances and build wealth strategically.',
+                    resources: [
+                        {
+                            title: 'FinHelp Platform',
+                            description: 'Comprehensive financial management and planning.',
+                            icon: 'fas fa-chart-pie',
+                            color: 'text-green-600',
+                            link: 'modules/finhelp.html',
+                            tags: ['Budgeting', 'Investment', 'Planning']
+                        },
+                        {
+                            title: 'Tax Readiness Guide',
+                            description: 'Prepare for tax season with confidence.',
+                            icon: 'fas fa-file-invoice-dollar',
+                            color: 'text-blue-600',
+                            link: 'modules/finhelp.html#tax',
+                            tags: ['Tax', 'Compliance', 'Documentation']
+                        },
+                        {
+                            title: 'Asset Tracking System',
+                            description: 'Monitor and manage your wealth portfolio.',
+                            icon: 'fas fa-coins',
+                            color: 'text-yellow-600',
+                            link: 'modules/finhelp.html#assets',
+                            tags: ['Assets', 'Tracking', 'Portfolio']
+                        }
+                    ]
+                },
+                {
+                    id: 'family-organization',
+                    title: 'Family & Relationships',
+                    icon: 'fas fa-users',
+                    color: 'text-purple-500',
+                    description: 'Strengthen family bonds and organize household management.',
+                    resources: [
+                        {
+                            title: 'FamilyHub Platform',
+                            description: 'Digital intranet for family collaboration.',
+                            icon: 'fas fa-home',
+                            color: 'text-purple-600',
+                            link: 'modules/family-hub.html',
+                            tags: ['Family', 'Collaboration', 'Organization']
+                        },
+                        {
+                            title: 'Parenting Plan Creator',
+                            description: 'Structure effective co-parenting agreements.',
+                            icon: 'fas fa-baby',
+                            color: 'text-pink-500',
+                            link: 'modules/legalhelp.html#parenting',
+                            tags: ['Parenting', 'Legal', 'Planning']
+                        },
+                        {
+                            title: 'Family Meeting Templates',
+                            description: 'Conduct productive family discussions.',
+                            icon: 'fas fa-comments',
+                            color: 'text-blue-500',
+                            link: 'modules/commshub.html',
+                            tags: ['Communication', 'Family', 'Templates']
+                        }
+                    ]
+                },
+                {
+                    id: 'professional-tools',
+                    title: 'Professional Tools',
+                    icon: 'fas fa-briefcase',
+                    color: 'text-orange-500',
+                    description: 'Advance your career and professional capabilities.',
+                    resources: [
+                        {
+                            title: 'HRHelp Suite',
+                            description: 'Human resources management made simple.',
+                            icon: 'fas fa-user-tie',
+                            color: 'text-gray-600',
+                            link: 'modules/hrhelp.html',
+                            tags: ['HR', 'Management', 'Business']
+                        },
+                        {
+                            title: 'Document Generator',
+                            description: 'Create professional documents efficiently.',
+                            icon: 'fas fa-file-alt',
+                            color: 'text-blue-500',
+                            link: 'modules/docuhelp.html',
+                            tags: ['Documents', 'Templates', 'Professional']
+                        },
+                        {
+                            title: 'Training Resources',
+                            description: 'Skill development and learning materials.',
+                            icon: 'fas fa-chalkboard-teacher',
+                            color: 'text-green-500',
+                            link: 'modules/training.html',
+                            tags: ['Training', 'Skills', 'Development']
+                        }
+                    ]
+                },
+                {
+                    id: 'legal-compliance',
+                    title: 'Legal & Compliance',
+                    icon: 'fas fa-gavel',
+                    color: 'text-red-500',
+                    description: 'Navigate legal requirements with confidence.',
+                    resources: [
+                        {
+                            title: 'LegalHelp Database',
+                            description: 'Searchable South African legislation.',
+                            icon: 'fas fa-book-open',
+                            color: 'text-red-600',
+                            link: 'https://salatiso.com/legalhelp/',
+                            external: true,
+                            tags: ['Legal', 'Legislation', 'Database']
+                        },
+                        {
+                            title: 'Legal Document Templates',
+                            description: 'Standard legal forms and agreements.',
+                            icon: 'fas fa-file-contract',
+                            color: 'text-blue-600',
+                            link: 'modules/legalhelp.html',
+                            tags: ['Legal', 'Templates', 'Forms']
+                        },
+                        {
+                            title: 'Compliance Checklists',
+                            description: 'Ensure regulatory compliance.',
+                            icon: 'fas fa-clipboard-check',
+                            color: 'text-green-600',
+                            link: 'modules/legalhelp.html#compliance',
+                            tags: ['Compliance', 'Checklists', 'Regulatory']
+                        }
+                    ]
+                }
+            ];
+
+            // Function to create category section
+            function createCategorySection(category) {
+                return `
+                    <div class="category-section bg-white dark:bg-gray-700 rounded-lg shadow-lg overflow-hidden">
+                        <div class="category-header cursor-pointer p-6 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors" onclick="toggleCategory('${category.id}')">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-4">
+                                    <i class="${category.icon} ${category.color} text-2xl"></i>
+                                    <div>
+                                        <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200">${category.title}</h3>
+                                        <p class="text-gray-600 dark:text-gray-400 text-sm">${category.description}</p>
+                                    </div>
+                                </div>
+                                <i class="fas fa-chevron-down transition-transform duration-300" id="chevron-${category.id}"></i>
+                            </div>
+                        </div>
+                        <div class="category-content" id="content-${category.id}">
+                            <div class="p-6 pt-0">
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    ${category.resources.map(resource => createResourceCard(resource)).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Function to create resource card
+            function createResourceCard(resource) {
+                const target = resource.external ? '_blank' : '_self';
+                return `
+                    <a href="${resource.link}" target="${target}" class="resource-item bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-transform transform hover:scale-105">
+                        <div class="p-4">
+                            <div class="flex items-center space-x-3 mb-2">
+                                <i class="${resource.icon} ${resource.color} text-2xl"></i>
+                                <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">${resource.title}</h4>
+                            </div>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">${resource.description}</p>
+                            <div class="flex flex-wrap gap-2">
+                                ${resource.tags.map(tag => `<span class="text-xs font-medium bg-gray-200 dark:bg-gray-700 rounded-full px-3 py-1">${tag}</span>`).join('')}
+                            </div>
+                        </div>
+                    </a>
+                `;
+            }
+
+            // Render categories on page load
+            const categoriesContainer = document.getElementById('resource-categories');
+            resourceCategories.forEach(category => {
+                categoriesContainer.insertAdjacentHTML('beforeend', createCategorySection(category));
+            });
+
+            // Initial visibility state for categories
+            const categoryStates = {};
+            resourceCategories.forEach(category => {
+                categoryStates[category.id] = false;
+            });
+
+            // Toggle category visibility
+            window.toggleCategory = function(categoryId) {
+                categoryStates[categoryId] = !categoryStates[categoryId];
+                const content = document.getElementById(`content-${categoryId}`);
+                const chevron = document.getElementById(`chevron-${categoryId}`);
+                if (categoryStates[categoryId]) {
+                    content.classList.add('expanded');
+                    chevron.classList.remove('fa-chevron-down');
+                    chevron.classList.add('fa-chevron-up');
+                } else {
+                    content.classList.remove('expanded');
+                    chevron.classList.remove('fa-chevron-up');
+                    chevron.classList.add('fa-chevron-down');
+                }
+            }
+
+            // Intersection Observer for resource grid animations
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.1
+            });
+
+            // Observe resource items
+            document.querySelectorAll('.resource-item').forEach(item => {
+                observer.observe(item);
+            });
+        });
+    </script>
 </body>
 </html>

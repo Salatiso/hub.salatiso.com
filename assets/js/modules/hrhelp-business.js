@@ -1339,17 +1339,17 @@ async function handleAction(action, element) {
 
     switch(action) {
         case 'approve-leave':
-            await updateDoc(doc(db, `users/${businessId}/hr/leaveRequests`, id), { status: 'approved' });
+            await updateDoc(doc(db, `users/${businessId}/leaveRequests`, id), { status: 'approved' });
             showNotification('Leave request approved.', 'success');
             break;
         case 'reject-leave':
-            await updateDoc(doc(db, `users/${businessId}/hr/leaveRequests`, id), { status: 'rejected' });
+            await updateDoc(doc(db, `users/${businessId}/leaveRequests`, id), { status: 'rejected' });
             showNotification('Leave request rejected.', 'info');
             break;
         case 'toggle-onboarding-task':
             const employeeId = element.dataset.employeeId;
             const taskId = element.dataset.taskId;
-            const employeeRef = doc(db, `users/${businessId}/hr/employees`, employeeId);
+            const employeeRef = doc(db, `users/${businessId}/employees`, employeeId);
             const employeeDoc = await getDoc(employeeRef);
             if (employeeDoc.exists()) {
                 const employeeData = employeeDoc.data();

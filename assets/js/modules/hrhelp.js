@@ -55,7 +55,8 @@ async function loadPersonalModule() {
 async function loadBusinessModule() {
     if (isBusinessLoaded) return;
     try {
-        businessModule = await import('./hrhelp-business.js');
+        // Add cache-busting query parameter to force reload
+        businessModule = await import('./hrhelp-business.js?v=' + new Date().getTime());
         businessModule.init(currentUser);
         isBusinessLoaded = true;
     } catch (error) {

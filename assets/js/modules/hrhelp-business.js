@@ -1717,8 +1717,59 @@ function getModalHTML() {
     const employeeOptions = employeesCache.map(e => `<option value="${e.id}">${e.firstName} ${e.lastName}</option>`).join('');
 
     return `
-        <!-- Add other modals here -->
-        
+        <!-- Employee Modal -->
+        <div id="add-employee-modal" class="modal-container">
+            <div class="modal-content">
+                <h3 class="modal-title">Add/Edit Employee</h3>
+                <form id="add-employee-form">
+                    <input type="hidden" name="id">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><label class="form-label">First Name</label><input type="text" name="firstName" required class="form-input"></div>
+                        <div><label class="form-label">Last Name</label><input type="text" name="lastName" required class="form-input"></div>
+                        <div><label class="form-label">Email</label><input type="email" name="email" required class="form-input"></div>
+                        <div><label class="form-label">Phone</label><input type="tel" name="phone" class="form-input"></div>
+                        <div><label class="form-label">Job Title</label><input type="text" name="jobTitle" required class="form-input"></div>
+                        <div><label class="form-label">Employment Type</label><select name="employmentType" required class="form-input">${EMPLOYEE_TYPES.map(type => `<option value="${type}">${type}</option>`).join('')}</select></div>
+                        <div><label class="form-label">Status</label><select name="status" class="form-input">${EMPLOYMENT_STATUSES.map(status => `<option value="${status}">${status}</option>`).join('')}</select></div>
+                        <div><label class="form-label">Start Date</label><input type="date" name="startDate" required class="form-input"></div>
+                        <div><label class="form-label">Salary</label><input type="number" name="salary" class="form-input"></div>
+                        <div><label class="form-label">Department</label><input type="text" name="department" class="form-input"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" data-modal-close="add-employee-modal" class="btn-secondary">Cancel</button>
+                        <button type="submit" class="btn-primary">Save Employee</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Job Position Modal -->
+        <div id="add-position-modal" class="modal-container">
+            <div class="modal-content">
+                <h3 class="modal-title">Post Job Opening</h3>
+                <form id="add-position-form">
+                    <input type="hidden" name="id">
+                    <div class="space-y-4">
+                        <div><label class="form-label">Job Title</label><input type="text" name="title" required class="form-input"></div>
+                        <div><label class="form-label">Department</label><input type="text" name="department" required class="form-input"></div>
+                        <div><label class="form-label">Employment Type</label><select name="employmentType" required class="form-input">${EMPLOYEE_TYPES.map(type => `<option value="${type}">${type}</option>`).join('')}</select></div>
+                        <div><label class="form-label">Location</label><input type="text" name="location" required class="form-input"></div>
+                        <div><label class="form-label">Description</label><textarea name="description" rows="4" required class="form-input"></textarea></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="form-label">Salary Range (Min)</label><input type="number" name="salaryMin" class="form-input"></div>
+                            <div><label class="form-label">Salary Range (Max)</label><input type="number" name="salaryMax" class="form-input"></div>
+                        </div>
+                        <div><label class="form-label">Status</label><select name="status" class="form-input"><option value="Open">Open</option><option value="In Progress">In Progress</option><option value="Filled">Filled</option><option value="Closed">Closed</option></select></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" data-modal-close="add-position-modal" class="btn-secondary">Cancel</button>
+                        <button type="submit" class="btn-primary">Post Job</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Performance Review Modal -->
         <div id="performance-review-modal" class="modal-container">
             <div class="modal-content">
                 <h3 class="modal-title">Add/Edit Performance Review</h3>
@@ -1737,6 +1788,166 @@ function getModalHTML() {
                     <div class="modal-footer">
                         <button type="button" data-modal-close="performance-review-modal" class="btn-secondary">Cancel</button>
                         <button type="submit" class="btn-primary">Save Review</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Training Modal -->
+        <div id="add-training-modal" class="modal-container">
+            <div class="modal-content">
+                <h3 class="modal-title">Add Training Program</h3>
+                <form id="add-training-modal-form">
+                    <input type="hidden" name="id">
+                    <div class="space-y-4">
+                        <div><label class="form-label">Training Title</label><input type="text" name="title" required class="form-input"></div>
+                        <div><label class="form-label">Provider</label><input type="text" name="provider" required class="form-input"></div>
+                        <div><label class="form-label">Description</label><textarea name="description" rows="3" class="form-input"></textarea></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="form-label">Start Date</label><input type="date" name="startDate" required class="form-input"></div>
+                            <div><label class="form-label">End Date</label><input type="date" name="endDate" class="form-input"></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="form-label">Cost</label><input type="number" name="cost" class="form-input"></div>
+                            <div><label class="form-label">Status</label><select name="status" class="form-input"><option value="Planned">Planned</option><option value="Active">Active</option><option value="Completed">Completed</option><option value="Cancelled">Cancelled</option></select></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" data-modal-close="add-training-modal" class="btn-secondary">Cancel</button>
+                        <button type="submit" class="btn-primary">Save Training</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Compensation Modal -->
+        <div id="add-compensation-modal" class="modal-container">
+            <div class="modal-content">
+                <h3 class="modal-title">Add/Edit Compensation</h3>
+                <form id="add-compensation-modal-form">
+                    <input type="hidden" name="id">
+                    <div class="space-y-4">
+                        <div><label class="form-label">Employee</label><select name="employeeId" required class="form-input">${employeeOptions}</select></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="form-label">Base Salary</label><input type="number" name="baseSalary" required class="form-input"></div>
+                            <div><label class="form-label">Bonus</label><input type="number" name="bonus" class="form-input"></div>
+                        </div>
+                        <div><label class="form-label">Benefits Package</label><input type="text" name="benefitsPackage" class="form-input"></div>
+                        <div><label class="form-label">Last Review Date</label><input type="date" name="lastReviewDate" class="form-input"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" data-modal-close="add-compensation-modal" class="btn-secondary">Cancel</button>
+                        <button type="submit" class="btn-primary">Save Compensation</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Benefits Modal -->
+        <div id="add-benefit-modal" class="modal-container">
+            <div class="modal-content">
+                <h3 class="modal-title">Add Company Benefit</h3>
+                <form id="add-benefit-modal-form">
+                    <input type="hidden" name="id">
+                    <div class="space-y-4">
+                        <div><label class="form-label">Benefit Name</label><input type="text" name="name" required class="form-input"></div>
+                        <div><label class="form-label">Type</label><select name="type" required class="form-input"><option value="Health">Health</option><option value="Retirement">Retirement</option><option value="Insurance">Insurance</option><option value="Wellness">Wellness</option><option value="Other">Other</option></select></div>
+                        <div><label class="form-label">Provider</label><input type="text" name="provider" required class="form-input"></div>
+                        <div><label class="form-label">Description</label><textarea name="description" rows="3" class="form-input"></textarea></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" data-modal-close="add-benefit-modal" class="btn-secondary">Cancel</button>
+                        <button type="submit" class="btn-primary">Save Benefit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Leave Request Modal -->
+        <div id="add-leave-modal" class="modal-container">
+            <div class="modal-content">
+                <h3 class="modal-title">Add Leave Request</h3>
+                <form id="add-leave-modal-form">
+                    <input type="hidden" name="id">
+                    <div class="space-y-4">
+                        <div><label class="form-label">Employee</label><select name="employeeId" required class="form-input">${employeeOptions}</select></div>
+                        <div><label class="form-label">Leave Type</label><select name="type" required class="form-input">${LEAVE_TYPES.map(type => `<option value="${type}">${type}</option>`).join('')}</select></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="form-label">Start Date</label><input type="date" name="startDate" required class="form-input"></div>
+                            <div><label class="form-label">End Date</label><input type="date" name="endDate" required class="form-input"></div>
+                        </div>
+                        <div><label class="form-label">Reason</label><textarea name="reason" rows="3" class="form-input"></textarea></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" data-modal-close="add-leave-modal" class="btn-secondary">Cancel</button>
+                        <button type="submit" class="btn-primary">Submit Request</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Grievance Modal -->
+        <div id="add-grievance-modal" class="modal-container">
+            <div class="modal-content">
+                <h3 class="modal-title">File Grievance</h3>
+                <form id="add-grievance-modal-form">
+                    <input type="hidden" name="id">
+                    <div class="space-y-4">
+                        <div><label class="form-label">Employee</label><select name="employeeId" required class="form-input">${employeeOptions}</select></div>
+                        <div><label class="form-label">Grievance Type</label><select name="type" required class="form-input">${GRIEVANCE_TYPES.map(type => `<option value="${type}">${type}</option>`).join('')}</select></div>
+                        <div><label class="form-label">Priority</label><select name="priority" required class="form-input"><option value="Low">Low</option><option value="Medium">Medium</option><option value="High">High</option><option value="Critical">Critical</option></select></div>
+                        <div><label class="form-label">Description</label><textarea name="description" rows="4" required class="form-input"></textarea></div>
+                        <div><label class="form-label">Case Number</label><input type="text" name="caseNumber" required class="form-input" placeholder="GRV-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" data-modal-close="add-grievance-modal" class="btn-secondary">Cancel</button>
+                        <button type="submit" class="btn-primary">File Grievance</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Disciplinary Action Modal -->
+        <div id="disciplinary-action-modal" class="modal-container">
+            <div class="modal-content">
+                <h3 class="modal-title">Disciplinary Action</h3>
+                <form id="disciplinary-action-modal-form">
+                    <input type="hidden" name="id">
+                    <div class="space-y-4">
+                        <div><label class="form-label">Employee</label><select name="employeeId" required class="form-input">${employeeOptions}</select></div>
+                        <div><label class="form-label">Action Type</label><select name="actionType" required class="form-input">${DISCIPLINARY_ACTIONS.map(action => `<option value="${action}">${action}</option>`).join('')}</select></div>
+                        <div><label class="form-label">Severity</label><select name="severity" required class="form-input"><option value="Minor">Minor</option><option value="Major">Major</option><option value="Serious">Serious</option></select></div>
+                        <div><label class="form-label">Description</label><textarea name="description" rows="4" required class="form-input"></textarea></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="form-label">Date Issued</label><input type="date" name="dateIssued" required class="form-input"></div>
+                            <div><label class="form-label">Follow-up Date</label><input type="date" name="followUpDate" class="form-input"></div>
+                        </div>
+                        <div><label class="form-label">Issued By</label><input type="text" name="issuedBy" required class="form-input"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" data-modal-close="disciplinary-action-modal" class="btn-secondary">Cancel</button>
+                        <button type="submit" class="btn-primary">Issue Action</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Termination Modal -->
+        <div id="termination-modal" class="modal-container">
+            <div class="modal-content">
+                <h3 class="modal-title">Employee Termination</h3>
+                <form id="termination-modal-form">
+                    <input type="hidden" name="id">
+                    <div class="space-y-4">
+                        <div><label class="form-label">Employee</label><select name="employeeId" required class="form-input">${employeeOptions}</select></div>
+                        <div><label class="form-label">Termination Reason</label><select name="reason" required class="form-input"><option value="Resignation">Resignation</option><option value="Dismissal">Dismissal</option><option value="Redundancy">Redundancy</option><option value="End of Contract">End of Contract</option><option value="Retirement">Retirement</option></select></div>
+                        <div><label class="form-label">Termination Date</label><input type="date" name="terminationDate" required class="form-input"></div>
+                        <div><label class="form-label">Exit Interview Date</label><input type="date" name="exitInterviewDate" class="form-input"></div>
+                        <div><label class="form-label">Notes</label><textarea name="notes" rows="3" class="form-input"></textarea></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" data-modal-close="termination-modal" class="btn-secondary">Cancel</button>
+                        <button type="submit" class="btn-primary">Process Termination</button>
                     </div>
                 </form>
             </div>

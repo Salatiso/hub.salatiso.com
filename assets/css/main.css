@@ -23,10 +23,74 @@
     @apply border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500;
 }
 
+/* Sidebar Layout Fixes */
+#app-container {
+    @apply flex h-screen;
+}
+
+#sidebar-placeholder {
+    @apply flex-shrink-0 w-64 bg-slate-800 text-white;
+    min-height: 100vh;
+    position: relative;
+}
+
+#sidebar-placeholder nav {
+    @apply space-y-2 pt-4;
+}
+
+#sidebar-placeholder nav a {
+    @apply block py-3 px-4 rounded-md text-sm font-medium transition-colors;
+}
+
+#sidebar-placeholder nav a:hover {
+    @apply bg-slate-700 text-white;
+}
+
+#sidebar-placeholder nav a.active {
+    @apply bg-slate-700 text-white font-bold;
+}
+
+/* Main content area adjustments */
+main {
+    @apply flex-1 overflow-hidden;
+    background-color: #f8fafc;
+}
+
+#publications-module-container {
+    @apply h-full overflow-y-auto;
+}
+
+/* Mobile responsive sidebar */
+@media (max-width: 768px) {
+    #app-container {
+        @apply flex-col;
+    }
+    
+    #sidebar-placeholder {
+        @apply w-full h-auto;
+        min-height: auto;
+    }
+    
+    main {
+        @apply flex-1;
+        min-height: calc(100vh - 200px);
+    }
+}
+
 /* Print styles */
 @media print {
     .no-print {
         display: none !important;
+    }
+    
+    #sidebar-placeholder {
+        display: none !important;
+    }
+    
+    main {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
     
     body {
@@ -61,4 +125,31 @@
     border-bottom: 1px solid #ccc;
     border-left: 1px solid #ccc;
     border-right: 1px solid #ccc;
+}
+
+/* Additional Publications specific styles */
+.publications-grid {
+    @apply grid gap-6;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.publication-card {
+    @apply bg-white rounded-lg shadow-sm border border-slate-200 hover:shadow-md transition-shadow;
+}
+
+.publication-card:hover {
+    transform: translateY(-2px);
+    transition: all 0.2s ease-in-out;
+}
+
+/* Modal improvements */
+.modal-content {
+    @apply bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+/* Loading spinner alignment */
+.loading-container {
+    @apply flex items-center justify-center h-full min-h-[400px];
 }

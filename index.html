@@ -39,12 +39,29 @@
         .dark .border-gray-200 {
             border-color: #4b5563;
         }
+        
+        /* Logo hover animation */
+        .salatiso-logo-svg {
+            transition: all 0.3s ease;
+        }
+        .logo-container:hover .salatiso-logo-svg {
+            transform: rotate(5deg) scale(1.05);
+        }
     </style>
 </head>
 <body class="bg-gray-100">
     <div class="min-h-screen flex flex-col items-center justify-center p-4">
         <div class="max-w-4xl w-full">
             <div class="text-center">
+                <!-- Logo Section -->
+                <div class="logo-container mb-8">
+                    <svg viewBox="0 0 100 100" class="salatiso-logo-svg h-20 w-20 md:h-24 md:w-24 mx-auto text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                        <circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="8" fill="none"/>
+                        <path d="M50 10 L 50 90 M10 50 L 90 50" stroke="#4b5563" stroke-width="2"/>
+                        <path d="M50 10 L 40 25 L 60 25 Z" fill="currentColor"/>
+                    </svg>
+                </div>
+                
                 <h1 class="text-4xl md:text-5xl font-extrabold text-gray-800 font-poppins" data-translate-key="welcome_title">Welcome to The Hub</h1>
                 <p class="text-xl text-gray-600 mt-4" data-translate-key="welcome_subtitle">Your digital homestead, by Salatiso.</p>
                 <p class="mt-6 text-gray-700 max-w-2xl mx-auto" data-translate-key="welcome_description">
@@ -61,32 +78,32 @@
             </div>
 
             <!-- NEW: Explore The Hub Section -->
-            <div class="mt-16 pt-10 border-t border-gray-200">
+            <div class="mt-16 pt-10 border-t border-gray-200 dark:border-gray-600">
                 <h2 class="text-2xl font-bold text-center text-gray-800 mb-8" data-translate-key="explore_hub_title">Explore The Hub</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <!-- About Us Card -->
-                    <a href="about.html" class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow text-center">
+                    <a href="about.html" class="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow text-center">
                         <i class="fas fa-info-circle text-3xl text-blue-500 mb-3"></i>
-                        <h3 class="font-bold text-lg text-gray-800" data-translate-key="philosophy_title">Our Philosophy</h3>
-                        <p class="text-sm text-gray-600 mt-1" data-translate-key="philosophy_description">Discover the "Live, Learn, Lead" journey behind The Hub.</p>
+                        <h3 class="font-bold text-lg text-gray-800 dark:text-gray-200" data-translate-key="philosophy_title">Our Philosophy</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1" data-translate-key="philosophy_description">Discover the "Live, Learn, Lead" journey behind The Hub.</p>
                     </a>
                     <!-- Assessment Card -->
-                    <a href="assessment.html" class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow text-center">
+                    <a href="assessment.html" class="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow text-center">
                         <i class="fas fa-map-signs text-3xl text-green-500 mb-3"></i>
-                        <h3 class="font-bold text-lg text-gray-800" data-translate-key="find_tool_title">Find Your Tool</h3>
-                        <p class="text-sm text-gray-600 mt-1" data-translate-key="find_tool_description">Answer a few questions to find the perfect starting point for you.</p>
+                        <h3 class="font-bold text-lg text-gray-800 dark:text-gray-200" data-translate-key="find_tool_title">Find Your Tool</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1" data-translate-key="find_tool_description">Answer a few questions to find the perfect starting point for you.</p>
                     </a>
                     <!-- Quiz Card -->
-                    <a href="quiz.html" class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow text-center">
+                    <a href="quiz.html" class="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow text-center">
                         <i class="fas fa-brain text-3xl text-purple-500 mb-3"></i>
-                        <h3 class="font-bold text-lg text-gray-800" data-translate-key="quiz_title">Holistic Quiz</h3>
-                        <p class="text-sm text-gray-600 mt-1" data-translate-key="quiz_description">Begin the journey of self-discovery and build your LifeCV.</p>
+                        <h3 class="font-bold text-lg text-gray-800 dark:text-gray-200" data-translate-key="quiz_title">Holistic Quiz</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1" data-translate-key="quiz_description">Begin the journey of self-discovery and build your LifeCV.</p>
                     </a>
                     <!-- Contact Card -->
-                    <a href="contact.html" class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow text-center">
+                    <a href="contact.html" class="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow text-center">
                         <i class="fas fa-envelope text-3xl text-orange-500 mb-3"></i>
-                        <h3 class="font-bold text-lg text-gray-800" data-translate-key="contact_title">Get In Touch</h3>
-                        <p class="text-sm text-gray-600 mt-1" data-translate-key="contact_description">Have questions or feedback? We'd love to hear from you.</p>
+                        <h3 class="font-bold text-lg text-gray-800 dark:text-gray-200" data-translate-key="contact_title">Get In Touch</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1" data-translate-key="contact_description">Have questions or feedback? We'd love to hear from you.</p>
                     </a>
                 </div>
             </div>

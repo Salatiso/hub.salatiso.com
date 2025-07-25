@@ -325,6 +325,237 @@ function renderMyGoals() {
     `;
 }
 
+function renderSkills() {
+    const skillsFromEntries = lifeCvCache
+        .filter(entry => entry.type === 'skill')
+        .map(entry => ({
+            name: entry.title,
+            level: entry.status === 'excellent_pass' ? 'Expert' : entry.status === 'completed' ? 'Proficient' : 'Learning',
+            tags: entry.tags
+        }));
+
+    document.getElementById('main-content-area-personal').innerHTML = `
+        <div>
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-800">Skills Portfolio</h1>
+                    <p class="text-slate-500">Your growing collection of skills and competencies.</p>
+                </div>
+                <button data-modal-toggle="add-lifecv-modal" data-preset-type="skill" class="btn-primary flex items-center">
+                    <i class="fas fa-plus mr-2"></i> Add Skill
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                ${skillsFromEntries.length > 0 ? skillsFromEntries.map(skill => `
+                    <div class="bg-white p-6 rounded-xl shadow-md">
+                        <h3 class="font-bold text-lg text-slate-800 mb-2">${skill.name}</h3>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-sm font-medium text-slate-600">Proficiency</span>
+                            <span class="px-2 py-1 text-xs font-bold rounded-full ${
+                                skill.level === 'Expert' ? 'bg-yellow-100 text-yellow-800' : 
+                                skill.level === 'Proficient' ? 'bg-green-100 text-green-800' : 
+                                'bg-blue-100 text-blue-800'
+                            }">${skill.level}</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1">
+                            ${skill.tags.map(tag => `<span class="px-2 py-1 text-xs rounded-full bg-slate-100 text-slate-600">${tag}</span>`).join('')}
+                        </div>
+                    </div>
+                `).join('') : `
+                    <div class="col-span-full text-center p-10 bg-white rounded-xl shadow-md">
+                        <i class="fas fa-cogs fa-3x text-slate-300 mb-4"></i>
+                        <h3 class="text-xl font-bold text-slate-700">No Skills Added Yet</h3>
+                        <p class="text-slate-500 mt-2">Add skills to your LifeCV to see them here.</p>
+                    </div>
+                `}
+            </div>
+        </div>
+    `;
+}
+
+function renderExperience() {
+    const experienceEntries = lifeCvCache.filter(entry => entry.type === 'work_experience');
+
+    document.getElementById('main-content-area-personal').innerHTML = `
+        <div>
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-800">Work Experience</h1>
+                    <p class="text-slate-500">Your professional journey and career milestones.</p>
+                </div>
+                <button data-modal-toggle="add-lifecv-modal" data-preset-type="work_experience" class="btn-primary flex items-center">
+                    <i class="fas fa-plus mr-2"></i> Add Experience
+                </button>
+            </div>
+            <div class="space-y-6">
+                ${experienceEntries.length > 0 ? experienceEntries.map(entry => `
+                    <div class="bg-white p-6 rounded-xl shadow-md">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="font-bold text-xl text-slate-800">${entry.title}</h3>
+                                <p class="text-slate-600 font-medium">${entry.source || 'Company Name'}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm text-slate-500">${entry.startDate || ''} ${entry.endDate ? `- ${entry.endDate}` : '- Present'}</p>
+                                ${getStatusBadge(entry.status)}
+                            </div>
+                        </div>
+                        <p class="text-slate-700 mb-3">${entry.description}</p>
+                        ${entry.actionTaken ? `<div class="bg-green-50 p-3 rounded-lg mb-3"><strong class="text-green-700">Key Achievements:</strong> ${entry.actionTaken}</div>` : ''}
+                        <div class="flex flex-wrap gap-2">
+                            ${entry.tags.map(tag => `<span class="px-2 py-1 text-xs rounded-full bg-slate-100 text-slate-600">${tag}</span>`).join('')}
+                        </div>
+                    </div>
+                `).join('') : `
+                    <div class="text-center p-10 bg-white rounded-xl shadow-md">
+                        <i class="fas fa-briefcase fa-3x text-slate-300 mb-4"></i>
+                        <h3 class="text-xl font-bold text-slate-700">No Experience Added Yet</h3>
+                        <p class="text-slate-500 mt-2">Add work experience to your LifeCV to see it here.</p>
+                    </div>
+                `}
+            </div>
+        </div>
+    `;
+}
+
+function renderEducation() {
+    const educationEntries = lifeCvCache.filter(entry => entry.type === 'formal_education' || entry.type === 'certification');
+
+    document.getElementById('main-content-area-personal').innerHTML = `
+        <div>
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-800">Education & Certifications</h1>
+                    <p class="text-slate-500">Your formal learning achievements and qualifications.</p>
+                </div>
+                <button data-modal-toggle="add-lifecv-modal" data-preset-type="formal_education" class="btn-primary flex items-center">
+                    <i class="fas fa-plus mr-2"></i> Add Education
+                </button>
+            </div>
+            <div class="space-y-6">
+                ${educationEntries.length > 0 ? educationEntries.map(entry => `
+                    <div class="bg-white p-6 rounded-xl shadow-md">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center mr-4">
+                                    <i class="fas ${entry.type === 'certification' ? 'fa-certificate' : 'fa-graduation-cap'} text-indigo-600"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-xl text-slate-800">${entry.title}</h3>
+                                    <p class="text-slate-600 font-medium">${entry.source || 'Institution'}</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm text-slate-500">${entry.endDate || entry.startDate || ''}</p>
+                                ${getStatusBadge(entry.status)}
+                            </div>
+                        </div>
+                        <p class="text-slate-700 mb-3">${entry.description}</p>
+                        <div class="flex flex-wrap gap-2">
+                            ${entry.tags.map(tag => `<span class="px-2 py-1 text-xs rounded-full bg-indigo-100 text-indigo-600">${tag}</span>`).join('')}
+                        </div>
+                    </div>
+                `).join('') : `
+                    <div class="text-center p-10 bg-white rounded-xl shadow-md">
+                        <i class="fas fa-graduation-cap fa-3x text-slate-300 mb-4"></i>
+                        <h3 class="text-xl font-bold text-slate-700">No Education Added Yet</h3>
+                        <p class="text-slate-500 mt-2">Add your education and certifications to your LifeCV to see them here.</p>
+                    </div>
+                `}
+            </div>
+        </div>
+    `;
+}
+
+function renderPortfolio() {
+    const projectEntries = lifeCvCache.filter(entry => entry.type === 'project');
+
+    document.getElementById('main-content-area-personal').innerHTML = `
+        <div>
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-800">Project Portfolio</h1>
+                    <p class="text-slate-500">Showcase your projects, creations, and achievements.</p>
+                </div>
+                <button data-modal-toggle="add-lifecv-modal" data-preset-type="project" class="btn-primary flex items-center">
+                    <i class="fas fa-plus mr-2"></i> Add Project
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                ${projectEntries.length > 0 ? projectEntries.map(entry => `
+                    <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="font-bold text-xl text-slate-800">${entry.title}</h3>
+                            ${getStatusBadge(entry.status)}
+                        </div>
+                        <p class="text-slate-700 mb-4">${entry.description}</p>
+                        ${entry.actionTaken ? `<div class="bg-blue-50 p-3 rounded-lg mb-4"><strong class="text-blue-700">What I Built:</strong> ${entry.actionTaken}</div>` : ''}
+                        ${entry.outcome ? `<div class="bg-green-50 p-3 rounded-lg mb-4"><strong class="text-green-700">Impact:</strong> ${entry.outcome}</div>` : ''}
+                        <div class="flex flex-wrap gap-2">
+                            ${entry.tags.map(tag => `<span class="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-600">${tag}</span>`).join('')}
+                        </div>
+                    </div>
+                `).join('') : `
+                    <div class="col-span-full text-center p-10 bg-white rounded-xl shadow-md">
+                        <i class="fas fa-folder-open fa-3x text-slate-300 mb-4"></i>
+                        <h3 class="text-xl font-bold text-slate-700">No Projects Added Yet</h3>
+                        <p class="text-slate-500 mt-2">Add projects to your LifeCV to showcase your work here.</p>
+                    </div>
+                `}
+            </div>
+        </div>
+    `;
+}
+
+function renderContributions() {
+    const contributionEntries = lifeCvCache.filter(entry => 
+        entry.tags.some(tag => ['volunteer', 'community', 'charity', 'giving', 'helping'].includes(tag.toLowerCase()))
+    );
+
+    document.getElementById('main-content-area-personal').innerHTML = `
+        <div>
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-800">Community Contributions</h1>
+                    <p class="text-slate-500">Your impact through volunteering, mentoring, and giving back.</p>
+                </div>
+                <button data-modal-toggle="add-lifecv-modal" class="btn-primary flex items-center">
+                    <i class="fas fa-plus mr-2"></i> Add Contribution
+                </button>
+            </div>
+            <div class="space-y-6">
+                ${contributionEntries.length > 0 ? contributionEntries.map(entry => `
+                    <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-green-500">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="font-bold text-xl text-slate-800">${entry.title}</h3>
+                                <p class="text-slate-600 font-medium">${entry.source || 'Community Service'}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm text-slate-500">${entry.startDate || ''} ${entry.endDate ? `- ${entry.endDate}` : ''}</p>
+                                ${getStatusBadge(entry.status)}
+                            </div>
+                        </div>
+                        <p class="text-slate-700 mb-3">${entry.description}</p>
+                        ${entry.actionTaken ? `<div class="bg-green-50 p-3 rounded-lg mb-3"><strong class="text-green-700">My Contribution:</strong> ${entry.actionTaken}</div>` : ''}
+                        ${entry.outcome ? `<div class="bg-yellow-50 p-3 rounded-lg mb-3"><strong class="text-yellow-700">Impact:</strong> ${entry.outcome}</div>` : ''}
+                        <div class="flex flex-wrap gap-2">
+                            ${entry.tags.map(tag => `<span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-600">${tag}</span>`).join('')}
+                        </div>
+                    </div>
+                `).join('') : `
+                    <div class="text-center p-10 bg-white rounded-xl shadow-md">
+                        <i class="fas fa-hands-helping fa-3x text-slate-300 mb-4"></i>
+                        <h3 class="text-xl font-bold text-slate-700">No Contributions Added Yet</h3>
+                        <p class="text-slate-500 mt-2">Add your volunteer work and community contributions to your LifeCV.</p>
+                        <p class="text-slate-400 text-sm mt-1">Tip: Use tags like "volunteer", "community", "charity" to categorize contributions.</p>
+                    </div>
+                `}
+            </div>
+        </div>
+    `;
+}
+
 function renderKidsCorner() {
     const jobs = [
         { name: 'Doctor', icon: 'fa-user-md', color: 'blue' },
@@ -380,26 +611,191 @@ function renderKidsCorner() {
 }
 
 function renderResourceHub() {
-     document.getElementById('main-content-area-personal').innerHTML = `
+    const resources = [
+        {
+            title: "Safety First Help",
+            description: "Comprehensive safety and emergency guidance for workplace and personal situations.",
+            url: "https://safetyfirst.help/",
+            icon: "fa-shield-alt",
+            color: "red"
+        },
+        {
+            title: "HR Help Career Module",
+            description: "Professional career development tools and guidance for workplace success.",
+            url: "https://salatiso.com/hrhelp/modules/career.html",
+            icon: "fa-briefcase",
+            color: "blue"
+        },
+        {
+            title: "Legal Help",
+            description: "Legal guidance and resources for common legal questions and situations.",
+            url: "https://salatiso.com/legalhelp/",
+            icon: "fa-gavel",
+            color: "purple"
+        },
+        {
+            title: "Document Help",
+            description: "Templates and guidance for creating professional documents and forms.",
+            url: "https://salatiso.com/docuhelp/",
+            icon: "fa-file-alt",
+            color: "green"
+        },
+        {
+            title: "Flamea Organization",
+            description: "Community organization focused on empowerment and social development.",
+            url: "https://flamea.org/",
+            icon: "fa-users",
+            color: "orange"
+        }
+    ];
+
+    document.getElementById('main-content-area-personal').innerHTML = `
         <div>
-            <h1 class="text-3xl font-bold text-slate-800 mb-6">Resource Hub</h1>
-            <div class="bg-white rounded-xl shadow-md p-8 text-center">
-                <i class="fas fa-book-open fa-3x text-slate-300 mb-4"></i>
-                <h3 class="text-xl font-bold text-slate-700">Resource Hub Coming Soon</h3>
-                <p class="text-slate-500 mt-2">A curated library of free learning resources to fuel your growth.</p>
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-slate-800">Resource Hub</h1>
+                <p class="text-slate-500">Curated resources to support your personal and professional development.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                ${resources.map(resource => `
+                    <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 rounded-full bg-${resource.color}-100 flex items-center justify-center mr-4">
+                                <i class="fas ${resource.icon} text-${resource.color}-600 fa-lg"></i>
+                            </div>
+                            <h3 class="font-bold text-lg text-slate-800">${resource.title}</h3>
+                        </div>
+                        <p class="text-slate-600 mb-4">${resource.description}</p>
+                        <a href="${resource.url}" target="_blank" rel="noopener noreferrer" 
+                           class="inline-flex items-center text-${resource.color}-600 hover:text-${resource.color}-800 font-medium">
+                            Visit Resource
+                            <i class="fas fa-external-link-alt ml-2 fa-sm"></i>
+                        </a>
+                    </div>
+                `).join('')}
+            </div>
+            
+            <div class="mt-8 bg-gradient-to-r from-teal-50 to-blue-50 p-6 rounded-xl border border-teal-200">
+                <h2 class="text-xl font-bold text-slate-800 mb-3">
+                    <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>
+                    Learning Tip
+                </h2>
+                <p class="text-slate-700">
+                    These resources are carefully selected to complement your LifeCV journey. Bookmark the ones most relevant to your current goals and check back regularly for updates.
+                </p>
             </div>
         </div>
     `;
 }
 
 function renderSettings() {
-     document.getElementById('main-content-area-personal').innerHTML = `
+    document.getElementById('main-content-area-personal').innerHTML = `
         <div>
-            <h1 class="text-3xl font-bold text-slate-800 mb-6">Settings</h1>
-            <div class="bg-white rounded-xl shadow-md p-8 text-center">
-                <i class="fas fa-cog fa-3x text-slate-300 mb-4"></i>
-                <h3 class="text-xl font-bold text-slate-700">Settings Page Coming Soon</h3>
-                <p class="text-slate-500 mt-2">Manage your profile, privacy, and notification preferences here.</p>
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-slate-800">Settings</h1>
+                <p class="text-slate-500">Manage your profile, privacy, and preferences.</p>
+            </div>
+            
+            <div class="space-y-6">
+                <!-- Profile Settings -->
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h2 class="text-xl font-bold text-slate-800 mb-4">
+                        <i class="fas fa-user-circle text-indigo-600 mr-2"></i>
+                        Profile Settings
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="form-label">Display Name</label>
+                            <input class="input" type="text" value="${currentUser?.displayName || ''}" placeholder="Your display name">
+                        </div>
+                        <div>
+                            <label class="form-label">Email</label>
+                            <input class="input" type="email" value="${currentUser?.email || ''}" disabled class="bg-slate-100">
+                        </div>
+                    </div>
+                    <button class="btn-primary mt-4">Save Profile Changes</button>
+                </div>
+
+                <!-- Privacy Settings -->
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h2 class="text-xl font-bold text-slate-800 mb-4">
+                        <i class="fas fa-shield-alt text-green-600 mr-2"></i>
+                        Privacy Settings
+                    </h2>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="font-medium text-slate-800">Public LifeCV</h3>
+                                <p class="text-sm text-slate-500">Allow others to view your public LifeCV entries</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="font-medium text-slate-800">Analytics</h3>
+                                <p class="text-sm text-slate-500">Help improve the platform with anonymous usage data</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notification Settings -->
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h2 class="text-xl font-bold text-slate-800 mb-4">
+                        <i class="fas fa-bell text-yellow-600 mr-2"></i>
+                        Notification Preferences
+                    </h2>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="font-medium text-slate-800">Goal Reminders</h3>
+                                <p class="text-sm text-slate-500">Get reminded about your goals and milestones</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="font-medium text-slate-800">Learning Suggestions</h3>
+                                <p class="text-sm text-slate-500">Receive personalized learning recommendations</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Management -->
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h2 class="text-xl font-bold text-slate-800 mb-4">
+                        <i class="fas fa-database text-slate-600 mr-2"></i>
+                        Data Management
+                    </h2>
+                    <div class="space-y-4">
+                        <button class="flex items-center text-blue-600 hover:text-blue-800 font-medium">
+                            <i class="fas fa-download mr-2"></i>
+                            Export My Data
+                        </button>
+                        <button class="flex items-center text-red-600 hover:text-red-800 font-medium">
+                            <i class="fas fa-trash-alt mr-2"></i>
+                            Delete Account
+                        </button>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-4">
+                        These actions will affect all your data. Please proceed with caution.
+                    </p>
+                </div>
             </div>
         </div>
     `;

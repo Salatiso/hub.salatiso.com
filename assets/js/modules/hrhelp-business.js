@@ -1402,3 +1402,164 @@ function getOnboardingTasks(employee) {
         { id: 'training', name: 'Initial Training', completed: !!employee.initialTraining }
     ];
 }
+
+// Add this function before the init() function
+function getBusinessWorkspaceHTML() {
+    return `
+        <div class="flex h-screen bg-slate-100">
+            <!-- Sidebar -->
+            <div class="w-64 bg-indigo-800 text-white flex-shrink-0">
+                <div class="p-6 border-b border-indigo-700">
+                    <h2 class="text-xl font-bold">HR Management</h2>
+                    <p class="text-indigo-200 text-sm">Business Suite</p>
+                </div>
+                <nav class="mt-6">
+                    <div class="px-6 mb-4">
+                        <h3 class="text-xs font-semibold text-indigo-300 uppercase tracking-wider">Overview</h3>
+                    </div>
+                    <a href="#" class="nav-link active bg-indigo-700 text-white block px-6 py-3 text-sm font-medium hover:bg-indigo-500 transition-colors" data-view="dashboard">
+                        <i class="fas fa-tachometer-alt mr-3"></i>Dashboard
+                    </a>
+                    
+                    <div class="px-6 mt-6 mb-4">
+                        <h3 class="text-xs font-semibold text-indigo-300 uppercase tracking-wider">Employee Management</h3>
+                    </div>
+                    <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="people">
+                        <i class="fas fa-users mr-3"></i>People
+                    </a>
+                    <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="recruitment">
+                        <i class="fas fa-user-plus mr-3"></i>Recruitment
+                    </a>
+                    <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="onboarding">
+                        <i class="fas fa-clipboard-check mr-3"></i>Onboarding
+                    </a>
+                    
+                    <div class="px-6 mt-6 mb-4">
+                        <h3 class="text-xs font-semibold text-indigo-300 uppercase tracking-wider">Performance & Development</h3>
+                    </div>
+                    <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="performance">
+                        <i class="fas fa-chart-line mr-3"></i>Performance
+                    </a>
+                    <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="training">
+                        <i class="fas fa-graduation-cap mr-3"></i>Training
+                    </a>
+                    
+                    <div class="px-6 mt-6 mb-4">
+                        <h3 class="text-xs font-semibold text-indigo-300 uppercase tracking-wider">Compensation & Benefits</h3>
+                    </div>
+                    <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="compensation">
+                        <i class="fas fa-dollar-sign mr-3"></i>Compensation
+                    </a>
+                    <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="benefits">
+                        <i class="fas fa-heart mr-3"></i>Benefits
+                    </a>
+                    <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="leave">
+                        <i class="fas fa-calendar-alt mr-3"></i>Leave Management
+                    </a>
+                    
+                    <div class="px-6 mt-6 mb-4">
+                        <h3 class="text-xs font-semibold text-indigo-300 uppercase tracking-wider">Employee Relations</h3>
+                    </div>
+                    <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="employee-relations">
+                        <i class="fas fa-handshake mr-3"></i>Relations
+                    </a>
+                    <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="compliance">
+                        <i class="fas fa-shield-alt mr-3"></i>Compliance
+                    </a>
+                    
+                    <div class="px-6 mt-6 mb-4">
+                        <h3 class="text-xs font-semibold text-indigo-300 uppercase tracking-wider">Operations</h3>
+                    </div>
+                    <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="payroll">
+                        <i class="fas fa-calculator mr-3"></i>Payroll
+                    </a>
+                    <a href="#" class="nav-link text-indigo-100 hover:bg-indigo-500 block px-6 py-3 text-sm font-medium transition-colors" data-view="termination">
+                        <i class="fas fa-user-times mr-3"></i>Termination
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Main Content -->
+            <div class="flex-1 flex flex-col overflow-hidden">
+                <!-- Header -->
+                <header class="bg-white shadow-sm border-b border-slate-200 px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <h1 class="text-2xl font-bold text-slate-800">HR Management System</h1>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <button class="p-2 text-slate-400 hover:text-slate-600">
+                                <i class="fas fa-bell"></i>
+                            </button>
+                            <button class="p-2 text-slate-400 hover:text-slate-600">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                            <div class="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center">
+                                <span class="text-white text-sm font-medium">${currentUser?.email?.charAt(0).toUpperCase() || 'U'}</span>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Content Area -->
+                <main class="flex-1 overflow-y-auto p-6" id="main-content-area">
+                    <div class="text-center p-10">
+                        <i class="fas fa-spinner fa-spin fa-3x text-indigo-500"></i>
+                        <p class="mt-4 text-slate-500">Loading...</p>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <!-- Add modal containers -->
+        ${getModalHTML()}
+    `;
+}
+
+function getModalHTML() {
+    return `
+        <!-- Add Employee Modal -->
+        <div id="add-employee-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg p-6 w-full max-w-md">
+                <h3 class="text-lg font-bold mb-4">Add New Employee</h3>
+                <form id="add-employee-form">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">First Name</label>
+                            <input type="text" name="firstName" required class="w-full p-2 border border-slate-300 rounded-md">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">Last Name</label>
+                            <input type="text" name="lastName" required class="w-full p-2 border border-slate-300 rounded-md">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">Email</label>
+                            <input type="email" name="email" required class="w-full p-2 border border-slate-300 rounded-md">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">Job Title</label>
+                            <input type="text" name="jobTitle" class="w-full p-2 border border-slate-300 rounded-md">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">Employment Type</label>
+                            <select name="employmentType" class="w-full p-2 border border-slate-300 rounded-md">
+                                ${EMPLOYEE_TYPES.map(type => `<option value="${type}">${type}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">Start Date</label>
+                            <input type="date" name="startDate" class="w-full p-2 border border-slate-300 rounded-md">
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-2 mt-6">
+                        <button type="button" data-modal-close="add-employee-modal" class="btn-secondary">Cancel</button>
+                        <button type="submit" class="btn-primary">Add Employee</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Additional modals would go here -->
+        <!-- You can add more modals as needed for other functions -->
+    `;
+}

@@ -15,7 +15,7 @@
 
 import { auth, db } from '../firebase-config.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { doc, collection, addDoc, getDocs, setDoc, deleteDoc, onSnapshot, query, where, getDoc, updateDoc, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { doc, collection, addDoc, getDocs, setDoc, deleteDoc, onSnapshot, query, where, getDoc, updateDoc, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 // --- STATE MANAGEMENT ---
 let currentUser = null;
@@ -90,34 +90,28 @@ function setupDataListeners() {
     };
 
     const caches = {
-        employees: (data) => employeesCache = data,
-        leaveRequests: (data) => leaveRequestsCache = data,
+        employees: (data) => employeesCache = data.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0)),
+        leaveRequests: (data) => leaveRequestsCache = data.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0)),
         benefits: (data) => benefitsCache = data,
-        recruitment: (data) => recruitmentCache = data,
+        recruitment: (data) => recruitmentCache = data.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0)),
         performance: (data) => performanceCache = data,
         training: (data) => trainingCache = data,
         compensation: (data) => compensationCache = data,
-        grievances: (data) => grievancesCache = data,
+        grievances: (data) => grievancesCache = data.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0)),
         disciplinary: (data) => disciplinaryCache = data,
         termination: (data) => terminationCache = data
     };
 
-    for (const [key, path] of Object.entries(collections)) {
-        const q = query(collection(db, 'businesses', businessId, path), orderBy('createdAt', 'desc'));
+    Object.entries(collections).forEach(([cacheKey, collectionName]) => {
+        const q = query(collection(db, `users/${businessId}/hr/${collectionName}`), orderBy('createdAt', 'desc'));
         const unsub = onSnapshot(q, (snapshot) => {
             const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            caches[key](data);
-            console.log(`Updated ${key} cache:`, data);
-            
-            // Re-render current view if needed
-            const currentView = document.querySelector('.nav-link.active')?.dataset.view;
-            if (currentView === 'dashboard') renderDashboard();
-        }, (error) => {
-            console.error(`Error fetching ${key}:`, error);
-            showNotification(`Failed to load ${key} data.`, 'error');
-        });
+            caches[cacheKey](data);
+            const activeView = document.querySelector('.nav-link.active')?.dataset.view || 'dashboard';
+            navigateTo(activeView, true); // Re-render the current view with new data
+        }, (error) => console.error(`Error fetching ${collectionName}:`, error));
         unsubscribers.push(unsub);
-    }
+    });
 }
 
 // --- NAVIGATION & RENDERING ---
@@ -125,16 +119,18 @@ function setupDataListeners() {
 function attachEventListeners() {
     const workspace = document.getElementById('business-workspace');
     workspace.addEventListener('click', (e) => {
+        const target = e.target;
+
         // Handle sidebar navigation
-        const navLink = e.target.closest('.nav-link');
+        const navLink = target.closest('.nav-link');
         if (navLink && !navLink.classList.contains('active')) {
             const view = navLink.dataset.view;
             navigateTo(view);
             return;
         }
 
-        // Handle navigation actions
-        const navAction = e.target.closest('.nav-action');
+        // Handle navigation actions (e.g., from dashboard cards)
+        const navAction = target.closest('.nav-action');
         if (navAction) {
             const view = navAction.dataset.view;
             navigateTo(view);
@@ -142,38 +138,51 @@ function attachEventListeners() {
         }
 
         // Handle modal opening
-        const modalToggle = e.target.closest('[data-modal-toggle]');
+        const modalToggle = target.closest('[data-modal-toggle]');
         if (modalToggle) {
             const modalId = modalToggle.dataset.modalToggle;
-            document.getElementById(modalId)?.classList.remove('hidden');
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                // If editing, populate form
+                const editId = modalToggle.dataset.editId;
+                if (editId) {
+                    populateForm(modalId, editId);
+                }
+                modal.classList.remove('hidden');
+            }
             return;
         }
 
         // Handle modal closing
-        const modalClose = e.target.closest('[data-modal-close]');
+        const modalClose = target.closest('[data-modal-close]');
         if (modalClose) {
             const modalId = modalClose.dataset.modalClose;
-            document.getElementById(modalId)?.classList.add('hidden');
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('hidden');
+                const form = modal.querySelector('form');
+                if (form) form.reset(); // Reset form on close
+            }
             return;
         }
 
         // Handle button actions
-        const action = e.target.dataset.action;
+        const action = target.closest('[data-action]')?.dataset.action;
         if (action) {
-            handleAction(action, e.target);
+            handleAction(action, target.closest('[data-action]'));
             return;
         }
         
         // Handle form submissions
-        const form = e.target.closest('form');
-        if (form && e.target.type === 'submit') {
+        const form = target.closest('form');
+        if (form && target.type === 'submit') {
             e.preventDefault();
             handleFormSubmission(form);
         }
     });
 }
 
-function navigateTo(view) {
+function navigateTo(view, isRefresh = false) {
     console.log(`Navigating to: ${view}`);
     const contentArea = document.getElementById('main-content-area');
     const navLinks = document.querySelectorAll('.nav-link');
@@ -182,14 +191,16 @@ function navigateTo(view) {
 
     // Update active link in sidebar
     navLinks.forEach(link => {
-        link.classList.toggle('active', link.dataset.view === view);
-        link.classList.toggle('bg-indigo-700', link.dataset.view === view);
-        link.classList.toggle('text-white', link.dataset.view === view);
-        link.classList.toggle('text-indigo-100', link.dataset.view !== view);
-        link.classList.toggle('hover:bg-indigo-500', link.dataset.view !== view);
+        const isActive = link.dataset.view === view;
+        link.classList.toggle('active', isActive);
+        link.classList.toggle('bg-indigo-700', isActive);
+        link.classList.toggle('text-white', isActive);
+        link.classList.toggle('text-indigo-100', !isActive);
     });
 
-    contentArea.innerHTML = '<div class="text-center p-10"><i class="fas fa-spinner fa-spin fa-3x text-indigo-500"></i></div>';
+    if (!isRefresh) {
+        contentArea.innerHTML = '<div class="text-center p-10"><i class="fas fa-spinner fa-spin fa-3x text-indigo-500"></i></div>';
+    }
     
     if (unsubscribers.length === 0) {
         setupDataListeners();
@@ -223,6 +234,7 @@ function renderDashboard() {
     const pendingLeave = leaveRequestsCache.filter(r => r.status === 'pending').length;
     const openPositions = recruitmentCache.filter(r => r.status === 'Open').length;
     const upcomingReviews = performanceCache.filter(p => {
+        if (!p.nextReviewDate) return false;
         const reviewDate = new Date(p.nextReviewDate);
         const now = new Date();
         const diff = reviewDate - now;
@@ -235,7 +247,7 @@ function renderDashboard() {
             <!-- Header -->
             <div class="mb-8">
                 <h1 class="text-3xl font-bold text-slate-800">HR Dashboard</h1>
-                <p class="text-slate-500">Welcome back! Here's your HR overview.</p>
+                <p class="text-slate-500">Welcome back! Here's a snapshot of your organization.</p>
             </div>
 
             <!-- Stats Grid -->
@@ -246,7 +258,7 @@ function renderDashboard() {
                         <p class="text-3xl font-bold text-slate-800">${totalEmployees}</p>
                         <p class="text-xs text-green-600">${activeEmployees} Active</p>
                     </div>
-                    <div class="bg-indigo-100 text-indigo-600 rounded-full p-3">
+                     <div class="bg-green-100 text-green-600 rounded-full p-3">
                         <i class="fas fa-users fa-lg"></i>
                     </div>
                 </div>
@@ -324,7 +336,7 @@ function generateRecentActivity() {
             icon: 'fa-user-plus',
             color: 'green',
             text: `${emp.firstName} ${emp.lastName} joined as ${emp.jobTitle}`,
-            time: formatRelativeTime(emp.createdAt)
+            time: formatRelativeTime(emp.createdAt?.toDate())
         });
     });
     
@@ -335,7 +347,7 @@ function generateRecentActivity() {
             icon: 'fa-plane-departure',
             color: 'amber',
             text: `${employee?.firstName || 'Employee'} requested ${leave.type} leave`,
-            time: formatRelativeTime(leave.createdAt)
+            time: formatRelativeTime(leave.createdAt?.toDate())
         });
     });
     
@@ -345,45 +357,47 @@ function generateRecentActivity() {
             icon: 'fa-exclamation-circle',
             color: 'red',
             text: `New grievance filed: ${grievance.type}`,
-            time: formatRelativeTime(grievance.createdAt)
+            time: formatRelativeTime(grievance.createdAt?.toDate())
         });
     });
+
+    if (activities.length === 0) {
+        return '<p class="text-center text-slate-500 py-8">No recent activity.</p>';
+    }
     
-    activities.sort((a, b) => new Date(b.time) - new Date(a.time));
-    
-    return activities.slice(0, 5).map(activity => `
-        <div class="flex items-center p-3 bg-slate-50 rounded-lg">
-            <div class="w-8 h-8 bg-${activity.color}-100 text-${activity.color}-600 rounded-full flex items-center justify-center mr-3">
-                <i class="fas ${activity.icon} text-sm"></i>
+    return activities
+        .sort((a, b) => new Date(b.time) - new Date(a.time))
+        .slice(0, 5)
+        .map(act => `
+        <div class="flex items-center">
+            <div class="bg-${act.color}-100 text-${act.color}-600 rounded-full h-8 w-8 flex items-center justify-center mr-4">
+                <i class="fas ${act.icon}"></i>
             </div>
-            <div class="flex-1">
-                <p class="text-sm font-medium text-slate-800">${activity.text}</p>
-                <p class="text-xs text-slate-500">${activity.time}</p>
+            <div>
+                <p class="text-sm text-slate-700">${act.text}</p>
+                <p class="text-xs text-slate-400">${act.time}</p>
             </div>
         </div>
-    `).join('') || '<p class="text-slate-500 text-center py-4">No recent activity</p>';
+    `).join('');
 }
 
 function renderPeople() {
     const contentArea = document.getElementById('main-content-area');
-    
-    // Group employees by type
     const employeesByType = EMPLOYEE_TYPES.reduce((acc, type) => {
-        acc[type] = employeesCache.filter(emp => emp.employmentType === type);
+        acc[type] = employeesCache.filter(e => e.employmentType === type);
         return acc;
     }, {});
-    
-    let employeesHtml = '';
-    
+
+    let employeesHtml;
     if (employeesCache.length > 0) {
         employeesHtml = employeesCache.map(emp => {
-            const statusColor = emp.status === 'Active' ? 'green' : emp.status === 'On Leave' ? 'yellow' : 'red';
+            const statusColor = getStatusColor(emp.status || 'Active');
             return `
                 <tr class="hover:bg-slate-50">
                     <td class="p-4 whitespace-nowrap">
                         <div class="flex items-center">
-                            <div class="w-10 h-10 flex-shrink-0 mr-4">
-                                <img class="w-full h-full rounded-full" src="${emp.avatar || `https://ui-avatars.com/api/?name=${emp.firstName}+${emp.lastName}&background=random`}" alt="${emp.firstName}">
+                            <div class="w-10 h-10 rounded-full bg-indigo-500 text-white flex items-center justify-center mr-3 font-bold">
+                                ${emp.firstName?.charAt(0) || ''}${emp.lastName?.charAt(0) || ''}
                             </div>
                             <div>
                                 <div class="font-semibold text-slate-800">${emp.firstName} ${emp.lastName}</div>
@@ -394,17 +408,17 @@ function renderPeople() {
                     <td class="p-4 whitespace-nowrap text-slate-600">${emp.jobTitle || 'N/A'}</td>
                     <td class="p-4 whitespace-nowrap text-slate-600">${emp.employmentType || 'N/A'}</td>
                     <td class="p-4 whitespace-nowrap">
-                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-${statusColor}-100 text-${statusColor}-800">
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusColor}">
                             ${emp.status || 'Active'}
                         </span>
                     </td>
-                    <td class="p-4 whitespace-nowrap text-slate-600">${emp.startDate || 'N/A'}</td>
+                    <td class="p-4 whitespace-nowrap text-slate-600">${formatDate(emp.startDate) || 'N/A'}</td>
                     <td class="p-4 whitespace-nowrap text-right">
-                        <div class="flex space-x-2">
-                            <button data-action="view-employee" data-id="${emp.id}" class="text-indigo-600 hover:text-indigo-900">
+                        <div class="flex space-x-2 justify-end">
+                            <button data-action="view-employee" data-id="${emp.id}" class="text-indigo-600 hover:text-indigo-900" title="View Details">
                                 <i class="fas fa-eye"></i>
                             </button>
-                            <button data-action="edit-employee" data-id="${emp.id}" class="text-slate-400 hover:text-slate-600">
+                            <button data-modal-toggle="add-employee-modal" data-edit-id="${emp.id}" class="text-slate-400 hover:text-slate-600" title="Edit Employee">
                                 <i class="fas fa-edit"></i>
                             </button>
                         </div>
@@ -435,7 +449,7 @@ function renderPeople() {
 
             <!-- Employee Type Tabs -->
             <div class="mb-6">
-                <nav class="flex space-x-1 bg-slate-100 p-1 rounded-lg">
+                <nav class="flex space-x-1 bg-slate-100 p-1 rounded-lg overflow-x-auto">
                     <button class="employee-type-tab active px-4 py-2 rounded-md bg-white shadow-sm font-medium text-sm" data-type="all">
                         All (${employeesCache.length})
                     </button>
@@ -485,16 +499,16 @@ function renderPeople() {
 
 function filterEmployeesByType(type) {
     const tbody = document.getElementById('employees-table-body');
-    const filteredEmployees = type === 'all' ? employeesCache : employeesCache.filter(emp => emp.employmentType === type);
+    const filteredEmployees = type === 'all' ? employeesCache : employeesCache.filter(e => e.employmentType === type);
     
     const employeesHtml = filteredEmployees.map(emp => {
-        const statusColor = emp.status === 'Active' ? 'green' : emp.status === 'On Leave' ? 'yellow' : 'red';
+        const statusColor = getStatusColor(emp.status || 'Active');
         return `
             <tr class="hover:bg-slate-50">
                 <td class="p-4 whitespace-nowrap">
                     <div class="flex items-center">
-                        <div class="w-10 h-10 flex-shrink-0 mr-4">
-                            <img class="w-full h-full rounded-full" src="${emp.avatar || `https://ui-avatars.com/api/?name=${emp.firstName}+${emp.lastName}&background=random`}" alt="${emp.firstName}">
+                        <div class="w-10 h-10 rounded-full bg-indigo-500 text-white flex items-center justify-center mr-3 font-bold">
+                            ${emp.firstName?.charAt(0) || ''}${emp.lastName?.charAt(0) || ''}
                         </div>
                         <div>
                             <div class="font-semibold text-slate-800">${emp.firstName} ${emp.lastName}</div>
@@ -505,17 +519,17 @@ function filterEmployeesByType(type) {
                 <td class="p-4 whitespace-nowrap text-slate-600">${emp.jobTitle || 'N/A'}</td>
                 <td class="p-4 whitespace-nowrap text-slate-600">${emp.employmentType || 'N/A'}</td>
                 <td class="p-4 whitespace-nowrap">
-                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-${statusColor}-100 text-${statusColor}-800">
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusColor}">
                         ${emp.status || 'Active'}
                     </span>
                 </td>
-                <td class="p-4 whitespace-nowrap text-slate-600">${emp.startDate || 'N/A'}</td>
+                <td class="p-4 whitespace-nowrap text-slate-600">${formatDate(emp.startDate) || 'N/A'}</td>
                 <td class="p-4 whitespace-nowrap text-right">
-                    <div class="flex space-x-2">
-                        <button data-action="view-employee" data-id="${emp.id}" class="text-indigo-600 hover:text-indigo-900">
+                    <div class="flex space-x-2 justify-end">
+                        <button data-action="view-employee" data-id="${emp.id}" class="text-indigo-600 hover:text-indigo-900" title="View Details">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button data-action="edit-employee" data-id="${emp.id}" class="text-slate-400 hover:text-slate-600">
+                        <button data-modal-toggle="add-employee-modal" data-edit-id="${emp.id}" class="text-slate-400 hover:text-slate-600" title="Edit Employee">
                             <i class="fas fa-edit"></i>
                         </button>
                     </div>
@@ -545,17 +559,17 @@ function renderRecruitment() {
                     ${position.status}
                 </span>
             </div>
-            <p class="text-slate-600 mb-4">${position.description}</p>
+            <p class="text-slate-600 mb-4">${position.description.substring(0, 150)}...</p>
             <div class="flex justify-between items-center">
                 <div class="text-sm text-slate-500">
                     <span class="mr-4"><i class="fas fa-users mr-1"></i>${position.applicants || 0} applicants</span>
-                    <span><i class="fas fa-calendar mr-1"></i>Posted ${formatRelativeTime(position.createdAt)}</span>
+                    <span><i class="fas fa-calendar mr-1"></i>Posted ${formatRelativeTime(position.createdAt?.toDate())}</span>
                 </div>
                 <div class="flex space-x-2">
                     <button data-action="view-applicants" data-id="${position.id}" class="btn-secondary text-sm">
                         View Applicants
                     </button>
-                    <button data-action="edit-position" data-id="${position.id}" class="btn-primary text-sm">
+                    <button data-modal-toggle="add-position-modal" data-edit-id="${position.id}" class="btn-primary text-sm">
                         Edit
                     </button>
                 </div>
@@ -621,27 +635,20 @@ function renderRecruitment() {
 
 function renderOnboarding() {
     const contentArea = document.getElementById('main-content-area');
-    
-    // Get new employees (started within last 30 days)
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
-    const newEmployees = employeesCache.filter(emp => {
-        const startDate = new Date(emp.startDate);
-        return startDate >= thirtyDaysAgo;
-    });
+    const onboardingEmployees = employeesCache.filter(e => e.status === 'Active' && calculateOnboardingProgress(e) < 100);
 
-    const onboardingHtml = newEmployees.map(emp => {
+    const onboardingHtml = onboardingEmployees.map(emp => {
         const progress = calculateOnboardingProgress(emp);
         return `
             <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
-                <div class="flex items-center justify-between mb-4">
+                <div class="flex justify-between items-start mb-4">
                     <div class="flex items-center">
-                        <img src="${emp.avatar || `https://ui-avatars.com/api/?name=${emp.firstName}+${emp.lastName}&background=random`}" 
-                             class="w-12 h-12 rounded-full mr-4">
+                        <div class="w-10 h-10 rounded-full bg-indigo-500 text-white flex items-center justify-center mr-3 font-bold">
+                            ${emp.firstName?.charAt(0) || ''}${emp.lastName?.charAt(0) || ''}
+                        </div>
                         <div>
                             <h3 class="text-lg font-bold text-slate-800">${emp.firstName} ${emp.lastName}</h3>
-                            <p class="text-sm text-slate-500">${emp.jobTitle} • Started ${emp.startDate}</p>
+                            <p class="text-sm text-slate-500">${emp.jobTitle} • Started ${formatDate(emp.startDate)}</p>
                         </div>
                     </div>
                     <span class="px-3 py-1 text-xs font-semibold rounded-full ${progress === 100 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
@@ -658,15 +665,15 @@ function renderOnboarding() {
                         <div class="bg-indigo-600 h-2 rounded-full transition-all duration-300" style="width: ${progress}%"></div>
                     </div>
                 </div>
-
+                
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     ${getOnboardingTasks(emp).map(task => `
                         <div class="flex items-center">
                             <input type="checkbox" ${task.completed ? 'checked' : ''} 
-                                   class="h-4 w-4 text-indigo-600 rounded mr-2" 
+                                   class="h-4 w-4 text-indigo-600 rounded mr-2 cursor-pointer" 
                                    data-action="toggle-onboarding-task" 
                                    data-employee-id="${emp.id}" 
-                                   data-task="${task.id}">
+                                   data-task-id="${task.id}">
                             <span class="text-sm ${task.completed ? 'line-through text-slate-400' : 'text-slate-700'}">${task.name}</span>
                         </div>
                     `).join('')}
@@ -708,34 +715,36 @@ function renderPerformance() {
     
     const performanceHtml = performanceCache.map(review => {
         const employee = employeesCache.find(e => e.id === review.employeeId);
+        if (!employee) return '';
+        const ratingColor = getRatingColor(review.overallRating);
+        
         return `
             <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
                 <div class="flex justify-between items-start mb-4">
-                    <div class="flex items-center">
-                        <img src="${employee?.avatar || `https://ui-avatars.com/api/?name=${employee?.firstName}+${employee?.lastName}&background=random`}" 
-                             class="w-10 h-10 rounded-full mr-3">
-                        <div>
-                            <h3 class="text-lg font-bold text-slate-800">${employee?.firstName} ${employee?.lastName}</h3>
-                            <p class="text-sm text-slate-500">${employee?.jobTitle}</p>
-                        </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800">${employee.firstName} ${employee.lastName}</h3>
+                        <p class="text-sm text-slate-500">${employee.jobTitle}</p>
+                        <p class="text-xs text-slate-400">Review Date: ${formatDate(review.reviewDate)}</p>
                     </div>
-                    <span class="px-3 py-1 text-xs font-semibold rounded-full ${getRatingColor(review.overallRating)}">
+                    <span class="px-3 py-1 text-xs font-semibold rounded-full ${ratingColor}">
                         ${review.overallRating}
                     </span>
                 </div>
                 
+                <p class="text-sm text-slate-600 mb-4">${review.summary}</p>
+                
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <div class="text-center p-3 bg-slate-50 rounded-lg">
-                        <p class="text-2xl font-bold text-slate-800">${review.overallScore || 'N/A'}</p>
-                        <p class="text-xs text-slate-500">Overall Score</p>
+                    <div>
+                        <p class="text-xs text-slate-500">Reviewer</p>
+                        <p class="font-medium text-slate-800">${review.reviewer}</p>
                     </div>
-                    <div class="text-center p-3 bg-slate-50 rounded-lg">
-                        <p class="text-2xl font-bold text-slate-800">${review.goals?.completed || 0}/${review.goals?.total || 0}</p>
-                        <p class="text-xs text-slate-500">Goals Achieved</p>
+                    <div>
+                        <p class="text-xs text-slate-500">Goals Met</p>
+                        <p class="font-medium text-slate-800">${review.goalsMet || 'N/A'}</p>
                     </div>
-                    <div class="text-center p-3 bg-slate-50 rounded-lg">
-                        <p class="text-2xl font-bold text-slate-800">${formatDate(review.nextReviewDate)}</p>
+                    <div>
                         <p class="text-xs text-slate-500">Next Review</p>
+                        <p class="font-medium text-slate-800">${formatDate(review.nextReviewDate)}</p>
                     </div>
                 </div>
 
@@ -743,8 +752,8 @@ function renderPerformance() {
                     <button data-action="view-performance" data-id="${review.id}" class="btn-secondary text-sm">
                         View Details
                     </button>
-                    <button data-action="start-review" data-id="${review.employeeId}" class="btn-primary text-sm">
-                        Start Review
+                    <button data-modal-toggle="performance-review-modal" data-edit-id="${review.id}" class="btn-primary text-sm">
+                        Update Review
                     </button>
                 </div>
             </div>
@@ -759,7 +768,7 @@ function renderPerformance() {
                     <p class="text-slate-500">Track and manage employee performance reviews.</p>
                 </div>
                 <div class="flex space-x-2">
-                    <button data-modal-toggle="bulk-review-modal" class="btn-secondary">
+                    <button data-action="bulk-review" class="btn-secondary">
                         <i class="fas fa-users mr-2"></i>Bulk Review
                     </button>
                     <button data-modal-toggle="performance-review-modal" class="btn-primary">
@@ -782,31 +791,28 @@ function renderTraining() {
         <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
             <div class="flex justify-between items-start mb-4">
                 <div>
-                    <h3 class="text-xl font-bold text-slate-800">${training.title}</h3>
-                    <p class="text-sm text-slate-500">${training.provider} • ${training.duration}</p>
-                    <p class="text-sm text-slate-600 mt-2">${training.description}</p>
+                    <h3 class="text-lg font-bold text-slate-800">${training.title}</h3>
+                    <p class="text-sm text-slate-500">Provider: ${training.provider}</p>
                 </div>
                 <span class="px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(training.status)}">
                     ${training.status}
                 </span>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                <div class="text-center p-3 bg-slate-50 rounded-lg">
-                    <p class="text-lg font-bold text-slate-800">${training.enrolledCount || 0}</p>
-                    <p class="text-xs text-slate-500">Enrolled</p>
+            <p class="text-sm text-slate-600 mb-4">${training.description}</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                    <p class="text-xs text-slate-500">Participants</p>
+                    <p class="font-medium text-slate-800">${training.participants?.length || 0}</p>
                 </div>
-                <div class="text-center p-3 bg-slate-50 rounded-lg">
-                    <p class="text-lg font-bold text-slate-800">${training.completedCount || 0}</p>
-                    <p class="text-xs text-slate-500">Completed</p>
+                <div>
+                    <p class="text-xs text-slate-500">Cost</p>
+                    <p class="font-medium text-slate-800">R ${training.cost || 0}</p>
                 </div>
-                <div class="text-center p-3 bg-slate-50 rounded-lg">
-                    <p class="text-lg font-bold text-slate-800">${training.cost || 'Free'}</p>
-                    <p class="text-xs text-slate-500">Cost per Person</p>
-                </div>
-                <div class="text-center p-3 bg-slate-50 rounded-lg">
-                    <p class="text-lg font-bold text-slate-800">${formatDate(training.startDate)}</p>
+                <div>
                     <p class="text-xs text-slate-500">Start Date</p>
+                    <p class="font-medium text-slate-800">${formatDate(training.startDate)}</p>
                 </div>
             </div>
 
@@ -814,7 +820,7 @@ function renderTraining() {
                 <button data-action="view-participants" data-id="${training.id}" class="btn-secondary text-sm">
                     View Participants
                 </button>
-                <button data-action="manage-training" data-id="${training.id}" class="btn-primary text-sm">
+                <button data-modal-toggle="add-training-modal" data-edit-id="${training.id}" class="btn-primary text-sm">
                     Manage
                 </button>
             </div>
@@ -845,30 +851,25 @@ function renderCompensation() {
     
     const compensationHtml = compensationCache.map(comp => {
         const employee = employeesCache.find(e => e.id === comp.employeeId);
+        if (!employee) return '';
         return `
             <tr class="hover:bg-slate-50">
                 <td class="p-4">
-                    <div class="flex items-center">
-                        <img src="${employee?.avatar || `https://ui-avatars.com/api/?name=${employee?.firstName}+${employee?.lastName}&background=random`}" 
-                             class="w-8 h-8 rounded-full mr-3">
-                        <div>
-                            <div class="font-medium text-slate-800">${employee?.firstName} ${employee?.lastName}</div>
-                            <div class="text-sm text-slate-500">${employee?.jobTitle}</div>
-                        </div>
-                    </div>
+                    <div class="font-semibold">${employee.firstName} ${employee.lastName}</div>
+                    <div class="text-sm text-slate-500">${employee.jobTitle}</div>
                 </td>
-                <td class="p-4 text-slate-600">${comp.baseSalary ? `R ${comp.baseSalary.toLocaleString()}` : 'N/A'}</td>
-                <td class="p-4 text-slate-600">${comp.bonus || 'N/A'}</td>
-                <td class="p-4 text-slate-600">${comp.benefits || 'N/A'}</td>
-                <td class="p-4 text-slate-600">${formatDate(comp.lastReview)}</td>
+                <td class="p-4">R ${comp.baseSalary?.toLocaleString() || 'N/A'}</td>
+                <td class="p-4">R ${comp.bonus?.toLocaleString() || 'N/A'}</td>
+                <td class="p-4">${comp.benefitsPackage || 'N/A'}</td>
+                <td class="p-4">${formatDate(comp.lastReviewDate)}</td>
                 <td class="p-4 text-right">
-                    <button data-action="adjust-compensation" data-id="${comp.id}" class="text-indigo-600 hover:text-indigo-900">
-                        <i class="fas fa-edit"></i>
+                    <button data-modal-toggle="add-compensation-modal" data-edit-id="${comp.id}" class="btn-secondary text-sm">
+                        Update
                     </button>
                 </td>
             </tr>
         `;
-    }).join('') || '<tr><td colspan="6" class="text-center p-8 text-slate-500">No compensation data available.</td></tr>';
+    }).join('') || '<tr><td colspan="6" class="text-center p-8 text-slate-500">No compensation records found.</td></tr>';
 
     contentArea.innerHTML = `
         <div>
@@ -910,20 +911,19 @@ function renderCompensation() {
 
 function renderBenefits() {
     const contentArea = document.getElementById('main-content-area');
-    let benefitsHtml = benefitsCache.length > 0 ? benefitsCache.map(b => `
+    
+    const benefitsHtml = benefitsCache.length > 0 ? benefitsCache.map(b => `
         <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
             <div class="flex justify-between items-start mb-4">
                 <div>
-                    <h3 class="text-xl font-bold text-slate-800">${b.name}</h3>
-                    <p class="text-sm text-slate-500">${b.type} • Provider: ${b.provider}</p>
-                    <p class="text-sm text-slate-600 mt-2">${b.description}</p>
+                    <h3 class="text-lg font-bold text-slate-800">${b.name}</h3>
+                    <p class="text-sm text-slate-500">${b.type}</p>
                 </div>
-                <div class="text-right">
-                    <p class="text-lg font-bold text-slate-800">${b.cost ? `R ${b.cost}` : 'No Cost'}</p>
-                    <p class="text-xs text-slate-500">per employee/month</p>
-                </div>
+                <span class="px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                    ${b.provider}
+                </span>
             </div>
-            
+            <p class="text-sm text-slate-600 mb-4">${b.description}</p>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div class="text-center p-3 bg-slate-50 rounded-lg">
                     <p class="text-lg font-bold text-slate-800">${b.enrolledEmployees || 0}</p>
@@ -938,12 +938,11 @@ function renderBenefits() {
                     <p class="text-xs text-slate-500">Utilization</p>
                 </div>
             </div>
-
             <div class="flex justify-end space-x-2">
                 <button data-action="manage-enrollment" data-id="${b.id}" class="btn-secondary text-sm">
                     Manage Enrollment
                 </button>
-                <button data-action="edit-benefit" data-id="${b.id}" class="btn-primary text-sm">
+                <button data-modal-toggle="add-benefit-modal" data-edit-id="${b.id}" class="btn-primary text-sm">
                     Edit
                 </button>
             </div>
@@ -978,50 +977,30 @@ function renderLeave() {
     const leaveHtml = leaveRequestsCache.map(leave => {
         const employee = employeesCache.find(e => e.id === leave.employeeId);
         const statusColor = leave.status === 'approved' ? 'green' : leave.status === 'rejected' ? 'red' : 'yellow';
-        
         return `
-            <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
-                <div class="flex justify-between items-start mb-4">
-                    <div class="flex items-center">
-                        <img src="${employee?.avatar || `https://ui-avatars.com/api/?name=${employee?.firstName}+${employee?.lastName}&background=random`}" 
-                             class="w-10 h-10 rounded-full mr-3">
-                        <div>
-                            <h3 class="text-lg font-bold text-slate-800">${employee?.firstName} ${employee?.lastName}</h3>
-                            <p class="text-sm text-slate-500">${leave.type} Leave</p>
-                        </div>
-                    </div>
+            <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200 grid grid-cols-6 gap-4 items-center">
+                <div class="col-span-2">
+                    <p class="font-bold text-slate-800">${employee?.firstName || ''} ${employee?.lastName || ''}</p>
+                    <p class="text-sm text-slate-500">${leave.type}</p>
+                </div>
+                <div class="text-sm text-slate-600">
+                    <p>${formatDate(leave.startDate)}</p>
+                </div>
+                <div class="text-sm text-slate-600">
+                    <p>${formatDate(leave.endDate)}</p>
+                </div>
+                <div>
                     <span class="px-3 py-1 text-xs font-semibold rounded-full bg-${statusColor}-100 text-${statusColor}-800">
                         ${leave.status}
                     </span>
                 </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <div>
-                        <p class="text-xs text-slate-500">Start Date</p>
-                        <p class="font-medium text-slate-800">${formatDate(leave.startDate)}</p>
-                    </div>
-                    <div>
-                        <p class="text-xs text-slate-500">End Date</p>
-                        <p class="font-medium text-slate-800">${formatDate(leave.endDate)}</p>
-                    </div>
-                    <div>
-                        <p class="text-xs text-slate-500">Duration</p>
-                        <p class="font-medium text-slate-800">${leave.duration} days</p>
-                    </div>
+                <div class="flex justify-end space-x-2">
+                    ${leave.status === 'pending' ? `
+                        <button data-action="approve-leave" data-id="${leave.id}" class="btn-sm btn-success"><i class="fas fa-check"></i></button>
+                        <button data-action="reject-leave" data-id="${leave.id}" class="btn-sm btn-danger"><i class="fas fa-times"></i></button>
+                    ` : ''}
+                    <button data-action="view-leave" data-id="${leave.id}" class="btn-sm btn-secondary"><i class="fas fa-eye"></i></button>
                 </div>
-                
-                <p class="text-sm text-slate-600 mb-4"><strong>Reason:</strong> ${leave.reason}</p>
-                
-                ${leave.status === 'pending' ? `
-                    <div class="flex justify-end space-x-2">
-                        <button data-action="reject-leave" data-id="${leave.id}" class="btn-secondary text-sm bg-red-50 text-red-600 hover:bg-red-100">
-                            Reject
-                        </button>
-                        <button data-action="approve-leave" data-id="${leave.id}" class="btn-primary text-sm">
-                            Approve
-                        </button>
-                    </div>
-                ` : ''}
             </div>
         `;
     }).join('') || '<p class="text-center text-slate-500 py-8">No leave requests yet.</p>';
@@ -1075,7 +1054,7 @@ function renderLeave() {
                 </div>
             </div>
             
-            <div class="space-y-6">
+            <div class="space-y-4">
                 ${leaveHtml}
             </div>
         </div>
@@ -1111,7 +1090,7 @@ function renderEmployeeRelations() {
                     </div>
                     <div>
                         <p class="text-xs text-slate-500">Filed Date</p>
-                        <p class="font-medium text-slate-800">${formatDate(grievance.createdAt)}</p>
+                        <p class="font-medium text-slate-800">${formatDate(grievance.createdAt?.toDate())}</p>
                     </div>
                     <div>
                         <p class="text-xs text-slate-500">Assigned To</p>
@@ -1123,13 +1102,13 @@ function renderEmployeeRelations() {
                     <button data-action="view-grievance" data-id="${grievance.id}" class="btn-secondary text-sm">
                         View Details
                     </button>
-                    <button data-action="update-grievance" data-id="${grievance.id}" class="btn-primary text-sm">
+                    <button data-modal-toggle="add-grievance-modal" data-edit-id="${grievance.id}" class="btn-primary text-sm">
                         Update
                     </button>
                 </div>
             </div>
         `;
-    }).join('');
+    }).join('') || '<p class="text-center text-slate-500 py-8">No grievances filed yet.</p>';
     
     const disciplinaryHtml = disciplinaryCache.map(action => {
         const employee = employeesCache.find(e => e.id === action.employeeId);
@@ -1166,7 +1145,7 @@ function renderEmployeeRelations() {
                     <button data-action="view-disciplinary" data-id="${action.id}" class="btn-secondary text-sm">
                         View Details
                     </button>
-                    <button data-action="update-disciplinary" data-id="${action.id}" class="btn-primary text-sm">
+                    <button data-modal-toggle="disciplinary-action-modal" data-edit-id="${action.id}" class="btn-primary text-sm">
                         Update
                     </button>
                 </div>
@@ -1242,7 +1221,7 @@ function renderEmployeeRelations() {
 
             <!-- Content Sections -->
             <div id="grievances-section" class="space-y-6">
-                ${grievancesHtml || '<p class="text-center text-slate-500 py-8">No grievances filed yet.</p>'}
+                ${grievancesHtml}
             </div>
             
             <div id="disciplinary-section" class="space-y-6 hidden">
@@ -1254,12 +1233,8 @@ function renderEmployeeRelations() {
     // Add tab switching functionality
     document.querySelectorAll('.relations-tab').forEach(tab => {
         tab.addEventListener('click', (e) => {
-            document.querySelectorAll('.relations-tab').forEach(t => {
-                t.classList.remove('active', 'bg-white', 'shadow-sm');
-                t.classList.add('text-slate-600');
-            });
+            document.querySelectorAll('.relations-tab').forEach(t => t.classList.remove('active', 'bg-white', 'shadow-sm'));
             e.target.classList.add('active', 'bg-white', 'shadow-sm');
-            e.target.classList.remove('text-slate-600');
             
             const tabType = e.target.dataset.tab;
             document.getElementById('grievances-section').classList.toggle('hidden', tabType !== 'grievances');
@@ -1277,8 +1252,14 @@ function renderCompliance() {
                     <h1 class="text-3xl font-bold text-slate-800">Compliance</h1>
                     <p class="text-slate-500">Manage regulatory compliance and documentation.</p>
                 </div>
+                 <button data-action="add-document" class="btn-primary">
+                    <i class="fas fa-file-upload mr-2"></i>Upload Document
+                </button>
             </div>
-            <p class="text-center text-slate-500 py-8">Compliance module coming soon.</p>
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+                <h3 class="text-lg font-bold text-slate-800 mb-4">Compliance Dashboard</h3>
+                <p class="text-center text-slate-500 py-8">Compliance tracking and document management features are in development and will be available soon.</p>
+            </div>
         </div>
     `;
 }
@@ -1292,14 +1273,43 @@ function renderPayroll() {
                     <h1 class="text-3xl font-bold text-slate-800">Payroll</h1>
                     <p class="text-slate-500">Manage payroll processing and records.</p>
                 </div>
+                <button data-action="run-payroll" class="btn-primary">
+                    <i class="fas fa-cogs mr-2"></i>Run Payroll
+                </button>
             </div>
-            <p class="text-center text-slate-500 py-8">Payroll module coming soon.</p>
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+                <h3 class="text-lg font-bold text-slate-800 mb-4">Payroll Overview</h3>
+                <p class="text-center text-slate-500 py-8">A simplified payroll module is currently under development. It will support basic salary processing, deductions, and payslip generation.</p>
+            </div>
         </div>
     `;
 }
 
 function renderTermination() {
     const contentArea = document.getElementById('main-content-area');
+    
+    const terminationHtml = terminationCache.map(term => {
+        const employee = employeesCache.find(e => e.id === term.employeeId);
+        return `
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800">${employee?.firstName || ''} ${employee?.lastName || ''}</h3>
+                        <p class="text-sm text-slate-500">Termination Date: ${formatDate(term.terminationDate)}</p>
+                    </div>
+                    <span class="px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                        ${term.reason}
+                    </span>
+                </div>
+                <p class="text-sm text-slate-600 mb-4"><strong>Exit Interview Scheduled:</strong> ${term.exitInterviewDate ? formatDate(term.exitInterviewDate) : 'No'}</p>
+                <div class="flex justify-end space-x-2">
+                    <button data-action="view-termination" data-id="${term.id}" class="btn-secondary text-sm">View Checklist</button>
+                    <button data-modal-toggle="termination-modal" data-edit-id="${term.id}" class="btn-primary text-sm">Update</button>
+                </div>
+            </div>
+        `;
+    }).join('') || '<p class="text-center text-slate-500 py-8">No termination records found.</p>';
+
     contentArea.innerHTML = `
         <div>
             <div class="flex justify-between items-center mb-6">
@@ -1307,33 +1317,104 @@ function renderTermination() {
                     <h1 class="text-3xl font-bold text-slate-800">Termination Management</h1>
                     <p class="text-slate-500">Manage employee terminations and exit processes.</p>
                 </div>
+                <button data-modal-toggle="termination-modal" class="btn-primary">
+                    <i class="fas fa-user-times mr-2"></i>Initiate Termination
+                </button>
             </div>
-            <p class="text-center text-slate-500 py-8">Termination module coming soon.</p>
+            <div class="space-y-6">
+                ${terminationHtml}
+            </div>
         </div>
     `;
 }
 
-function handleAction(action, element) {
-    console.log(`Handling action: ${action}`, element);
-    // Add action handlers as needed
-    showNotification('Action not implemented yet.', 'info');
+async function handleAction(action, element) {
+    const id = element.dataset.id;
+    console.log(`Handling action: ${action} for ID: ${id}`);
+
+    switch(action) {
+        case 'approve-leave':
+            await updateDoc(doc(db, `users/${businessId}/hr/leaveRequests`, id), { status: 'approved' });
+            showNotification('Leave request approved.', 'success');
+            break;
+        case 'reject-leave':
+            await updateDoc(doc(db, `users/${businessId}/hr/leaveRequests`, id), { status: 'rejected' });
+            showNotification('Leave request rejected.', 'info');
+            break;
+        case 'toggle-onboarding-task':
+            const employeeId = element.dataset.employeeId;
+            const taskId = element.dataset.taskId;
+            const employeeRef = doc(db, `users/${businessId}/hr/employees`, employeeId);
+            const employeeDoc = await getDoc(employeeRef);
+            if (employeeDoc.exists()) {
+                const employeeData = employeeDoc.data();
+                const updatedTaskStatus = !employeeData[taskId];
+                await updateDoc(employeeRef, { [taskId]: updatedTaskStatus });
+                showNotification('Onboarding task updated.', 'success');
+            }
+            break;
+        default:
+            showNotification(`Action '${action}' is not fully implemented yet.`, 'info');
+    }
 }
 
-function handleFormSubmission(form) {
-    console.log('Handling form submission:', form);
-    // Add form handlers as needed
-    showNotification('Form submission not implemented yet.', 'info');
+async function handleFormSubmission(form) {
+    const formId = form.id;
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+    const docId = data.id;
+    delete data.id;
+
+    let collectionName = '';
+    switch(formId) {
+        case 'add-employee-form': collectionName = 'employees'; break;
+        case 'add-position-form': collectionName = 'recruitment'; break;
+        case 'add-training-modal-form': collectionName = 'training'; break;
+        case 'add-compensation-modal-form': collectionName = 'compensation'; break;
+        case 'add-benefit-modal-form': collectionName = 'benefits'; break;
+        case 'add-leave-modal-form': collectionName = 'leaveRequests'; data.status = 'pending'; break;
+        case 'add-grievance-modal-form': collectionName = 'grievances'; data.status = 'Open'; break;
+        case 'disciplinary-action-modal-form': collectionName = 'disciplinary'; break;
+        case 'termination-modal-form': collectionName = 'termination'; break;
+        case 'performance-review-modal-form': collectionName = 'performance'; break;
+    }
+
+    if (!collectionName) {
+        showNotification('Unknown form submission.', 'error');
+        return;
+    }
+
+    try {
+        const collectionRef = collection(db, `users/${businessId}/hr/${collectionName}`);
+        if (docId) { // Update existing document
+            await setDoc(doc(collectionRef, docId), data, { merge: true });
+            showNotification('Record updated successfully!', 'success');
+        } else { // Add new document
+            data.createdAt = serverTimestamp();
+            await addDoc(collectionRef, data);
+            showNotification('Record added successfully!', 'success');
+        }
+        
+        const modal = form.closest('.fixed');
+        if (modal) {
+            modal.classList.add('hidden');
+            form.reset();
+        }
+    } catch (error) {
+        console.error(`Error saving to ${collectionName}:`, error);
+        showNotification(`Error saving record: ${error.message}`, 'error');
+    }
 }
 
 function showNotification(message, type = 'info') {
-    // Simple notification system
     const notification = document.createElement('div');
-    notification.className = `fixed top-4 right-4 p-4 rounded-md shadow-lg z-50 ${
-        type === 'error' ? 'bg-red-500 text-white' :
-        type === 'success' ? 'bg-green-500 text-white' :
-        type === 'warning' ? 'bg-yellow-500 text-white' :
-        'bg-blue-500 text-white'
-    }`;
+    const typeClasses = {
+        error: 'bg-red-500 text-white',
+        success: 'bg-green-500 text-white',
+        warning: 'bg-yellow-500 text-white',
+        info: 'bg-blue-500 text-white'
+    };
+    notification.className = `fixed top-4 right-4 p-4 rounded-md shadow-lg z-50 ${typeClasses[type] || typeClasses.info}`;
     notification.textContent = message;
     document.body.appendChild(notification);
     
@@ -1342,20 +1423,22 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-// Add these helper functions before the module renderers
-function formatDate(dateString) {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString();
+// --- HELPER FUNCTIONS ---
+function formatDate(dateInput) {
+    if (!dateInput) return 'N/A';
+    // Handles Firestore Timestamps and date strings
+    const date = dateInput.toDate ? dateInput.toDate() : new Date(dateInput);
+    if (isNaN(date)) return 'N/A';
+    return date.toLocaleDateString('en-ZA'); // South African format YYYY/MM/DD
 }
 
-function formatRelativeTime(dateString) {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
+function formatRelativeTime(date) {
+    if (!date) return 'N/A';
     const now = new Date();
     const diff = now - date;
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     
-    if (days === 0) return 'Today';
+    if (days < 1) return 'Today';
     if (days === 1) return 'Yesterday';
     if (days < 7) return `${days} days ago`;
     if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
@@ -1369,7 +1452,11 @@ function getStatusColor(status) {
         'Filled': 'bg-purple-100 text-purple-800',
         'Closed': 'bg-slate-100 text-slate-800',
         'Active': 'bg-green-100 text-green-800',
-        'Completed': 'bg-blue-100 text-blue-800'
+        'Completed': 'bg-blue-100 text-blue-800',
+        'On Leave': 'bg-yellow-100 text-yellow-800',
+        'Terminated': 'bg-red-100 text-red-800',
+        'Resigned': 'bg-red-100 text-red-800',
+        'Suspended': 'bg-orange-100 text-orange-800',
     };
     return colors[status] || 'bg-slate-100 text-slate-800';
 }
@@ -1385,30 +1472,65 @@ function getRatingColor(rating) {
 }
 
 function calculateOnboardingProgress(employee) {
-    // Simple calculation - you can enhance this
     const tasks = getOnboardingTasks(employee);
+    if (tasks.length === 0) return 100;
     const completed = tasks.filter(task => task.completed).length;
     return Math.round((completed / tasks.length) * 100);
 }
 
 function getOnboardingTasks(employee) {
-    // Default onboarding tasks
     return [
-        { id: 'contract', name: 'Contract Signed', completed: !!employee.contractSigned },
-        { id: 'documents', name: 'Documents Collected', completed: !!employee.documentsCollected },
-        { id: 'equipment', name: 'Equipment Assigned', completed: !!employee.equipmentAssigned },
-        { id: 'access', name: 'System Access', completed: !!employee.systemAccess },
-        { id: 'orientation', name: 'Orientation Complete', completed: !!employee.orientationComplete },
-        { id: 'training', name: 'Initial Training', completed: !!employee.initialTraining }
+        { id: 'contractSigned', name: 'Contract Signed', completed: !!employee.contractSigned },
+        { id: 'documentsCollected', name: 'Documents Collected', completed: !!employee.documentsCollected },
+        { id: 'equipmentAssigned', name: 'Equipment Assigned', completed: !!employee.equipmentAssigned },
+        { id: 'systemAccess', name: 'System Access', completed: !!employee.systemAccess },
+        { id: 'orientationComplete', name: 'Orientation Complete', completed: !!employee.orientationComplete },
+        { id: 'initialTraining', name: 'Initial Training', completed: !!employee.initialTraining }
     ];
 }
 
-// Add this function before the init() function
+async function populateForm(modalId, docId) {
+    const form = document.getElementById(modalId)?.querySelector('form');
+    if (!form) return;
+    form.reset();
+
+    let collectionName = '';
+    let cache;
+    switch(modalId) {
+        case 'add-employee-modal': collectionName = 'employees'; cache = employeesCache; break;
+        case 'add-position-modal': collectionName = 'recruitment'; cache = recruitmentCache; break;
+        case 'add-training-modal': collectionName = 'training'; cache = trainingCache; break;
+        case 'add-compensation-modal': collectionName = 'compensation'; cache = compensationCache; break;
+        case 'add-benefit-modal': collectionName = 'benefits'; cache = benefitsCache; break;
+        case 'add-grievance-modal': collectionName = 'grievances'; cache = grievancesCache; break;
+        case 'disciplinary-action-modal': collectionName = 'disciplinary'; cache = disciplinaryCache; break;
+        case 'termination-modal': collectionName = 'termination'; cache = terminationCache; break;
+        case 'performance-review-modal': collectionName = 'performance'; cache = performanceCache; break;
+    }
+
+    const record = cache.find(item => item.id === docId);
+    if (record) {
+        form.querySelector('input[name="id"]').value = docId;
+        for (const key in record) {
+            const input = form.elements[key];
+            if (input) {
+                if (input.type === 'date') {
+                    input.value = record[key] ? new Date(record[key].toDate ? record[key].toDate() : record[key]).toISOString().split('T')[0] : '';
+                } else {
+                    input.value = record[key];
+                }
+            }
+        }
+    }
+}
+
+// --- HTML TEMPLATES ---
+
 function getBusinessWorkspaceHTML() {
     return `
         <div class="flex h-screen bg-slate-100">
             <!-- Sidebar -->
-            <div class="w-64 bg-indigo-800 text-white flex-shrink-0">
+            <div class="w-64 bg-indigo-800 text-white flex-shrink-0 overflow-y-auto">
                 <div class="p-6 border-b border-indigo-700">
                     <h2 class="text-xl font-bold">HR Management</h2>
                     <p class="text-indigo-200 text-sm">Business Suite</p>
@@ -1417,7 +1539,7 @@ function getBusinessWorkspaceHTML() {
                     <div class="px-6 mb-4">
                         <h3 class="text-xs font-semibold text-indigo-300 uppercase tracking-wider">Overview</h3>
                     </div>
-                    <a href="#" class="nav-link active bg-indigo-700 text-white block px-6 py-3 text-sm font-medium hover:bg-indigo-500 transition-colors" data-view="dashboard">
+                    <a href="#" class="nav-link active bg-indigo-700 text-white block px-6 py-3 text-sm font-medium transition-colors" data-view="dashboard">
                         <i class="fas fa-tachometer-alt mr-3"></i>Dashboard
                     </a>
                     
@@ -1517,49 +1639,244 @@ function getBusinessWorkspaceHTML() {
 }
 
 function getModalHTML() {
+    const employeeOptions = employeesCache.map(e => `<option value="${e.id}">${e.firstName} ${e.lastName}</option>`).join('');
+
     return `
-        <!-- Add Employee Modal -->
-        <div id="add-employee-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white rounded-lg p-6 w-full max-w-md">
-                <h3 class="text-lg font-bold mb-4">Add New Employee</h3>
+        <!-- Generic Modal Structure -->
+        <div id="add-employee-modal" class="modal-container">
+            <div class="modal-content">
+                <h3 class="modal-title">Add/Edit Employee</h3>
                 <form id="add-employee-form">
+                    <input type="hidden" name="id">
                     <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-2">First Name</label>
-                            <input type="text" name="firstName" required class="w-full p-2 border border-slate-300 rounded-md">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="form-label">First Name</label><input type="text" name="firstName" required class="form-input"></div>
+                            <div><label class="form-label">Last Name</label><input type="text" name="lastName" required class="form-input"></div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-2">Last Name</label>
-                            <input type="text" name="lastName" required class="w-full p-2 border border-slate-300 rounded-md">
+                        <div><label class="form-label">Email</label><input type="email" name="email" required class="form-input"></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="form-label">Job Title</label><input type="text" name="jobTitle" class="form-input"></div>
+                            <div><label class="form-label">Department</label><input type="text" name="department" class="form-input"></div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-2">Email</label>
-                            <input type="email" name="email" required class="w-full p-2 border border-slate-300 rounded-md">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="form-label">Employment Type</label><select name="employmentType" class="form-input">${EMPLOYEE_TYPES.map(type => `<option value="${type}">${type}</option>`).join('')}</select></div>
+                            <div><label class="form-label">Status</label><select name="status" class="form-input">${EMPLOYMENT_STATUSES.map(s => `<option value="${s}">${s}</option>`).join('')}</select></div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-2">Job Title</label>
-                            <input type="text" name="jobTitle" class="w-full p-2 border border-slate-300 rounded-md">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-2">Employment Type</label>
-                            <select name="employmentType" class="w-full p-2 border border-slate-300 rounded-md">
-                                ${EMPLOYEE_TYPES.map(type => `<option value="${type}">${type}</option>`).join('')}
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-2">Start Date</label>
-                            <input type="date" name="startDate" class="w-full p-2 border border-slate-300 rounded-md">
-                        </div>
+                        <div><label class="form-label">Start Date</label><input type="date" name="startDate" class="form-input"></div>
                     </div>
-                    <div class="flex justify-end space-x-2 mt-6">
+                    <div class="modal-footer">
                         <button type="button" data-modal-close="add-employee-modal" class="btn-secondary">Cancel</button>
-                        <button type="submit" class="btn-primary">Add Employee</button>
+                        <button type="submit" class="btn-primary">Save Employee</button>
                     </div>
                 </form>
             </div>
         </div>
 
-        <!-- Additional modals would go here -->
-        <!-- You can add more modals as needed for other functions -->
+        <div id="add-position-modal" class="modal-container">
+            <div class="modal-content">
+                <h3 class="modal-title">Add/Edit Job Position</h3>
+                <form id="add-position-form">
+                    <input type="hidden" name="id">
+                    <div class="space-y-4">
+                        <div><label class="form-label">Job Title</label><input type="text" name="title" required class="form-input"></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="form-label">Department</label><input type="text" name="department" class="form-input"></div>
+                            <div><label class="form-label">Location</label><input type="text" name="location" class="form-input"></div>
+                        </div>
+                        <div><label class="form-label">Employment Type</label><select name="employmentType" class="form-input">${EMPLOYEE_TYPES.map(type => `<option value="${type}">${type}</option>`).join('')}</select></div>
+                        <div><label class="form-label">Description</label><textarea name="description" rows="4" class="form-input"></textarea></div>
+                        <div><label class="form-label">Status</label><select name="status" class="form-input"><option>Open</option><option>In Progress</option><option>Filled</option><option>Closed</option></select></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" data-modal-close="add-position-modal" class="btn-secondary">Cancel</button>
+                        <button type="submit" class="btn-primary">Save Position</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="add-training-modal" class="modal-container">
+            <div class="modal-content">
+                <h3 class="modal-title">Add/Edit Training Program</h3>
+                <form id="add-training-modal-form">
+                    <input type="hidden" name="id">
+                    <div class="space-y-4">
+                        <div><label class="form-label">Program Title</label><input type="text" name="title" required class="form-input"></div>
+                        <div><label class="form-label">Provider</label><input type="text" name="provider" class="form-input"></div>
+                        <div><label class="form-label">Description</label><textarea name="description" rows="3" class="form-input"></textarea></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="form-label">Start Date</label><input type="date" name="startDate" class="form-input"></div>
+                            <div><label class="form-label">Cost (ZAR)</label><input type="number" name="cost" class="form-input"></div>
+                        </div>
+                        <div><label class="form-label">Status</label><select name="status" class="form-input"><option>Planned</option><option>In Progress</option><option>Completed</option></select></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" data-modal-close="add-training-modal" class="btn-secondary">Cancel</button>
+                        <button type="submit" class="btn-primary">Save Program</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="add-compensation-modal" class="modal-container">
+            <div class="modal-content">
+                <h3 class="modal-title">Add/Edit Compensation</h3>
+                <form id="add-compensation-modal-form">
+                    <input type="hidden" name="id">
+                    <div class="space-y-4">
+                        <div><label class="form-label">Employee</label><select name="employeeId" required class="form-input">${employeeOptions}</select></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="form-label">Base Salary (ZAR)</label><input type="number" name="baseSalary" class="form-input"></div>
+                            <div><label class="form-label">Bonus (ZAR)</label><input type="number" name="bonus" class="form-input"></div>
+                        </div>
+                        <div><label class="form-label">Benefits Package</label><input type="text" name="benefitsPackage" class="form-input" placeholder="e.g., Medical Aid, Pension"></div>
+                        <div><label class="form-label">Last Review Date</label><input type="date" name="lastReviewDate" class="form-input"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" data-modal-close="add-compensation-modal" class="btn-secondary">Cancel</button>
+                        <button type="submit" class="btn-primary">Save Record</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="add-benefit-modal" class="modal-container">
+            <div class="modal-content">
+                <h3 class="modal-title">Add/Edit Benefit</h3>
+                <form id="add-benefit-modal-form">
+                    <input type="hidden" name="id">
+                    <div class="space-y-4">
+                        <div><label class="form-label">Benefit Name</label><input type="text" name="name" required class="form-input"></div>
+                        <div><label class="form-label">Type</label><input type="text" name="type" class="form-input" placeholder="e.g., Health, Retirement"></div>
+                        <div><label class="form-label">Provider</label><input type="text" name="provider" class="form-input"></div>
+                        <div><label class="form-label">Description</label><textarea name="description" rows="3" class="form-input"></textarea></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" data-modal-close="add-benefit-modal" class="btn-secondary">Cancel</button>
+                        <button type="submit" class="btn-primary">Save Benefit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="add-leave-modal" class="modal-container">
+            <div class="modal-content">
+                <h3 class="modal-title">Add Leave Request</h3>
+                <form id="add-leave-modal-form">
+                    <input type="hidden" name="id">
+                    <div class="space-y-4">
+                        <div><label class="form-label">Employee</label><select name="employeeId" required class="form-input">${employeeOptions}</select></div>
+                        <div><label class="form-label">Leave Type</label><select name="type" class="form-input">${LEAVE_TYPES.map(t => `<option value="${t}">${t}</option>`).join('')}</select></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="form-label">Start Date</label><input type="date" name="startDate" required class="form-input"></div>
+                            <div><label class="form-label">End Date</label><input type="date" name="endDate" required class="form-input"></div>
+                        </div>
+                        <div><label class="form-label">Reason</label><textarea name="reason" rows="3" class="form-input"></textarea></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" data-modal-close="add-leave-modal" class="btn-secondary">Cancel</button>
+                        <button type="submit" class="btn-primary">Submit Request</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="add-grievance-modal" class="modal-container">
+            <div class="modal-content">
+                <h3 class="modal-title">File/Update Grievance</h3>
+                <form id="add-grievance-modal-form">
+                    <input type="hidden" name="id">
+                    <div class="space-y-4">
+                        <div><label class="form-label">Employee Filing</label><select name="employeeId" required class="form-input">${employeeOptions}</select></div>
+                        <div><label class="form-label">Grievance Type</label><select name="type" class="form-input">${GRIEVANCE_TYPES.map(t => `<option value="${t}">${t}</option>`).join('')}</select></div>
+                        <div><label class="form-label">Description</label><textarea name="description" rows="4" required class="form-input"></textarea></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="form-label">Priority</label><select name="priority" class="form-input"><option>Low</option><option>Medium</option><option>High</option></select></div>
+                            <div><label class="form-label">Status</label><select name="status" class="form-input"><option>Open</option><option>In Progress</option><option>Resolved</option></select></div>
+                        </div>
+                        <div><label class="form-label">Assigned To</label><input type="text" name="assignedTo" class="form-input"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" data-modal-close="add-grievance-modal" class="btn-secondary">Cancel</button>
+                        <button type="submit" class="btn-primary">Save Grievance</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="disciplinary-action-modal" class="modal-container">
+            <div class="modal-content">
+                <h3 class="modal-title">Log/Update Disciplinary Action</h3>
+                <form id="disciplinary-action-modal-form">
+                    <input type="hidden" name="id">
+                    <div class="space-y-4">
+                        <div><label class="form-label">Employee</label><select name="employeeId" required class="form-input">${employeeOptions}</select></div>
+                        <div><label class="form-label">Action Type</label><select name="actionType" class="form-input">${DISCIPLINARY_ACTIONS.map(t => `<option value="${t}">${t}</option>`).join('')}</select></div>
+                        <div><label class="form-label">Description of Incident</label><textarea name="description" rows="4" required class="form-input"></textarea></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="form-label">Severity</label><select name="severity" class="form-input"><option>Low</option><option>Medium</option><option>High</option><option>Critical</option></select></div>
+                            <div><label class="form-label">Issued By</label><input type="text" name="issuedBy" class="form-input"></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="form-label">Date Issued</label><input type="date" name="dateIssued" required class="form-input"></div>
+                            <div><label class="form-label">Follow-up Date</label><input type="date" name="followUpDate" class="form-input"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" data-modal-close="disciplinary-action-modal" class="btn-secondary">Cancel</button>
+                        <button type="submit" class="btn-primary">Save Action</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="termination-modal" class="modal-container">
+            <div class="modal-content">
+                <h3 class="modal-title">Initiate/Update Termination</h3>
+                <form id="termination-modal-form">
+                    <input type="hidden" name="id">
+                    <div class="space-y-4">
+                        <div><label class="form-label">Employee</label><select name="employeeId" required class="form-input">${employeeOptions}</select></div>
+                        <div><label class="form-label">Reason for Termination</label><input type="text" name="reason" required class="form-input"></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="form-label">Termination Date</label><input type="date" name="terminationDate" required class="form-input"></div>
+                            <div><label class="form-label">Exit Interview Date</label><input type="date" name="exitInterviewDate" class="form-input"></div>
+                        </div>
+                        <div><label class="form-label">Notes</label><textarea name="notes" rows="3" class="form-input"></textarea></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" data-modal-close="termination-modal" class="btn-secondary">Cancel</button>
+                        <button type="submit" class="btn-primary">Save Termination</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div id="performance-review-modal" class="modal-container">
+            <div class="modal-content">
+                <h3 class="modal-title">Add/Edit Performance Review</h3>
+                <form id="performance-review-modal-form">
+                    <input type="hidden" name="id">
+                    <div class="space-y-4">
+                        <div><label class="form-label">Employee</label><select name="employeeId" required class="form-input">${employeeOptions}</select></div>
+                        <div><label class="form-label">Reviewer</label><input type="text" name="reviewer" required class="form-input"></div>
+                        <div><label class="form-label">Overall Rating</label><select name="overallRating" class="form-input">${PERFORMANCE_RATINGS.map(r => `<option value="${r}">${r}</option>`).join('')}</select></div>
+                        <div><label class="form-label">Summary</label><textarea name="summary" rows="3" class="form-input"></textarea></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="form-label">Review Date</label><input type="date" name="reviewDate" required class="form-input"></div>
+                            <div><label class="form-label">Next Review Date</label><input type="date" name="nextReviewDate" class="form-input"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" data-modal-close="performance-review-modal" class="btn-secondary">Cancel</button>
+                        <button type="submit" class="btn-primary">Save Review</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     `;
 }
+```// filepath: e:\Google Drive\@Work\Web Development\GitHub\hub.salatiso.com\assets\js\modules\hrhelp-business.js
+/* ================================================================================= */
+/* FILE: assets/js/modules/hrhelp-business.js */
+/* ================================================================================= */

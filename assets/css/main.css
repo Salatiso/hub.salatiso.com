@@ -1,0 +1,64 @@
+/* Publications Module Styles */
+.modal-overlay {
+    backdrop-filter: blur(4px);
+}
+
+.btn {
+    @apply px-4 py-2 rounded-lg font-medium transition-colors;
+}
+
+.btn-primary {
+    @apply bg-indigo-600 text-white hover:bg-indigo-700;
+}
+
+.btn-secondary {
+    @apply bg-slate-200 text-slate-800 hover:bg-slate-300;
+}
+
+.btn-danger {
+    @apply bg-red-600 text-white hover:bg-red-700;
+}
+
+.input {
+    @apply border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500;
+}
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    body {
+        font-size: 12pt;
+        line-height: 1.4;
+        color: black;
+        background: white;
+    }
+    
+    .page-break {
+        page-break-before: always;
+    }
+    
+    footer {
+        page-break-inside: avoid;
+    }
+}
+
+/* Quill editor improvements */
+.ql-editor {
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.ql-toolbar {
+    border-top: 1px solid #ccc;
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+}
+
+.ql-container {
+    border-bottom: 1px solid #ccc;
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+}

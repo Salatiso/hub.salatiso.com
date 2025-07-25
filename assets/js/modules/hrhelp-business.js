@@ -50,14 +50,17 @@ export function init(user) {
         return;
     }
     
+    console.log("Initializing HRHelp Business module...");
+    
     // Clean up previous listeners to prevent memory leaks
     unsubscribers.forEach(unsub => unsub());
     unsubscribers = [];
 
     currentUser = user;
-    businessId = currentUser.uid; 
+    businessId = currentUser.uid;
     
     console.log(`HRHelp Business v3.0 initialized for business ID: ${businessId}`);
+    console.log(`Current cache state: employees=${employeesCache.length}, leaveRequests=${leaveRequestsCache.length}`);
 
     const businessWorkspace = document.getElementById('business-workspace');
     if (!businessWorkspace) {
@@ -65,8 +68,16 @@ export function init(user) {
         return;
     }
 
+    console.log("Rendering business workspace HTML");
     businessWorkspace.innerHTML = getBusinessWorkspaceHTML();
+    
+    console.log("Attaching event listeners");
     attachEventListeners();
+    
+    console.log("Setting up data listeners");
+    setupDataListeners();
+    
+    console.log("Navigating to dashboard");
     navigateTo('dashboard');
 }
 
@@ -90,7 +101,19 @@ function setupDataListeners() {
     };
 
     const caches = {
-        employees: (data) => employeesCache = data.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0)),
+        employees: (data) => {
+            console.log(`Processing ${data.length} employees from Firestore`);
+            // Check if createdAt exists and is properly formatted
+            const hasCreatedAt = data.some(item => item.createdAt);
+            if (!hasCreatedAt) {
+                console.warn('Warning: No createdAt field found in employee data');
+                employeesCache = data; // Just use the data as is without sorting
+            } else {
+                console.log('Sorting employees by createdAt timestamp');
+                employeesCache = data.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
+            }
+            return employeesCache;
+        },
         leaveRequests: (data) => leaveRequestsCache = data.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0)),
         benefits: (data) => benefitsCache = data,
         recruitment: (data) => recruitmentCache = data.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0)),
@@ -103,11 +126,23 @@ function setupDataListeners() {
     };
 
     Object.entries(collections).forEach(([cacheKey, collectionName]) => {
-        const q = query(collection(db, `users/${businessId}/${collectionName}`), orderBy('createdAt', 'desc'));
+        const collectionPath = `users/${businessId}/${collectionName}`;
+        console.log(`Setting up listener for collection: ${collectionPath}`);
+        
+        const q = query(collection(db, collectionPath), orderBy('createdAt', 'desc'));
         const unsub = onSnapshot(q, (snapshot) => {
             const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            console.log(`Received ${data.length} documents from ${collectionPath}`);
             caches[cacheKey](data);
+            
+            // Log the updated cache
+            if (cacheKey === 'employees') {
+                console.log(`Updated employeesCache with ${employeesCache.length} employees`);
+                console.log('First few employees:', employeesCache.slice(0, 3));
+            }
+            
             const activeView = document.querySelector('.nav-link.active')?.dataset.view || 'dashboard';
+            console.log(`Re-rendering view: ${activeView}`);
             navigateTo(activeView, true); // Re-render the current view with new data
         }, (error) => console.error(`Error fetching ${collectionName}:`, error));
         unsubscribers.push(unsub);
@@ -183,11 +218,14 @@ function attachEventListeners() {
 }
 
 function navigateTo(view, isRefresh = false) {
-    console.log(`Navigating to: ${view}`);
+    console.log(`Navigating to: ${view} (isRefresh: ${isRefresh})`);
     const contentArea = document.getElementById('main-content-area');
     const navLinks = document.querySelectorAll('.nav-link');
 
-    if (!contentArea) return;
+    if (!contentArea) {
+        console.error('main-content-area element not found');
+        return;
+    }
 
     // Update active link in sidebar
     navLinks.forEach(link => {
@@ -199,12 +237,19 @@ function navigateTo(view, isRefresh = false) {
     });
 
     if (!isRefresh) {
+        console.log('Showing loading spinner');
         contentArea.innerHTML = '<div class="text-center p-10"><i class="fas fa-spinner fa-spin fa-3x text-indigo-500"></i></div>';
     }
     
+    // Check if data listeners are set up
     if (unsubscribers.length === 0) {
+        console.log('No active listeners found, setting up data listeners');
         setupDataListeners();
+    } else {
+        console.log(`${unsubscribers.length} active listeners found`);
     }
+    
+    console.log(`Current cache state before rendering: employees=${employeesCache.length}, leaveRequests=${leaveRequestsCache.length}`);
 
     switch (view) {
         case 'dashboard': renderDashboard(); break;
@@ -382,14 +427,25 @@ function generateRecentActivity() {
 }
 
 function renderPeople() {
+    console.log('Rendering People view');
+    console.log(`Current employeesCache has ${employeesCache.length} employees`);
+    
     const contentArea = document.getElementById('main-content-area');
+    if (!contentArea) {
+        console.error('main-content-area element not found');
+        return;
+    }
+    
     const employeesByType = EMPLOYEE_TYPES.reduce((acc, type) => {
         acc[type] = employeesCache.filter(e => e.employmentType === type);
         return acc;
     }, {});
+    
+    console.log('Employees by type:', Object.keys(employeesByType).map(type => `${type}: ${employeesByType[type].length}`));
 
     let employeesHtml;
     if (employeesCache.length > 0) {
+        console.log('Generating HTML for employees');
         employeesHtml = employeesCache.map(emp => {
             const statusColor = getStatusColor(emp.status || 'Active');
             return `
@@ -1679,7 +1735,7 @@ function getBusinessWorkspaceHTML() {
         </div>
 
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col overflow-hidden">
+        <div class="flex-1 flex flex-col overflow-hidden ml-64">
             <!-- Header -->
             <header class="bg-white shadow-sm border-b border-slate-200 px-6 py-4">
                 <div class="flex items-center justify-between">

@@ -593,7 +593,7 @@ async function extractTextFromDocx(file) {
 
 // Enhanced AI processing function with proper LifeCV mapping
 async function processTextWithAI(text) {
-    const GEMINI_API_KEY = "AIzaSyDfm0Bvir6j_72RdxfxZYfGjWdJNXvwK9k";
+    const GEMINI_API_KEY = "AIzaSyBl15V2pM4E6Yeh7YzVEdBjXsH3E2b1Wro";
     
     const prompt = `
 You are a professional CV/resume parser. Convert the following resume/document text into a structured JSON object that matches the LifeCV format exactly.

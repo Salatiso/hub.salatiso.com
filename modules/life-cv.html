@@ -475,10 +475,28 @@ Instructions:
     <script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
 
     <script>
+        // Move the categoryIcons and categoryColors to the top level so they're accessible everywhere
+        const categoryColors = {
+            work: 'bg-blue-50 border-blue-200 text-blue-800',
+            education: 'bg-green-50 border-green-200 text-green-800',
+            skills: 'bg-yellow-50 border-yellow-200 text-yellow-800',
+            projects: 'bg-purple-50 border-purple-200 text-purple-800',
+            awards: 'bg-red-50 border-red-200 text-red-800',
+            profiles: 'bg-indigo-50 border-indigo-200 text-indigo-800'
+        };
+
+        const categoryIcons = {
+            work: 'fas fa-briefcase',
+            education: 'fas fa-graduation-cap',
+            skills: 'fas fa-cogs',
+            projects: 'fas fa-project-diagram',
+            awards: 'fas fa-trophy',
+            profiles: 'fas fa-user-circle'
+        };
+
         // Internet Search Functionality
-        let selectedSearchResults = [];
-        const GOOGLE_API_KEY = "AIzaSyDfm0Bvir6j_72RdxfxZYfGjWdJNXvwK9k"; // Your new LifeCV API key
-        const SEARCH_ENGINE_ID = "5122dffc3f9614d0a"; // Your Custom Search Engine ID
+        const GOOGLE_API_KEY = "AIzaSyDfm0Bvir6j_72RdxfxZYfGjWdJNXvwK9k";
+        const SEARCH_ENGINE_ID = "5122dffc3f9614d0a";
 
         // Initialize Internet Search Modal
         document.getElementById('internet-search-btn').addEventListener('click', function() {
@@ -825,24 +843,32 @@ Instructions:
                 return;
             }
             
-            const categoryColors = {
-                work: 'bg-blue-50 border-blue-200 text-blue-800',
-                education: 'bg-green-50 border-green-200 text-green-800',
-                skills: 'bg-yellow-50 border-yellow-200 text-yellow-800',
-                projects: 'bg-purple-50 border-purple-200 text-purple-800',
-                awards: 'bg-red-50 border-red-200 text-red-800',
-                profiles: 'bg-indigo-50 border-indigo-200 text-indigo-800'
-            };
-
-            const categoryIcons = {
-                work: 'fas fa-briefcase',
-                education: 'fas fa-graduation-cap',
-                skills: 'fas fa-cogs',
-                projects: 'fas fa-project-diagram',
-                awards: 'fas fa-trophy',
-                profiles: 'fas fa-user-circle'
-            };
-
+            // Add "Select All" controls at the top
+            const selectAllSection = document.createElement('div');
+            selectAllSection.className = 'mb-6 p-4 bg-slate-50 border border-slate-200 rounded-lg';
+            selectAllSection.innerHTML = `
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-lg font-semibold text-slate-800">Quick Selection</h3>
+                    <button onclick="clearAllSelections()" class="text-sm text-slate-600 hover:text-slate-800">
+                        <i class="fas fa-times mr-1"></i>Clear All
+                    </button>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="selectAllResults()" class="px-3 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700">
+                        <i class="fas fa-check-double mr-1"></i>Select All
+                    </button>
+                    ${Object.entries(processedResults).map(([category, items]) => 
+                        items.length > 0 ? `
+                            <button onclick="selectAllInCategory('${category}')" 
+                                    class="px-3 py-1 bg-slate-200 text-slate-700 text-sm rounded hover:bg-slate-300">
+                                <i class="${categoryIcons[category]} mr-1"></i>All ${category.charAt(0).toUpperCase() + category.slice(1)} (${items.length})
+                            </button>
+                        ` : ''
+                    ).join('')}
+                </div>
+            `;
+            resultsContainer.appendChild(selectAllSection);
+            
             Object.entries(processedResults).forEach(([category, items]) => {
                 if (items.length === 0) return;
                 
@@ -852,9 +878,15 @@ Instructions:
                 categorySection.className = 'mb-6 relative z-10';
                 
                 categorySection.innerHTML = `
-                    <h3 class="text-lg font-semibold text-slate-800 mb-3 flex items-center">
-                        <i class="${categoryIcons[category]} mr-2"></i>
-                        ${category.charAt(0).toUpperCase() + category.slice(1)} (${items.length})
+                    <h3 class="text-lg font-semibold text-slate-800 mb-3 flex items-center justify-between">
+                        <span class="flex items-center">
+                            <i class="${categoryIcons[category]} mr-2"></i>
+                            ${category.charAt(0).toUpperCase() + category.slice(1)} (${items.length})
+                        </span>
+                        <button onclick="selectAllInCategory('${category}')" 
+                                class="text-sm bg-slate-100 text-slate-600 px-2 py-1 rounded hover:bg-slate-200">
+                            Select All
+                        </button>
                     </h3>
                     <div class="space-y-3">
                         ${items.map((item, index) => `
@@ -905,36 +937,81 @@ Instructions:
             updateSelectedCount();
         }
 
+        // Update the selection functions to use the module
+        function selectAllResults() {
+            const allResults = document.querySelectorAll('.search-result-item');
+            allResults.forEach(item => {
+                const checkbox = item.querySelector('.result-checkbox');
+                if (!checkbox.checked) {
+                    checkbox.checked = true;
+                    item.classList.add('ring-2', 'ring-indigo-500');
+                    window.lifeCvModule.addSelectedResult({
+                        category: item.dataset.category,
+                        index: parseInt(item.dataset.index),
+                        element: item
+                    });
+                }
+            });
+            updateSelectedCount();
+        }
+
+        function selectAllInCategory(category) {
+            const categoryResults = document.querySelectorAll(`[data-category="${category}"]`);
+            categoryResults.forEach(item => {
+                const checkbox = item.querySelector('.result-checkbox');
+                if (!checkbox.checked) {
+                    checkbox.checked = true;
+                    item.classList.add('ring-2', 'ring-indigo-500');
+                    window.lifeCvModule.addSelectedResult({
+                        category: item.dataset.category,
+                        index: parseInt(item.dataset.index),
+                        element: item
+                    });
+                }
+            });
+            updateSelectedCount();
+        }
+
+        function clearAllSelections() {
+            const allResults = document.querySelectorAll('.search-result-item');
+            allResults.forEach(item => {
+                const checkbox = item.querySelector('.result-checkbox');
+                checkbox.checked = false;
+                item.classList.remove('ring-2', 'ring-indigo-500');
+            });
+            window.lifeCvModule.clearSelectedResults();
+            updateSelectedCount();
+        }
+
         function toggleResultSelection(element) {
             const checkbox = element.querySelector('.result-checkbox');
             checkbox.checked = !checkbox.checked;
             
             if (checkbox.checked) {
                 element.classList.add('ring-2', 'ring-indigo-500');
-                selectedSearchResults.push({
+                window.lifeCvModule.addSelectedResult({
                     category: element.dataset.category,
                     index: parseInt(element.dataset.index),
                     element: element
                 });
             } else {
                 element.classList.remove('ring-2', 'ring-indigo-500');
-                selectedSearchResults = selectedSearchResults.filter(
-                    item => !(item.category === element.dataset.category && item.index === parseInt(element.dataset.index))
-                );
+                window.lifeCvModule.removeSelectedResult(element.dataset.category, parseInt(element.dataset.index));
             }
             
             updateSelectedCount();
         }
 
         function updateSelectedCount() {
-            const count = selectedSearchResults.length;
+            const count = window.lifeCvModule.getSelectedSearchResults().length;
             document.getElementById('selected-count').textContent = count;
             document.getElementById('import-selected-btn').disabled = count === 0;
         }
 
-        // Import selected results
+        // UPDATED Import selected results function
         document.getElementById('import-selected-btn').addEventListener('click', async function() {
-            if (selectedSearchResults.length === 0) return;
+            const selectedResults = window.lifeCvModule.getSelectedSearchResults();
+            if (selectedResults.length === 0) return;
 
             const importBtn = this;
             const originalText = importBtn.innerHTML;
@@ -944,27 +1021,11 @@ Instructions:
             importBtn.disabled = true;
 
             try {
-                // Get the current LifeCV data
-                const currentLifeCvData = await getLifeCvData();
-                
-                // Process selected results into LifeCV format
-                const importData = processSelectedResultsToLifeCV();
-                
-                // Merge with existing data
-                const mergedData = mergeImportDataWithExisting(importData, currentLifeCvData);
-                
-                // Save to Firebase using the existing updateDocument function
-                await updateDocument('users', currentUser.uid, { 'lifeCv': mergedData });
-                
-                // Show success message
-                showImportSuccessMessage(selectedSearchResults.length);
+                // Use the module's import function
+                await window.lifeCvModule.importSelectedResults();
                 
                 // Close modal and reset
                 document.getElementById('internet-search-modal').classList.add('hidden');
-                selectedSearchResults = [];
-                
-                // Force refresh of the page to show new data
-                location.reload();
                 
             } catch (error) {
                 console.error('Import error:', error);
@@ -976,142 +1037,10 @@ Instructions:
             }
         });
 
-        async function getLifeCvData() {
-            try {
-                // Use the existing getDocument function from the imported modules
-                const userDoc = await getDocument('users', currentUser.uid);
-                return userDoc?.lifeCv || {};
-            } catch (error) {
-                console.error('Error getting LifeCV data:', error);
-                return {};
-            }
-        }
+        // Remove the duplicate functions that are now in the module
+        // (getLifeCvData, processSelectedResultsToLifeCV, mergeImportDataWithExisting, showImportSuccessMessage)
+        // Keep only the helper functions for extraction
 
-        function processSelectedResultsToLifeCV() {
-            console.log('Processing selected results:', selectedSearchResults);
-            
-            const importData = {
-                experience: [],
-                education: [],
-                skills: [],
-                projects: [],
-                digital: [],
-                awards: []
-            };
-
-            selectedSearchResults.forEach(selected => {
-                const titleEl = selected.element.querySelector('h4');
-                const descEl = selected.element.querySelector('p');
-                const linkEl = selected.element.querySelector('a[href]');
-                
-                const title = titleEl ? titleEl.textContent.trim() : 'Unknown';
-                const description = descEl ? descEl.textContent.trim() : '';
-                const url = linkEl ? linkEl.href : '';
-                const source = selected.element.querySelector('.text-slate-400')?.textContent?.trim() || '';
-
-                // Map to LifeCV structure based on category
-                switch (selected.category) {
-                    case 'work':
-                        importData.experience.push({
-                            jobTitle: extractJobTitle(title, description),
-                            company: extractCompany(title, description, source),
-                            industry: '',
-                            location: '',
-                            startDate: '',
-                            endDate: '',
-                            description: description,
-                            skills: '',
-                            source: 'Internet Search',
-                            sourceUrl: url,
-                            importedAt: new Date().toISOString()
-                        });
-                        break;
-                        
-                    case 'education':
-                        importData.education.push({
-                            qualification: extractQualification(title, description),
-                            institution: extractInstitution(title, description, source),
-                            field: '',
-                            yearCompleted: '',
-                            grade: '',
-                            significance: description,
-                            source: 'Internet Search',
-                            sourceUrl: url,
-                            importedAt: new Date().toISOString()
-                        });
-                        break;
-                        
-                    case 'skills':
-                        importData.skills.push({
-                            category: 'Technical',
-                            skillName: extractSkillName(title, description),
-                            proficiency: 'Intermediate',
-                            context: description,
-                            source: 'Internet Search',
-                            sourceUrl: url,
-                            importedAt: new Date().toISOString()
-                        });
-                        break;
-                        
-                    case 'projects':
-                        importData.projects.push({
-                            name: title,
-                            type: 'Professional',
-                            description: description,
-                            role: '',
-                            technologies: '',
-                            outcome: '',
-                            url: url,
-                            source: 'Internet Search',
-                            importedAt: new Date().toISOString()
-                        });
-                        break;
-                        
-                    case 'awards':
-                        importData.awards.push({
-                            title: title,
-                            date: '',
-                            awarder: extractAwarder(title, description, source),
-                            summary: description,
-                            source: 'Internet Search',
-                            sourceUrl: url,
-                            importedAt: new Date().toISOString()
-                        });
-                        break;
-                        
-                    case 'profiles':
-                        importData.digital.push({
-                            platform: extractPlatform(source, url),
-                            username: extractUsername(title, url),
-                            url: url,
-                            purpose: 'Professional',
-                            privacy: 'Public',
-                            source: 'Internet Search',
-                            importedAt: new Date().toISOString()
-                        });
-                        break;
-                }
-            });
-
-            return importData;
-        }
-
-        function mergeImportDataWithExisting(importData, existingData) {
-            const merged = { ...existingData };
-            
-            // Merge array fields
-            const arrayFields = ['experience', 'education', 'skills', 'projects', 'digital', 'awards'];
-            arrayFields.forEach(field => {
-                if (importData[field] && importData[field].length > 0) {
-                    if (!merged[field]) merged[field] = [];
-                    merged[field] = [...merged[field], ...importData[field]];
-                }
-            });
-            
-            return merged;
-        }
-
-        // Helper functions (simplified versions)
         function extractJobTitle(title, description) {
             return title.split(' - ')[0] || title.split(' | ')[0] || title;
         }
@@ -1165,228 +1094,6 @@ Instructions:
                 return title.split(' ')[0] || '';
             }
         }
-
-        function showImportSuccessMessage(count) {
-            const message = document.createElement('div');
-            message.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-in';
-            message.innerHTML = `
-                <div class="flex items-center">
-                    <i class="fas fa-check-circle mr-2"></i>
-                    Successfully imported ${count} item${count === 1 ? '' : 's'} to your LifeCV!
-                </div>
-            `;
-            
-            document.body.appendChild(message);
-            
-            setTimeout(() => {
-                message.remove();
-            }, 4000);
-        }
-
-        // Existing functionality for file import and JSON import
-        async function handleAiFileImport(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const overlay = document.getElementById('ai-processing-overlay');
-            overlay.style.display = 'flex';
-
-            try {
-                let fileContent = '';
-                
-                if (file.type === 'application/pdf') {
-                    alert('PDF processing requires additional setup. Please use .txt files for now.');
-                    throw new Error('PDF processing not implemented');
-                } else if (file.type.includes('word') || file.name.endsWith('.docx') || file.name.endsWith('.doc')) {
-                    alert('Word document processing requires additional setup. Please use .txt files for now.');
-                    throw new Error('Word document processing not implemented');
-                } else {
-                    fileContent = await new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onload = (e) => resolve(e.target.result);
-                        reader.onerror = (e) => reject(e);
-                        reader.readAsText(file);
-                    });
-                }
-
-                if (!fileContent.trim()) {
-                    throw new Error('No content could be extracted from the file');
-                }
-
-                const prompt = `Extract CV/resume information from the following text and convert it to JSON format matching this structure:
-                {
-                    "personal": {
-                        "fullName": "",
-                        "email": "",
-                        "phone": "",
-                        "address": "",
-                        "linkedIn": "",
-                        "website": ""
-                    },
-                    "summary": {
-                        "summary": ""
-                    },
-                    "experience": [
-                        {
-                            "jobTitle": "",
-                            "company": "",
-                            "location": "",
-                            "startDate": "",
-                            "endDate": "",
-                            "description": ""
-                        }
-                    ],
-                    "education": [
-                        {
-                            "qualification": "",
-                            "institution": "",
-                            "year": "",
-                            "grade": ""
-                        }
-                    ],
-                    "skills": [
-                        {
-                            "skillName": "",
-                            "level": ""
-                        }
-                    ]
-                }
-                
-                Text to extract from:
-                ${fileContent}
-                
-                Please return only valid JSON without any markdown formatting.`;
-
-                const apiKey = "AIzaSyCNvLRXRvgaHygRa2v_3IrhCsL1PmT05Wk";
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-                
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [{ text: prompt }]
-                        }]
-                    })
-                });
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('API Error Response:', errorText);
-                    throw new Error(`API Error: ${response.status} - ${response.statusText}`);
-                }
-                
-                const result = await response.json();
-                
-                if (!result.candidates || !result.candidates[0] || !result.candidates[0].content) {
-                    throw new Error('Invalid response format from AI service');
-                }
-                
-                const text = result.candidates[0].content.parts[0].text;
-                const cleanedJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
-                
-                let importedData;
-                try {
-                    importedData = JSON.parse(cleanedJson);
-                } catch (parseError) {
-                    console.error('JSON Parse Error:', parseError);
-                    console.error('Raw AI Response:', text);
-                    throw new Error('AI returned invalid JSON format');
-                }
-
-                const mergedData = { ...lifeCvData, ...importedData };
-                await updateDocument('users', currentUser.uid, { 'lifeCv': mergedData });
-                
-                await loadLifeCvData();
-                renderLifeCv();
-                
-                alert("AI has successfully imported data from your file!");
-
-            } catch (error) {
-                console.error("AI Import Error:", error);
-                let errorMessage = "The AI could not process your document. ";
-                
-                if (error.message.includes('API key')) {
-                    errorMessage += "API key not configured.";
-                } else if (error.message.includes('Invalid response')) {
-                    errorMessage += "AI service returned an invalid response.";
-                } else if (error.message.includes('JSON')) {
-                    errorMessage += "AI returned invalid data format.";
-                } else {
-                    errorMessage += "Please check the file format and try again.";
-                }
-                
-                alert(errorMessage);
-            } finally {
-                overlay.style.display = 'none';
-                event.target.value = '';
-            }
-        }
-
-        // Tab switching functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const jsonTab = document.getElementById('json-tab');
-            const instructionsTab = document.getElementById('instructions-tab');
-            const jsonContent = document.getElementById('json-import-content');
-            const instructionsContent = document.getElementById('instructions-content');
-            const copyPromptBtn = document.getElementById('copy-prompt-btn');
-            const conversionPrompt = document.getElementById('conversion-prompt');
-
-            // Tab switching
-            jsonTab.addEventListener('click', function() {
-                jsonTab.classList.add('text-indigo-600', 'border-indigo-600');
-                jsonTab.classList.remove('text-slate-500');
-                instructionsTab.classList.add('text-slate-500');
-                instructionsTab.classList.remove('text-indigo-600', 'border-indigo-600');
-
-                jsonContent.classList.remove('hidden');
-                instructionsContent.classList.add('hidden');
-            });
-
-            instructionsTab.addEventListener('click', function() {
-                instructionsTab.classList.add('text-indigo-600', 'border-indigo-600');
-                instructionsTab.classList.remove('text-slate-500');
-                jsonTab.classList.add('text-slate-500');
-                jsonTab.classList.remove('text-indigo-600', 'border-indigo-600');
-
-                instructionsContent.classList.remove('hidden');
-                jsonContent.classList.add('hidden');
-            });
-
-            // Copy prompt functionality
-            copyPromptBtn.addEventListener('click', async function() {
-                try {
-                    await navigator.clipboard.writeText(conversionPrompt.value);
-                    
-                    const originalText = copyPromptBtn.innerHTML;
-                    copyPromptBtn.innerHTML = '<i class="fas fa-check mr-1"></i> Copied!';
-                    copyPromptBtn.classList.add('bg-green-100', 'text-green-700');
-                    copyPromptBtn.classList.remove('bg-indigo-100', 'text-indigo-700');
-                    
-                    setTimeout(() => {
-                        copyPromptBtn.innerHTML = originalText;
-                        copyPromptBtn.classList.remove('bg-green-100', 'text-green-700');
-                        copyPromptBtn.classList.add('bg-indigo-100', 'text-indigo-700');
-                    }, 2000);
-                } catch (err) {
-                    conversionPrompt.select();
-                    document.execCommand('copy');
-                    alert('Prompt copied to clipboard!');
-                }
-            });
-
-            // Close button functionality
-            document.getElementById('json-modal-close').addEventListener('click', function() {
-                document.getElementById('json-import-modal').classList.add('hidden');
-            });
-
-            document.getElementById('instructions-close').addEventListener('click', function() {
-                document.getElementById('json-import-modal').classList.add('hidden');
-            });
-
-            // File import event listener
-            document.getElementById('file-import-input').addEventListener('change', handleAiFileImport);
-        });
     </script>
 </body>
 </html>

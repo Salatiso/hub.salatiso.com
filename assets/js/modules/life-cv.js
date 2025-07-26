@@ -12,36 +12,152 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/fi
 let currentUser = null;
 let lifeCvData = {}; // Local cache for user's LifeCV data
 
-// Define the structure of the LifeCV
+// Define the holistic structure of the LifeCV
 const lifeCvSections = {
-    profilePictures: { title: 'Profile Pictures', icon: 'fa-camera-retro', isCustom: true }, // Custom rendered section
-    personal: { title: 'Personal & Contact Details', icon: 'fa-user', fields: [
+    profilePictures: { title: 'Profile Pictures', icon: 'fa-camera-retro', isCustom: true },
+    
+    // Personal & Identity
+    personal: { title: 'Personal & Identity', icon: 'fa-user', fields: [
         { id: 'fullName', label: 'Full Name', type: 'text' },
+        { id: 'preferredName', label: 'Preferred Name/Nickname', type: 'text' },
+        { id: 'pronouns', label: 'Pronouns', type: 'text', placeholder: 'they/them, she/her, he/him, etc.' },
         { id: 'idNumber', label: 'ID/Passport Number', type: 'text' },
         { id: 'dob', label: 'Date of Birth', type: 'date' },
         { id: 'nationality', label: 'Nationality', type: 'text' },
+        { id: 'ethnicity', label: 'Ethnicity/Heritage', type: 'text' },
         { id: 'phone', label: 'Phone Number', type: 'tel' },
         { id: 'email', label: 'Email Address', type: 'email', readonly: true },
         { id: 'address', label: 'Residential Address', type: 'textarea' },
+        { id: 'emergencyContact', label: 'Emergency Contact', type: 'textarea' },
     ]},
-    summary: { title: 'Professional Summary', icon: 'fa-quote-left', fields: [
-        { id: 'summary', label: 'Your Summary', type: 'textarea', placeholder: 'A brief summary of your professional background...' }
+    
+    // Life Philosophy & Values
+    philosophy: { title: 'Life Philosophy & Values', icon: 'fa-heart', fields: [
+        { id: 'mission', label: 'Personal Mission Statement', type: 'textarea', placeholder: 'What drives you in life?' },
+        { id: 'values', label: 'Core Values', type: 'textarea', placeholder: 'What principles guide your decisions?' },
+        { id: 'beliefs', label: 'Beliefs & Worldview', type: 'textarea' },
+        { id: 'spirituality', label: 'Spiritual/Religious Beliefs', type: 'textarea' },
+        { id: 'lifeGoals', label: 'Life Goals & Aspirations', type: 'textarea' },
     ]},
-    experience: { title: 'Work Experience', icon: 'fa-briefcase', isArray: true, fields: [
+    
+    // Family & Relationships
+    family: { title: 'Family & Relationships', icon: 'fa-users', isArray: true, fields: [
+        { id: 'relationship', label: 'Relationship Type', type: 'select', options: ['Parent', 'Child', 'Sibling', 'Spouse/Partner', 'Extended Family', 'Close Friend', 'Mentor', 'Other'] },
+        { id: 'name', label: 'Name', type: 'text' },
+        { id: 'significance', label: 'Significance in Your Life', type: 'textarea' },
+        { id: 'contact', label: 'Contact Information', type: 'text' },
+    ]},
+    
+    // Professional Life
+    professional: { title: 'Professional Journey', icon: 'fa-briefcase', fields: [
+        { id: 'summary', label: 'Professional Summary', type: 'textarea', placeholder: 'Brief overview of your professional background...' },
+        { id: 'careerVision', label: 'Career Vision', type: 'textarea', placeholder: 'Where do you see your career heading?' },
+        { id: 'workStyle', label: 'Work Style & Preferences', type: 'textarea' },
+    ]},
+    
+    experience: { title: 'Work Experience', icon: 'fa-building', isArray: true, fields: [
         { id: 'jobTitle', label: 'Job Title', type: 'text' },
-        { id: 'company', label: 'Company', type: 'text' },
+        { id: 'company', label: 'Company/Organization', type: 'text' },
+        { id: 'industry', label: 'Industry', type: 'text' },
+        { id: 'location', label: 'Location', type: 'text' },
         { id: 'startDate', label: 'Start Date', type: 'month' },
         { id: 'endDate', label: 'End Date (leave blank if current)', type: 'month' },
-        { id: 'description', label: 'Responsibilities', type: 'textarea' },
+        { id: 'description', label: 'Key Responsibilities & Achievements', type: 'textarea' },
+        { id: 'skills', label: 'Skills Developed', type: 'text' },
     ]},
+    
+    // Education & Learning
     education: { title: 'Education & Qualifications', icon: 'fa-graduation-cap', isArray: true, fields: [
-        { id: 'qualification', label: 'Qualification', type: 'text' },
+        { id: 'qualification', label: 'Qualification/Degree', type: 'text' },
         { id: 'institution', label: 'Institution', type: 'text' },
+        { id: 'field', label: 'Field of Study', type: 'text' },
         { id: 'yearCompleted', label: 'Year Completed', type: 'number' },
+        { id: 'grade', label: 'Grade/GPA', type: 'text' },
+        { id: 'significance', label: 'Key Learning & Impact', type: 'textarea' },
     ]},
-    skills: { title: 'Skills', icon: 'fa-cogs', isArray: true, fields: [
+    
+    // Skills & Competencies
+    skills: { title: 'Skills & Competencies', icon: 'fa-cogs', isArray: true, fields: [
+        { id: 'category', label: 'Category', type: 'select', options: ['Technical', 'Creative', 'Communication', 'Leadership', 'Personal', 'Physical', 'Language', 'Other'] },
         { id: 'skillName', label: 'Skill', type: 'text' },
-        { id: 'proficiency', label: 'Proficiency (e.g., Expert, Intermediate)', type: 'text' },
+        { id: 'proficiency', label: 'Proficiency Level', type: 'select', options: ['Beginner', 'Intermediate', 'Advanced', 'Expert', 'Master'] },
+        { id: 'context', label: 'How You Use This Skill', type: 'textarea' },
+    ]},
+    
+    // Health & Wellness
+    health: { title: 'Health & Wellness', icon: 'fa-heartbeat', fields: [
+        { id: 'physicalHealth', label: 'Physical Health Status', type: 'textarea' },
+        { id: 'mentalHealth', label: 'Mental Health & Wellbeing', type: 'textarea' },
+        { id: 'disabilities', label: 'Disabilities/Accessibility Needs', type: 'textarea' },
+        { id: 'allergies', label: 'Allergies & Medical Conditions', type: 'textarea' },
+        { id: 'medications', label: 'Current Medications', type: 'textarea' },
+        { id: 'healthGoals', label: 'Health & Fitness Goals', type: 'textarea' },
+    ]},
+    
+    // Hobbies & Interests
+    interests: { title: 'Hobbies & Interests', icon: 'fa-palette', isArray: true, fields: [
+        { id: 'category', label: 'Category', type: 'select', options: ['Sports & Fitness', 'Arts & Crafts', 'Music', 'Reading & Writing', 'Technology', 'Travel', 'Cooking', 'Gaming', 'Nature & Outdoors', 'Community Service', 'Other'] },
+        { id: 'interest', label: 'Interest/Hobby', type: 'text' },
+        { id: 'level', label: 'Involvement Level', type: 'select', options: ['Casual', 'Regular', 'Serious', 'Professional'] },
+        { id: 'description', label: 'What This Means to You', type: 'textarea' },
+    ]},
+    
+    // Life Experiences & Milestones
+    milestones: { title: 'Life Milestones & Experiences', icon: 'fa-star', isArray: true, fields: [
+        { id: 'title', label: 'Milestone/Experience', type: 'text' },
+        { id: 'date', label: 'Date', type: 'date' },
+        { id: 'category', label: 'Category', type: 'select', options: ['Personal Achievement', 'Travel', 'Relationship', 'Career', 'Education', 'Health', 'Community', 'Spiritual', 'Other'] },
+        { id: 'description', label: 'Description & Impact', type: 'textarea' },
+        { id: 'lessons', label: 'Lessons Learned', type: 'textarea' },
+    ]},
+    
+    // Community & Social Impact
+    community: { title: 'Community & Social Impact', icon: 'fa-hands-helping', isArray: true, fields: [
+        { id: 'organization', label: 'Organization/Cause', type: 'text' },
+        { id: 'role', label: 'Your Role', type: 'text' },
+        { id: 'startDate', label: 'Start Date', type: 'month' },
+        { id: 'endDate', label: 'End Date (if applicable)', type: 'month' },
+        { id: 'contribution', label: 'Your Contribution', type: 'textarea' },
+        { id: 'impact', label: 'Impact Created', type: 'textarea' },
+    ]},
+    
+    // Creative Works & Projects
+    projects: { title: 'Creative Works & Projects', icon: 'fa-lightbulb', isArray: true, fields: [
+        { id: 'name', label: 'Project Name', type: 'text' },
+        { id: 'type', label: 'Project Type', type: 'select', options: ['Professional', 'Personal', 'Academic', 'Community', 'Artistic', 'Technical', 'Other'] },
+        { id: 'description', label: 'Description', type: 'textarea' },
+        { id: 'role', label: 'Your Role', type: 'text' },
+        { id: 'technologies', label: 'Tools/Technologies Used', type: 'text' },
+        { id: 'outcome', label: 'Outcome & Impact', type: 'textarea' },
+        { id: 'url', label: 'Link/Portfolio URL', type: 'url' },
+    ]},
+    
+    // Travel & Cultural Experiences
+    travel: { title: 'Travel & Cultural Experiences', icon: 'fa-globe', isArray: true, fields: [
+        { id: 'destination', label: 'Destination', type: 'text' },
+        { id: 'date', label: 'Date/Period', type: 'text' },
+        { id: 'purpose', label: 'Purpose', type: 'select', options: ['Leisure', 'Work', 'Study', 'Volunteer', 'Family', 'Spiritual', 'Adventure', 'Other'] },
+        { id: 'experience', label: 'Key Experiences', type: 'textarea' },
+        { id: 'cultural', label: 'Cultural Insights Gained', type: 'textarea' },
+        { id: 'impact', label: 'How It Changed You', type: 'textarea' },
+    ]},
+    
+    // Financial & Legal
+    financial: { title: 'Financial & Legal Information', icon: 'fa-file-contract', fields: [
+        { id: 'bankDetails', label: 'Banking Information', type: 'textarea' },
+        { id: 'insurance', label: 'Insurance Policies', type: 'textarea' },
+        { id: 'investments', label: 'Investments & Assets', type: 'textarea' },
+        { id: 'legal', label: 'Legal Documents & Contracts', type: 'textarea' },
+        { id: 'financialGoals', label: 'Financial Goals', type: 'textarea' },
+    ]},
+    
+    // Digital Presence
+    digital: { title: 'Digital Presence & Social Media', icon: 'fa-share-alt', isArray: true, fields: [
+        { id: 'platform', label: 'Platform', type: 'text' },
+        { id: 'username', label: 'Username/Handle', type: 'text' },
+        { id: 'url', label: 'Profile URL', type: 'url' },
+        { id: 'purpose', label: 'Purpose/Use', type: 'text' },
+        { id: 'privacy', label: 'Privacy Level', type: 'select', options: ['Public', 'Friends Only', 'Private', 'Professional'] },
     ]},
 };
 

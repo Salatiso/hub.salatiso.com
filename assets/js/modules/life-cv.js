@@ -870,3 +870,316 @@ onAuthStateChanged(auth, (user) => {
         init(user);
     }
 });
+
+// Import selected results with proper backend integration
+document.getElementById('import-selected-btn').addEventListener('click', async function() {
+    if (selectedSearchResults.length === 0) return;
+
+    const importBtn = this;
+    const originalText = importBtn.innerHTML;
+    
+    // Show loading state
+    importBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Importing...';
+    importBtn.disabled = true;
+
+    try {
+        // Process selected results into LifeCV format
+        const importData = await processSelectedResultsToLifeCV();
+        
+        // Merge with existing LifeCV data
+        const mergedData = mergeImportDataWithExisting(importData);
+        
+        // Save to Firebase
+        await updateDocument('users', currentUser.uid, { 'lifeCv': mergedData });
+        
+        // Update local cache
+        lifeCvData = mergedData;
+        
+        // Re-render the LifeCV sections
+        renderAllSections();
+        
+        // Show success message
+        showImportSuccessMessage(selectedSearchResults.length);
+        
+        // Close modal and reset
+        document.getElementById('internet-search-modal').classList.add('hidden');
+        selectedSearchResults = [];
+        
+    } catch (error) {
+        console.error('Import error:', error);
+        alert('Failed to import selected items. Please try again.');
+    } finally {
+        // Reset button state
+        importBtn.innerHTML = originalText;
+        importBtn.disabled = false;
+    }
+});
+
+async function processSelectedResultsToLifeCV() {
+    console.log('Processing selected results:', selectedSearchResults);
+    
+    const importData = {
+        work: [],
+        education: [],
+        skills: [],
+        projects: [],
+        awards: [],
+        profiles: []
+    };
+
+    selectedSearchResults.forEach(selected => {
+        const titleEl = selected.element.querySelector('h4');
+        const descEl = selected.element.querySelector('p');
+        const linkEl = selected.element.querySelector('a[href]');
+        
+        const title = titleEl ? titleEl.textContent.trim() : 'Unknown';
+        const description = descEl ? descEl.textContent.trim() : '';
+        const url = linkEl ? linkEl.href : '';
+        const source = selected.element.querySelector('.text-slate-400')?.textContent?.trim() || '';
+
+        // Map to LifeCV structure based on category
+        switch (selected.category) {
+            case 'work':
+                importData.experience.push({
+                    jobTitle: extractJobTitle(title, description),
+                    company: extractCompany(title, description, source),
+                    location: '',
+                    startDate: '',
+                    endDate: '',
+                    description: description,
+                    skills: '',
+                    source: 'Internet Search',
+                    sourceUrl: url,
+                    importedAt: new Date().toISOString()
+                });
+                break;
+                
+            case 'education':
+                importData.education.push({
+                    qualification: extractQualification(title, description),
+                    institution: extractInstitution(title, description, source),
+                    field: '',
+                    yearCompleted: '',
+                    grade: '',
+                    significance: description,
+                    source: 'Internet Search',
+                    sourceUrl: url,
+                    importedAt: new Date().toISOString()
+                });
+                break;
+                
+            case 'skills':
+                importData.skills.push({
+                    category: 'Technical',
+                    skillName: extractSkillName(title, description),
+                    proficiency: 'Intermediate',
+                    context: description,
+                    source: 'Internet Search',
+                    sourceUrl: url,
+                    importedAt: new Date().toISOString()
+                });
+                break;
+                
+            case 'projects':
+                importData.projects.push({
+                    name: title,
+                    type: 'Professional',
+                    description: description,
+                    role: '',
+                    technologies: '',
+                    outcome: '',
+                    url: url,
+                    source: 'Internet Search',
+                    importedAt: new Date().toISOString()
+                });
+                break;
+                
+            case 'awards':
+                importData.awards = importData.awards || [];
+                importData.awards.push({
+                    title: title,
+                    date: '',
+                    awarder: extractAwarder(title, description, source),
+                    summary: description,
+                    source: 'Internet Search',
+                    sourceUrl: url,
+                    importedAt: new Date().toISOString()
+                });
+                break;
+                
+            case 'profiles':
+                importData.digital.push({
+                    platform: extractPlatform(source, url),
+                    username: extractUsername(title, url),
+                    url: url,
+                    purpose: 'Professional',
+                    privacy: 'Public',
+                    source: 'Internet Search',
+                    importedAt: new Date().toISOString()
+                });
+                break;
+        }
+    });
+
+    return importData;
+}
+
+function mergeImportDataWithExisting(importData) {
+    const merged = { ...lifeCvData };
+    
+    // Merge array fields
+    const arrayFields = ['experience', 'education', 'skills', 'projects', 'digital'];
+    arrayFields.forEach(field => {
+        if (importData[field] && importData[field].length > 0) {
+            if (!merged[field]) merged[field] = [];
+            merged[field] = [...merged[field], ...importData[field]];
+        }
+    });
+    
+    // Handle awards specially since it might not exist in lifeCvSections
+    if (importData.awards && importData.awards.length > 0) {
+        if (!merged.awards) merged.awards = [];
+        merged.awards = [...merged.awards, ...importData.awards];
+    }
+    
+    return merged;
+}
+
+// Helper functions to extract information
+function extractJobTitle(title, description) {
+    // Try to extract job title from title or description
+    const jobTitlePatterns = [
+        /^([^-|]+?)(?:\s*[-|]\s*)/,  // Everything before first dash or pipe
+        /(engineer|developer|manager|director|analyst|coordinator|specialist|lead)/i
+    ];
+    
+    for (const pattern of jobTitlePatterns) {
+        const match = title.match(pattern);
+        if (match) return match[1] || match[0];
+    }
+    
+    return title.split(' - ')[0] || title;
+}
+
+function extractCompany(title, description, source) {
+    // Try to extract company from source domain or title
+    if (source) {
+        const domain = source.replace(/^www\./, '').split('.')[0];
+        if (domain && domain !== 'linkedin' && domain !== 'github') {
+            return domain.charAt(0).toUpperCase() + domain.slice(1);
+        }
+    }
+    
+    // Look for company patterns in title
+    const companyPatterns = [
+        /(?:at|@)\s+([^-|,]+)/i,
+        /-\s*([^-|,]+)$/i
+    ];
+    
+    for (const pattern of companyPatterns) {
+        const match = title.match(pattern);
+        if (match) return match[1].trim();
+    }
+    
+    return source || 'Unknown Company';
+}
+
+function extractQualification(title, description) {
+    const qualificationPatterns = [
+        /(bachelor|master|phd|doctorate|degree|diploma|certificate)/i,
+        /^([^-|]+?)(?:\s*[-|]\s*)/
+    ];
+    
+    for (const pattern of qualificationPatterns) {
+        const match = title.match(pattern);
+        if (match) return match[1] || match[0];
+    }
+    
+    return title;
+}
+
+function extractInstitution(title, description, source) {
+    // Similar logic to extractCompany but for educational institutions
+    if (source && (source.includes('edu') || source.includes('university') || source.includes('college'))) {
+        return source.replace(/^www\./, '').split('.')[0];
+    }
+    
+    const institutionPatterns = [
+        /(?:at|@)\s+([^-|,]+)/i,
+        /-\s*([^-|,]+)$/i
+    ];
+    
+    for (const pattern of institutionPatterns) {
+        const match = title.match(pattern);
+        if (match) return match[1].trim();
+    }
+    
+    return source || 'Unknown Institution';
+}
+
+function extractSkillName(title, description) {
+    // Extract primary skill from title
+    const skillPatterns = [
+        /^([^-|]+?)(?:\s*[-|]\s*)/,
+        /(javascript|python|react|node|java|css|html|sql|aws|docker)/i
+    ];
+    
+    for (const pattern of skillPatterns) {
+        const match = title.match(pattern);
+        if (match) return match[1] || match[0];
+    }
+    
+    return title.split(' ')[0] || title;
+}
+
+function extractAwarder(title, description, source) {
+    return extractCompany(title, description, source);
+}
+
+function extractPlatform(source, url) {
+    const domain = source || new URL(url).hostname;
+    
+    if (domain.includes('linkedin')) return 'LinkedIn';
+    if (domain.includes('github')) return 'GitHub';
+    if (domain.includes('twitter')) return 'Twitter';
+    if (domain.includes('facebook')) return 'Facebook';
+    if (domain.includes('instagram')) return 'Instagram';
+    
+    return domain.replace(/^www\./, '').split('.')[0];
+}
+
+function extractUsername(title, url) {
+    // Try to extract username from URL or title
+    try {
+        const urlObj = new URL(url);
+        const pathParts = urlObj.pathname.split('/').filter(part => part);
+        
+        // For most social platforms, username is the first path segment
+        if (pathParts.length > 0) {
+            return pathParts[0];
+        }
+    } catch (e) {
+        // If URL parsing fails, try to extract from title
+    }
+    
+    return title.split(' ')[0] || '';
+}
+
+function showImportSuccessMessage(count) {
+    // Create a temporary success message
+    const message = document.createElement('div');
+    message.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+    message.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas fa-check-circle mr-2"></i>
+            Successfully imported ${count} item${count === 1 ? '' : 's'} to your LifeCV!
+        </div>
+    `;
+    
+    document.body.appendChild(message);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        message.remove();
+    }, 3000);
+}

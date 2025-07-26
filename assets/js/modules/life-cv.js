@@ -45,6 +45,47 @@ const lifeCvSections = {
     ]},
 };
 
+// Public Profile Templates
+const publicProfileTemplates = {
+    professional: {
+        name: 'Professional',
+        description: 'Clean, corporate design for job applications and networking',
+        sections: ['personal', 'professional', 'experience', 'education', 'skills', 'projects'],
+        theme: 'corporate'
+    },
+    creative: {
+        name: 'Creative Portfolio',
+        description: 'Vibrant design showcasing creative work and personality',
+        sections: ['personal', 'projects', 'skills', 'interests', 'travel', 'milestones'],
+        theme: 'artistic'
+    },
+    holistic: {
+        name: 'Life Story',
+        description: 'Complete life journey for personal branding and community projects',
+        sections: ['personal', 'philosophy', 'family', 'experience', 'education', 'community', 'interests', 'travel', 'milestones'],
+        theme: 'comprehensive'
+    },
+    academic: {
+        name: 'Academic Profile',
+        description: 'Scholarly presentation for academic and research positions',
+        sections: ['personal', 'education', 'experience', 'projects', 'skills', 'community'],
+        theme: 'academic'
+    },
+    community: {
+        name: 'Community Leader',
+        description: 'Emphasis on community impact and social contributions',
+        sections: ['personal', 'philosophy', 'community', 'experience', 'skills', 'milestones', 'interests'],
+        theme: 'community'
+    }
+};
+
+// Add public profile section to the main LifeCV structure
+lifeCvSections.publicProfiles = { 
+    title: 'Public Profiles', 
+    icon: 'fa-globe-americas', 
+    isCustom: true 
+};
+
 export function init(user) {
     if (!user) return;
     currentUser = user;
@@ -74,6 +115,8 @@ function renderAllSections() {
         if (section.isCustom) {
             if (key === 'profilePictures') {
                 container.appendChild(createProfilePicturesSection(key, section, lifeCvData.profilePictures || {}));
+            } else if (key === 'publicProfiles') {
+                container.appendChild(createPublicProfilesSection(key, section, lifeCvData.publicProfiles || {}));
             }
         } else {
             container.appendChild(createSectionElement(key, section, sectionData));
@@ -462,6 +505,233 @@ async function deleteItem(sectionKey, index) {
         console.error("Error deleting item:", error);
         alert("Failed to delete item.");
     }
+}
+
+// Function to create public profile management section
+function createPublicProfilesSection(key, sectionConfig, data) {
+    const sectionWrapper = document.createElement('div');
+    sectionWrapper.className = 'bg-white rounded-lg shadow-sm';
+    
+    const profiles = data.profiles || [];
+
+    sectionWrapper.innerHTML = `
+        <button class="w-full flex justify-between items-center text-left p-4 accordion-toggle">
+            <div class="flex items-center">
+                <i class="fas ${sectionConfig.icon} w-6 text-center text-indigo-600"></i>
+                <h2 class="text-lg font-bold text-slate-800 ml-3">${sectionConfig.title}</h2>
+            </div>
+            <i class="fas fa-chevron-down transform transition-transform"></i>
+        </button>
+        <div class="accordion-content">
+            <div class="p-6 border-t border-slate-200">
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-slate-800 mb-3">Create New Public Profile</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                        ${Object.entries(publicProfileTemplates).map(([templateKey, template]) => `
+                            <div class="border border-slate-200 rounded-lg p-4 hover:border-indigo-300 cursor-pointer template-card" data-template="${templateKey}">
+                                <h4 class="font-semibold text-slate-800 mb-2">${template.name}</h4>
+                                <p class="text-sm text-slate-600 mb-3">${template.description}</p>
+                                <div class="flex flex-wrap gap-1">
+                                    ${template.sections.slice(0, 3).map(section => `
+                                        <span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded">${lifeCvSections[section]?.title || section}</span>
+                                    `).join('')}
+                                    ${template.sections.length > 3 ? `<span class="text-xs text-slate-500">+${template.sections.length - 3} more</span>` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-slate-800 mb-3">Your Public Profiles</h3>
+                    ${profiles.length > 0 ? `
+                        <div class="space-y-3">
+                            ${profiles.map((profile, index) => `
+                                <div class="flex items-center justify-between p-4 border border-slate-200 rounded-lg">
+                                    <div class="flex-1">
+                                        <h4 class="font-semibold text-slate-800">${profile.name}</h4>
+                                        <p class="text-sm text-slate-600">${profile.description}</p>
+                                        <div class="flex items-center mt-2 space-x-4">
+                                            <a href="${profile.publicUrl}" target="_blank" class="text-sm text-indigo-600 hover:text-indigo-800">
+                                                <i class="fas fa-external-link-alt mr-1"></i>View Public Page
+                                            </a>
+                                            <button class="text-sm text-slate-600 hover:text-slate-800 copy-link-btn" data-url="${profile.publicUrl}">
+                                                <i class="fas fa-copy mr-1"></i>Copy Link
+                                            </button>
+                                            <button class="text-sm text-slate-600 hover:text-slate-800 show-qr-btn" data-url="${profile.publicUrl}">
+                                                <i class="fas fa-qrcode mr-1"></i>QR Code
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <button class="text-indigo-600 hover:text-indigo-800 edit-profile-btn" data-index="${index}">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="text-red-600 hover:text-red-800 delete-profile-btn" data-index="${index}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : `
+                        <p class="text-slate-500 text-center py-8">No public profiles created yet. Choose a template above to get started.</p>
+                    `}
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Attach event listeners
+    sectionWrapper.querySelector('.accordion-toggle').addEventListener('click', toggleAccordion);
+    
+    // Template selection
+    sectionWrapper.querySelectorAll('.template-card').forEach(card => {
+        card.addEventListener('click', () => openProfileCreationModal(card.dataset.template));
+    });
+
+    // Profile management
+    sectionWrapper.querySelectorAll('.copy-link-btn').forEach(btn => {
+        btn.addEventListener('click', () => copyToClipboard(btn.dataset.url));
+    });
+
+    sectionWrapper.querySelectorAll('.show-qr-btn').forEach(btn => {
+        btn.addEventListener('click', () => showQRCode(btn.dataset.url));
+    });
+
+    return sectionWrapper;
+}
+
+// Function to open profile creation modal
+function openProfileCreationModal(templateKey) {
+    const template = publicProfileTemplates[templateKey];
+    
+    // Create modal for profile customization
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+    modal.innerHTML = `
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-slate-200">
+                <h2 class="text-2xl font-bold text-slate-800">Create ${template.name} Profile</h2>
+                <p class="text-slate-600 mt-1">${template.description}</p>
+            </div>
+            <div class="p-6">
+                <form id="profile-creation-form">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Profile Name</label>
+                            <input type="text" name="profileName" required class="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="My ${template.name} Profile">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Public URL Slug</label>
+                            <input type="text" name="urlSlug" required class="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="my-profile">
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Profile Description</label>
+                        <textarea name="description" rows="3" class="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="Brief description of this profile..."></textarea>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <h3 class="text-lg font-semibold text-slate-800 mb-3">Sections to Include</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            ${template.sections.map(sectionKey => `
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="sections" value="${sectionKey}" checked class="rounded mr-2">
+                                    <span class="text-sm">${lifeCvSections[sectionKey]?.title || sectionKey}</span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <h3 class="text-lg font-semibold text-slate-800 mb-3">Privacy Settings</h3>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="radio" name="privacy" value="public" checked class="mr-2">
+                                <span class="text-sm">Public - Anyone can view with the link</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="privacy" value="unlisted" class="mr-2">
+                                <span class="text-sm">Unlisted - Only people with the direct link can view</span>
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="p-6 border-t border-slate-200 flex justify-end space-x-3">
+                <button type="button" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300" onclick="this.closest('.fixed').remove()">Cancel</button>
+                <button type="button" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700" onclick="createPublicProfile('${templateKey}')">Create Profile</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+// Function to create public profile
+async function createPublicProfile(templateKey) {
+    const form = document.getElementById('profile-creation-form');
+    const formData = new FormData(form);
+    
+    const profileData = {
+        id: Date.now().toString(),
+        template: templateKey,
+        name: formData.get('profileName'),
+        description: formData.get('description'),
+        urlSlug: formData.get('urlSlug'),
+        privacy: formData.get('privacy'),
+        sections: Array.from(formData.getAll('sections')),
+        createdAt: new Date().toISOString(),
+        publicUrl: `https://hub.salatiso.com/profile/${currentUser.uid}/${formData.get('urlSlug')}`
+    };
+    
+    try {
+        // Save to user's LifeCV data
+        const currentProfiles = lifeCvData.publicProfiles?.profiles || [];
+        currentProfiles.push(profileData);
+        
+        await updateDocument('users', currentUser.uid, { 
+            'lifeCv.publicProfiles.profiles': currentProfiles 
+        });
+        
+        // Generate the actual public page
+        await generatePublicProfilePage(profileData);
+        
+        // Close modal
+        document.querySelector('.fixed').remove();
+        
+        alert('Public profile created successfully!');
+        
+    } catch (error) {
+        console.error('Error creating public profile:', error);
+        alert('Failed to create public profile. Please try again.');
+    }
+}
+
+// Function to generate public profile page
+async function generatePublicProfilePage(profileData) {
+    const template = publicProfileTemplates[profileData.template];
+    const userData = lifeCvData;
+    
+    // Generate HTML based on template and user data
+    // This would create the actual public-facing HTML page
+    // For now, we'll simulate this
+    console.log('Generated public profile:', profileData);
+}
+
+// Utility functions
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        alert('Link copied to clipboard!');
+    });
+}
+
+function showQRCode(url) {
+    // You would integrate with a QR code library here
+    // For now, we'll show a placeholder
+    alert(`QR Code for: ${url}\n\n(QR code generation would be implemented here)`);
 }
 
 // Initialize the LifeCV when Firebase is ready

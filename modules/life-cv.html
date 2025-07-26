@@ -351,8 +351,8 @@ Instructions:
     </div>
 
     <!-- MODAL for Internet Search -->
-    <div id="internet-search-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-4">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-5xl max-h-[90vh] overflow-hidden">
+    <div id="internet-search-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-[60] p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-5xl max-h-[90vh] overflow-hidden relative z-[61]">
             <!-- Modal Header -->
             <div class="gradient-border-inner p-6 border-b border-slate-200">
                 <div class="flex justify-between items-start">
@@ -396,7 +396,7 @@ Instructions:
             </div>
 
             <!-- Search Results -->
-            <div id="search-results-container" class="flex-1 overflow-y-auto p-6" style="max-height: 60vh;">
+            <div id="search-results-container" class="flex-1 overflow-y-auto p-6 relative z-[62]" style="max-height: 60vh;">
                 <div id="search-results-placeholder" class="text-center py-16">
                     <div class="inline-block p-4 bg-purple-100 rounded-full mb-4">
                         <i class="fas fa-globe text-purple-600 text-2xl"></i>
@@ -412,13 +412,13 @@ Instructions:
                     <p class="text-sm text-slate-500 mt-1">This may take a few moments</p>
                 </div>
 
-                <div id="search-results" class="hidden space-y-4">
+                <div id="search-results" class="hidden space-y-4 relative z-[63]">
                     <!-- Results will be populated here -->
                 </div>
             </div>
 
             <!-- Modal Footer -->
-            <div class="p-6 border-t border-slate-200 bg-slate-50">
+            <div class="p-6 border-t border-slate-200 bg-slate-50 relative z-[64]">
                 <div class="flex justify-between items-center">
                     <div class="text-sm text-slate-500">
                         <i class="fas fa-shield-alt mr-1"></i>
@@ -780,13 +780,21 @@ Instructions:
         }
 
         function displaySearchResults(processedResults) {
+            console.log('displaySearchResults called with:', processedResults);
+            
             const resultsContainer = document.getElementById('search-results');
             const placeholderEl = document.getElementById('search-results-placeholder');
+            
+            if (!resultsContainer) {
+                console.error('Results container not found!');
+                return;
+            }
             
             resultsContainer.innerHTML = '';
             
             // Check if we have any results
             const totalResults = Object.values(processedResults).reduce((sum, items) => sum + items.length, 0);
+            console.log('Total results to display:', totalResults);
             
             if (totalResults === 0) {
                 showNoResultsMessage();
@@ -813,9 +821,11 @@ Instructions:
 
             Object.entries(processedResults).forEach(([category, items]) => {
                 if (items.length === 0) return;
+                
+                console.log(`Creating section for ${category} with ${items.length} items`);
 
                 const categorySection = document.createElement('div');
-                categorySection.className = 'mb-6';
+                categorySection.className = 'mb-6 relative z-10';
                 
                 categorySection.innerHTML = `
                     <h3 class="text-lg font-semibold text-slate-800 mb-3 flex items-center">
@@ -824,7 +834,7 @@ Instructions:
                     </h3>
                     <div class="space-y-3">
                         ${items.map((item, index) => `
-                            <div class="search-result-item ${categoryColors[category]} border rounded-lg p-4 cursor-pointer hover:shadow-md transition-all duration-300" 
+                            <div class="search-result-item ${categoryColors[category]} border rounded-lg p-4 cursor-pointer hover:shadow-md transition-all duration-300 relative z-20" 
                                  data-category="${category}" data-index="${index}" onclick="toggleResultSelection(this)">
                                 <div class="flex items-start justify-between">
                                     <div class="flex-1">
@@ -852,6 +862,8 @@ Instructions:
                 resultsContainer.appendChild(categorySection);
             });
 
+            console.log('Results container content updated, showing results...');
+
             // Animate results in
             setTimeout(() => {
                 document.querySelectorAll('.search-result-item').forEach((item, index) => {
@@ -863,6 +875,8 @@ Instructions:
 
             resultsContainer.classList.remove('hidden');
             placeholderEl.classList.add('hidden');
+            
+            console.log('Results should now be visible');
 
             updateSelectedCount();
         }

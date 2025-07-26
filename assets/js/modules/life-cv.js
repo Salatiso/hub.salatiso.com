@@ -1079,5 +1079,463 @@ window.lifeCvModule = {
             item => !(item.category === category && item.index === index)
         );
     },
-    clearSelectedResults: () => { selectedSearchResults = []; }
+    clearSelectedResults: () => { selectedSearchResults = []; },
+    
+    // Add new file import functions
+    handleFileImport,
+    processTextWithAI,
+    importLifeCvData,
+    showImportSuccessMessage,
+    showImportErrorMessage
 };
+
+// File Import Functionality
+function initializeFileImport() {
+    const fileInput = document.getElementById('file-import-input');
+    if (fileInput) {
+        fileInput.addEventListener('change', handleFileImport);
+    }
+}
+
+async function handleFileImport(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    console.log('File selected:', file.name, file.type, file.size);
+
+    // Show AI processing overlay
+    const overlay = document.getElementById('ai-processing-overlay');
+    if (overlay) {
+        overlay.classList.remove('hidden');
+        overlay.classList.add('flex');
+    }
+
+    try {
+        // Extract text based on file type
+        let extractedText = '';
+        
+        if (file.type === 'text/plain') {
+            extractedText = await extractTextFromTxt(file);
+        } else if (file.type === 'application/pdf') {
+            extractedText = await extractTextFromPdf(file);
+        } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+            extractedText = await extractTextFromDocx(file);
+        } else {
+            throw new Error('Unsupported file type. Please upload TXT, PDF, or DOCX files.');
+        }
+
+        console.log('Extracted text length:', extractedText.length);
+
+        if (!extractedText || extractedText.trim().length < 50) {
+            throw new Error('Could not extract sufficient text from the document. Please check the file content.');
+        }
+
+        // Process with AI
+        const lifeCvData = await processTextWithAI(extractedText);
+        
+        if (!lifeCvData) {
+            throw new Error('AI processing failed. Please try again or use the JSON import method.');
+        }
+
+        // Import the processed data
+        await importLifeCvData(lifeCvData);
+
+        // Show success message
+        showImportSuccessMessage('file');
+        
+        // Clear file input
+        event.target.value = '';
+
+    } catch (error) {
+        console.error('AI Import Error:', error);
+        showImportErrorMessage(error.message);
+    } finally {
+        // Hide AI processing overlay
+        if (overlay) {
+            overlay.classList.add('hidden');
+            overlay.classList.remove('flex');
+        }
+    }
+}
+
+// Text extraction functions
+async function extractTextFromTxt(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = () => reject(new Error('Failed to read text file'));
+        reader.readAsText(file);
+    });
+}
+
+async function extractTextFromPdf(file) {
+    try {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        let fullText = '';
+
+        for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            const pageText = textContent.items.map(item => item.str).join(' ');
+            fullText += pageText + '\n';
+        }
+
+        return fullText;
+    } catch (error) {
+        console.error('PDF extraction error:', error);
+        throw new Error('Failed to extract text from PDF. The file may be corrupted or protected.');
+    }
+}
+
+async function extractTextFromDocx(file) {
+    try {
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer });
+        return result.value;
+    } catch (error) {
+        console.error('DOCX extraction error:', error);
+        throw new Error('Failed to extract text from DOCX. The file may be corrupted.');
+    }
+}
+
+// Updated AI processing function with better error handling
+async function processTextWithAI(text) {
+    const GEMINI_API_KEY = "AIzaSyDfm0Bvir6j_72RdxfxZYfGjWdJNXvwK9k"; // Your Gemini API key
+    
+    // First, let's test the API key
+    try {
+        console.log('Testing Gemini API connection...');
+        
+        const testResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [{
+                        text: "Test connection. Respond with just 'OK'."
+                    }]
+                }]
+            })
+        });
+
+        if (!testResponse.ok) {
+            const errorData = await testResponse.json().catch(() => null);
+            console.error('Gemini API test failed:', testResponse.status, errorData);
+            
+            if (testResponse.status === 403) {
+                throw new Error('Gemini API access denied. Please check your API key and billing settings.');
+            } else if (testResponse.status === 429) {
+                throw new Error('Gemini API rate limit exceeded. Please wait and try again.');
+            } else {
+                throw new Error(`Gemini API error: ${testResponse.status}`);
+            }
+        }
+
+        console.log('Gemini API test successful');
+        
+    } catch (networkError) {
+        console.error('Network error testing Gemini API:', networkError);
+        throw new Error('Failed to connect to AI service. Please check your internet connection.');
+    }
+
+    // If test passes, proceed with actual processing
+    const prompt = `
+You are a professional CV/resume parser. Convert the following resume text into a structured JSON object that matches the LifeCV format exactly.
+
+IMPORTANT: Return ONLY valid JSON, no explanations or markdown formatting.
+
+Required JSON Structure:
+{
+  "basics": {
+    "name": "",
+    "label": "",
+    "email": "",
+    "phone": "",
+    "url": "",
+    "summary": "",
+    "location": {
+      "address": "",
+      "city": "",
+      "region": "",
+      "postalCode": "",
+      "countryCode": ""
+    }
+  },
+  "experience": [
+    {
+      "jobTitle": "",
+      "company": "",
+      "industry": "",
+      "location": "",
+      "startDate": "",
+      "endDate": "",
+      "description": "",
+      "skills": ""
+    }
+  ],
+  "education": [
+    {
+      "qualification": "",
+      "institution": "",
+      "field": "",
+      "yearCompleted": "",
+      "grade": "",
+      "significance": ""
+    }
+  ],
+  "skills": [
+    {
+      "category": "",
+      "skillName": "",
+      "proficiency": "",
+      "context": ""
+    }
+  ],
+  "projects": [
+    {
+      "name": "",
+      "type": "",
+      "description": "",
+      "role": "",
+      "technologies": "",
+      "outcome": "",
+      "url": ""
+    }
+  ],
+  "digital": [
+    {
+      "platform": "",
+      "username": "",
+      "url": "",
+      "purpose": "",
+      "privacy": ""
+    }
+  ],
+  "awards": [
+    {
+      "title": "",
+      "date": "",
+      "awarder": "",
+      "summary": ""
+    }
+  ]
+}
+
+Resume Text:
+${text}
+
+Return the complete JSON object:`;
+
+    try {
+        console.log('Sending text to Gemini API for processing...');
+        
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [{
+                        text: prompt
+                    }]
+                }],
+                generationConfig: {
+                    temperature: 0.1,
+                    maxOutputTokens: 4096,
+                }
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => null);
+            console.error('Gemini API Error:', response.status, errorData);
+            throw new Error(`AI processing failed: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('Gemini API response received');
+
+        if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+            console.error('Invalid Gemini response structure:', data);
+            throw new Error('Invalid response from AI service');
+        }
+
+        const generatedText = data.candidates[0].content.parts[0].text.trim();
+        console.log('Generated text length:', generatedText.length);
+
+        // Clean up the response - remove markdown formatting if present
+        let jsonText = generatedText;
+        if (jsonText.startsWith('```json')) {
+            jsonText = jsonText.replace(/```json\n?/, '').replace(/\n?```$/, '');
+        } else if (jsonText.startsWith('```')) {
+            jsonText = jsonText.replace(/```\n?/, '').replace(/\n?```$/, '');
+        }
+
+        // Parse and validate JSON
+        try {
+            const parsedData = JSON.parse(jsonText);
+            console.log('Successfully parsed JSON from AI response');
+            return parsedData;
+        } catch (parseError) {
+            console.error('JSON parsing error:', parseError);
+            console.error('Generated text:', generatedText);
+            throw new Error('AI generated invalid JSON format');
+        }
+
+    } catch (error) {
+        console.error('AI processing error:', error);
+        throw error;
+    }
+}
+
+// Updated import function with better error handling
+async function importLifeCvData(importData) {
+    try {
+        console.log('Importing LifeCV data...');
+        
+        // Validate required structure
+        if (!importData || typeof importData !== 'object') {
+            throw new Error('Invalid import data format');
+        }
+
+        // Get current LifeCV data
+        const currentData = await getLifeCvData();
+        
+        // Merge with existing data
+        const mergedData = { ...currentData };
+        
+        // Merge each section
+        if (importData.basics) {
+            mergedData.basics = { ...mergedData.basics, ...importData.basics };
+        }
+        
+        const arrayFields = ['experience', 'education', 'skills', 'projects', 'digital', 'awards'];
+        arrayFields.forEach(field => {
+            if (importData[field] && Array.isArray(importData[field])) {
+                if (!mergedData[field]) mergedData[field] = [];
+                // Add source info to imported items
+                const itemsWithSource = importData[field].map(item => ({
+                    ...item,
+                    source: 'AI File Import',
+                    importedAt: new Date().toISOString()
+                }));
+                mergedData[field] = [...mergedData[field], ...itemsWithSource];
+            }
+        });
+
+        // Save to Firebase with retry logic
+        let saveSuccess = false;
+        let attempts = 0;
+        const maxAttempts = 3;
+
+        while (!saveSuccess && attempts < maxAttempts) {
+            try {
+                attempts++;
+                console.log(`Saving to Firebase (attempt ${attempts}/${maxAttempts})...`);
+                
+                await updateDocument('users', currentUser.uid, { 'lifeCv': mergedData });
+                saveSuccess = true;
+                
+                console.log('Successfully saved to Firebase');
+                
+            } catch (saveError) {
+                console.error(`Save attempt ${attempts} failed:`, saveError);
+                
+                if (attempts >= maxAttempts) {
+                    throw new Error('Failed to save data after multiple attempts. Please try again.');
+                }
+                
+                // Wait before retry
+                await new Promise(resolve => setTimeout(resolve, 1000 * attempts));
+            }
+        }
+
+        // Update local cache
+        lifeCvData = mergedData;
+        
+        // Re-render the LifeCV sections
+        renderAllSections();
+        
+        return mergedData;
+        
+    } catch (error) {
+        console.error('Import error:', error);
+        throw error;
+    }
+}
+
+// Success message for file import
+function showImportSuccessMessage(type = 'file') {
+    const message = document.createElement('div');
+    message.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+    message.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas fa-check-circle mr-2"></i>
+            Successfully imported your ${type === 'file' ? 'CV/resume' : 'data'} using AI!
+        </div>
+    `;
+    
+    document.body.appendChild(message);
+    
+    setTimeout(() => {
+        message.remove();
+    }, 5000);
+}
+
+// Error message for file import
+function showImportErrorMessage(errorMessage) {
+    const message = document.createElement('div');
+    message.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 max-w-md';
+    message.innerHTML = `
+        <div class="flex items-start">
+            <i class="fas fa-exclamation-triangle mr-2 mt-1"></i>
+            <div>
+                <div class="font-semibold">Import Failed</div>
+                <div class="text-sm mt-1">${errorMessage}</div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(message);
+    
+    setTimeout(() => {
+        message.remove();
+    }, 8000);
+}
+
+// Update the module initialization to include file import
+function initializeModule() {
+    console.log('LifeCV module initialized.');
+    initializeFileImport(); // Add this line
+    
+    // ... rest of existing initialization code
+}
+
+// Update the window.lifeCvModule exports to include new functions
+window.lifeCvModule = {
+    // ... existing exports
+    importSelectedResults,
+    selectedSearchResults,
+    setSelectedSearchResults: (results) => { selectedSearchResults = results; },
+    getSelectedSearchResults: () => selectedSearchResults,
+    addSelectedResult: (result) => selectedSearchResults.push(result),
+    removeSelectedResult: (category, index) => {
+        selectedSearchResults = selectedSearchResults.filter(
+            item => !(item.category === category && item.index === index)
+        );
+    },
+    clearSelectedResults: () => { selectedSearchResults = []; },
+    
+    // Add new file import functions
+    handleFileImport,
+    processTextWithAI,
+    importLifeCvData,
+    showImportSuccessMessage,
+    showImportErrorMessage
+};
+
+// ... rest of existing code

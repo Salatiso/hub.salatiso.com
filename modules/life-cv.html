@@ -250,118 +250,220 @@
                                 <i class="fas fa-copy mr-1"></i> Copy Prompt
                             </button>
                         </div>
-                        <textarea id="conversion-prompt" readonly class="w-full h-96 p-3 border border-slate-300 rounded-md font-mono text-xs bg-slate-50 resize-none">Analyze the following resume text and convert it into a JSON object that strictly follows the structure and format provided below.
+                        <textarea id="conversion-prompt" readonly class="w-full h-96 p-3 border border-slate-300 rounded-md font-mono text-xs bg-slate-50 resize-none">You are an expert CV/resume parser and data extraction specialist. Convert the following document text into a comprehensive JSON object that follows the LifeCV structure exactly.
 
-JSON Structure:
+CRITICAL INSTRUCTIONS:
+1. Extract ALL relevant personal and professional information from the document
+2. Return ONLY valid JSON - no explanations, comments, or markdown formatting
+3. If information is missing, use empty strings "" or empty arrays []
+4. Be thorough - extract everything that could be relevant to a person's life and career
+
+REQUIRED LifeCV JSON STRUCTURE:
 
 {
-  "basics": {
-    "name": "string",
-    "label": "string",
-    "image": "string (URL)",
-    "email": "string",
-    "phone": "string",
-    "url": "string (personal website/portfolio)",
-    "summary": "string",
-    "location": {
-      "address": "string",
-      "postalCode": "string",
-      "city": "string",
-      "countryCode": "string",
-      "region": "string"
-    },
-    "profiles": [
-      {
-        "network": "string (e.g., 'LinkedIn', 'GitHub')",
-        "username": "string",
-        "url": "string"
-      }
-    ]
+  "personal": {
+    "fullName": "string (extract full name from document)",
+    "preferredName": "string (nickname or preferred name if mentioned)",
+    "pronouns": "string (he/him, she/her, they/them if mentioned)",
+    "phone": "string (phone number in any format)",
+    "email": "string (email address)",
+    "address": "string (full address if available)"
   },
-  "work": [
+  "professional": {
+    "summary": "string (professional summary, objective, or about section)",
+    "careerVision": "string (career goals, aspirations, or vision if mentioned)",
+    "workStyle": "string (work preferences, style, or approach if mentioned)"
+  },
+  "experience": [
     {
-      "name": "string (Company Name)",
-      "position": "string",
-      "url": "string (Company Website)",
-      "startDate": "YYYY-MM-DD",
-      "endDate": "YYYY-MM-DD or 'Present'",
-      "summary": "string (Briefly describe the role)",
-      "highlights": ["string (Accomplishment or responsibility)"]
+      "jobTitle": "string (job title/position)",
+      "company": "string (company/organization name)",
+      "industry": "string (industry sector if identifiable)",
+      "location": "string (work location - city, state/country)",
+      "startDate": "string (YYYY-MM-DD or YYYY-MM or YYYY format)",
+      "endDate": "string (YYYY-MM-DD, YYYY-MM, YYYY, or 'Present')",
+      "description": "string (job description, responsibilities, achievements)",
+      "skills": "string (skills used or developed in this role)"
     }
   ],
   "education": [
     {
-      "institution": "string",
-      "url": "string (Institution Website)",
-      "area": "string (e.g., 'Computer Science')",
-      "studyType": "string (e.g., 'Bachelor')",
-      "startDate": "YYYY-MM-DD",
-      "endDate": "YYYY-MM-DD or 'Present'",
-      "score": "string",
-      "courses": ["string"]
+      "qualification": "string (degree, certificate, diploma name)",
+      "institution": "string (school, university, college name)",
+      "field": "string (field of study, major, specialization)",
+      "yearCompleted": "string (graduation year YYYY)",
+      "grade": "string (GPA, grade, honors if mentioned)",
+      "significance": "string (relevance, achievements, notable coursework)"
     }
   ],
   "skills": [
     {
-      "name": "string (Skill category, e.g., 'Programming Languages')",
-      "level": "string (e.g., 'Expert')",
-      "keywords": ["string (Specific skill, e.g., 'JavaScript')"]
+      "category": "string (Technical, Soft Skills, Languages, etc.)",
+      "skillName": "string (specific skill name)",
+      "proficiency": "string (Beginner, Intermediate, Advanced, Expert)",
+      "context": "string (where/how this skill was used or developed)"
     }
   ],
   "projects": [
-     {
-        "name": "string",
-        "description": "string",
-        "highlights": ["string"],
-        "keywords": ["string (e.g., 'React', 'Node.js')"],
-        "url": "string",
-        "roles": ["string"],
-        "entity": "string (e.g., 'Personal Project', 'University Project')",
-        "type": "string (e.g., 'Web Application')"
-    }
-  ],
-  "awards": [
     {
-      "title": "string",
-      "date": "YYYY-MM-DD",
-      "awarder": "string (e.g., 'Company Name')",
-      "summary": "string"
+      "name": "string (project name or title)",
+      "type": "string (Personal, Professional, Academic, Open Source, etc.)",
+      "description": "string (what the project does/accomplished)",
+      "role": "string (your role in the project)",
+      "technologies": "string (technologies, tools, frameworks used)",
+      "outcome": "string (results, impact, achievements)",
+      "url": "string (project URL, GitHub link, portfolio link)"
     }
   ],
-  "publications": [
-     {
-        "name": "string",
-        "publisher": "string",
-        "releaseDate": "YYYY-MM-DD",
-        "url": "string",
-        "summary": "string"
+  "digital": [
+    {
+      "platform": "string (LinkedIn, GitHub, Twitter, Portfolio, etc.)",
+      "username": "string (username or handle)",
+      "url": "string (full URL to profile)",
+      "purpose": "string (Professional, Personal, Portfolio, etc.)",
+      "privacy": "string (Public, Private, Professional)"
+    }
+  ],
+  "interests": [
+    {
+      "category": "string (Hobbies, Sports, Technology, Arts, etc.)",
+      "interest": "string (specific interest or hobby)",
+      "level": "string (Casual, Serious, Professional, Expert)",
+      "description": "string (details about the interest)"
+    }
+  ],
+  "milestones": [
+    {
+      "title": "string (achievement, award, certification, significant event)",
+      "date": "string (YYYY-MM-DD or YYYY-MM or YYYY)",
+      "category": "string (Award, Certification, Achievement, Personal, etc.)",
+      "description": "string (details about the milestone)",
+      "lessons": "string (what was learned or gained from this)"
     }
   ],
   "languages": [
     {
-      "language": "string",
-      "fluency": "string (e.g., 'Native speaker', 'Fluent')"
+      "language": "string (language name)",
+      "proficiency": "string (Native, Fluent, Conversational, Basic)",
+      "context": "string (where/how this language is used)"
+    }
+  ],
+  "certifications": [
+    {
+      "name": "string (certification name)",
+      "issuer": "string (issuing organization)",
+      "date": "string (YYYY-MM-DD or YYYY-MM or YYYY)",
+      "expires": "string (expiration date if applicable)",
+      "credentialId": "string (credential ID if mentioned)",
+      "url": "string (verification URL if available)"
+    }
+  ],
+  "volunteering": [
+    {
+      "organization": "string (organization name)",
+      "role": "string (volunteer position/title)",
+      "cause": "string (cause or area of focus)",
+      "startDate": "string (start date)",
+      "endDate": "string (end date or 'Present')",
+      "description": "string (what you did, impact made)",
+      "skills": "string (skills used or developed)"
+    }
+  ],
+  "publications": [
+    {
+      "title": "string (publication title)",
+      "type": "string (Article, Blog Post, Paper, Book, etc.)",
+      "publisher": "string (where it was published)",
+      "date": "string (publication date)",
+      "url": "string (link to publication)",
+      "description": "string (summary or abstract)"
     }
   ],
   "references": [
     {
-      "name": "string",
-      "reference": "string (e.g., 'CEO of Company X')"
+      "name": "string (reference name)",
+      "title": "string (their job title)",
+      "company": "string (their company)",
+      "relationship": "string (how you know them)",
+      "contact": "string (email or phone if provided)"
     }
   ]
 }
 
-Instructions:
+EXTRACTION GUIDELINES:
 
-1. Carefully read the resume text provided below the --- separator.
-2. Populate all relevant fields in the JSON structure based on the text.
-3. If a section (like awards or publications) is not present in the resume, return an empty array [] for that key.
-4. For dates, use the YYYY-MM-DD format. If only a year is provided, use YYYY-01-01.
-5. The final output should be ONLY the raw JSON object. Do not include any explanations, comments, or surrounding text like "Here is the JSON output:".
+PERSONAL INFORMATION:
+- Look for names in headers, contact sections, or document beginning
+- Extract phone numbers in any format (+1-234-567-8900, (234) 567-8900, etc.)
+- Find email addresses anywhere in the document
+- Capture full addresses including city, state, zip/postal codes
+
+PROFESSIONAL INFORMATION:
+- Extract professional summaries, objectives, "About Me" sections
+- Look for career goals, vision statements, professional aspirations
+- Identify work style preferences, methodologies, approaches
+
+WORK EXPERIENCE:
+- Extract ALL job positions, internships, freelance work, consulting
+- Capture company names, job titles, employment dates
+- Include job descriptions, responsibilities, achievements, metrics
+- Note skills used or technologies worked with
+
+EDUCATION:
+- Include ALL education: degrees, certificates, bootcamps, online courses
+- Extract institution names, graduation dates, majors/fields
+- Capture GPA, honors, academic achievements if mentioned
+- Include relevant coursework, projects, thesis topics
+
+SKILLS:
+- Technical skills: programming languages, software, tools, frameworks
+- Soft skills: communication, leadership, teamwork, problem-solving
+- Languages: spoken languages with proficiency levels
+- Industry-specific skills and competencies
+- Categorize skills appropriately (Technical, Soft, Languages, etc.)
+
+PROJECTS:
+- Personal projects, work projects, academic projects
+- Open source contributions, side projects, portfolio pieces
+- Include technologies used, your role, outcomes achieved
+- Extract GitHub links, portfolio URLs, project demos
+
+DIGITAL PRESENCE:
+- LinkedIn profiles, GitHub accounts, personal websites
+- Social media accounts mentioned professionally
+- Portfolio sites, blog URLs, professional profiles
+- Extract usernames and full URLs
+
+ACHIEVEMENTS & MILESTONES:
+- Awards, recognitions, honors, achievements
+- Certifications, licenses, credentials
+- Publications, speaking engagements, conferences
+- Notable accomplishments, metrics, results
+
+ADDITIONAL INFORMATION:
+- Volunteer work, community involvement, causes supported
+- Hobbies, interests, activities outside work
+- Professional references with contact information
+- Any other relevant personal or professional details
+
+DATE FORMATS:
+- Use YYYY-MM-DD for full dates when available
+- Use YYYY-MM for month/year combinations
+- Use YYYY for year-only dates
+- Use "Present" for current/ongoing positions
+
+IMPORTANT REMINDERS:
+1. Extract EVERYTHING relevant - be comprehensive and thorough
+2. Don't skip sections because they seem unimportant
+3. Look for information in headers, footers, margins, contact sections
+4. Parse dates from any format (Jan 2020, 01/2020, January 2020, etc.)
+5. Create multiple objects in arrays for multiple items
+6. Return ONLY the JSON object - no additional text or formatting
 
 ---
 
-[PASTE YOUR FULL RESUME TEXT HERE]</textarea>
+DOCUMENT TEXT TO ANALYZE:
+[PASTE YOUR FULL DOCUMENT TEXT HERE]</textarea>
                     </div>
 
                     <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">

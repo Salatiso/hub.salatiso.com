@@ -1118,33 +1118,6 @@ function generateComparisonContent(currentData, importData, modal) {
     });
 }
 
-function formatDataPreview(data, sectionConfig) {
-    if (!data) return '<i class="text-slate-400">No data available</i>';
-    
-    const fields = sectionConfig.fields || [];
-    const isArray = Array.isArray(data);
-    
-    if (isArray) {
-        return data.map(item => `
-            <div class="mb-2">
-                ${fields.map(field => `
-                    <div class="flex">
-                        <span class="font-semibold text-slate-800 mr-2">${field.label}:</span>
-                        <span class="text-slate-700">${item[field.id] || '-'}</span>
-                    </div>
-                `).join('')}
-            </div>
-        `).join('');
-    } else {
-        return fields.map(field => `
-            <div class="flex">
-                <span class="font-semibold text-slate-800 mr-2">${field.label}:</span>
-                <span class="text-slate-700">${data[field.id] || '-'}</span>
-            </div>
-        `).join('');
-    }
-}
-
 // Direct import function (after version comparison)
 async function directImport(importData) {
     try {
@@ -1361,6 +1334,7 @@ function createPublicProfilesSection(key, sectionConfig, data) {
         </button>
         <div class="accordion-content">
             <div class="p-6 border-t border-slate-200">
+                <!-- Create New Profile -->
                 <div class="mb-6">
                     <h3 class="text-lg font-semibold text-slate-800 mb-3">Create New Public Profile</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
@@ -1379,6 +1353,7 @@ function createPublicProfilesSection(key, sectionConfig, data) {
                     </div>
                 </div>
                 
+                <!-- Your Public Profiles -->
                 <div class="mb-6">
                     <h3 class="text-lg font-semibold text-slate-800 mb-3">Your Public Profiles</h3>
                     ${profiles.length > 0 ? `
@@ -1421,13 +1396,10 @@ function createPublicProfilesSection(key, sectionConfig, data) {
 
     // Attach event listeners
     sectionWrapper.querySelector('.accordion-toggle').addEventListener('click', toggleAccordion);
-    
-    // Template selection
     sectionWrapper.querySelectorAll('.template-card').forEach(card => {
         card.addEventListener('click', () => openProfileCreationModal(card.dataset.template));
     });
 
-    // Profile management
     sectionWrapper.querySelectorAll('.copy-link-btn').forEach(btn => {
         btn.addEventListener('click', () => copyToClipboard(btn.dataset.url));
     });
@@ -1515,16 +1487,20 @@ async function createPublicProfile(templateKey) {
     const form = document.getElementById('profile-creation-form');
     const formData = new FormData(form);
     
+    // Create slug from name and profile type
+    const profileName = formData.get('profileName');
+    const urlSlug = generateSlugFromName(lifeCvData.personal?.fullName || 'user', profileName);
+    
     const profileData = {
         id: Date.now().toString(),
         template: templateKey,
         name: formData.get('profileName'),
         description: formData.get('description'),
-        urlSlug: formData.get('urlSlug'),
+        urlSlug: urlSlug,
         privacy: formData.get('privacy'),
         sections: Array.from(formData.getAll('sections')),
         createdAt: new Date().toISOString(),
-        publicUrl: `https://hub.salatiso.com/profile/${currentUser.uid}/${formData.get('urlSlug')}`
+        publicUrl: `https://hub.salatiso.com/profile/${currentUser.uid}/${urlSlug}`
     };
     
     try {
@@ -1624,51 +1600,1736 @@ function generateQRCodeImage(url, container) {
     }
 }
 
-// --- MISSING HELPER FUNCTIONS ---
+// Enhanced personal section structure with customizable fields
+const personalFieldCategories = {
+    identity: {
+        title: 'Identity Documents',
+        fields: [
+            { id: 'idNumber', label: 'ID Number', type: 'text', sensitive: true },
+            { id: 'passportNumber', label: 'Passport Number', type: 'text', sensitive: true },
+            { id: 'passportCountry', label: 'Passport Issuing Country', type: 'text' },
+            { id: 'passportExpiry', label: 'Passport Expiry Date', type: 'date' },
+            { id: 'nationality', label: 'Nationality', type: 'text' }
+        ]
+    },
+    contact: {
+        title: 'Contact Information',
+        isArray: true,
+        types: ['email', 'phone', 'address'],
+        templates: {
+            email: { 
+                id: 'email', 
+                label: 'Email Address', 
+                type: 'email', 
+                public: false,
+                fields: [
+                    { id: 'value', label: 'Email', type: 'email' },
+                    { id: 'type', label: 'Type', type: 'select', options: ['Personal', 'Work', 'Business', 'Other'] },
+                    { id: 'public', label: 'Share Publicly', type: 'checkbox' }
+                ]
+            },
+            phone: { 
+                id: 'phone', 
+                label: 'Phone Number', 
+                type: 'tel', 
+                public: false,
+                fields: [
+                    { id: 'value', label: 'Phone Number', type: 'tel' },
+                    { id: 'type', label: 'Type', type: 'select', options: ['Mobile', 'Home', 'Work', 'Fax', 'Other'] },
+                    { id: 'countryCode', label: 'Country Code', type: 'text', placeholder: '+27' },
+                    { id: 'public', label: 'Share Publicly', type: 'checkbox' }
+                ]
+            },
+            address: { 
+                id: 'address', 
+                label: 'Address', 
+                type: 'object', 
+                sensitive: true, 
+                public: false,
+                fields: [
+                    { id: 'type', label: 'Address Type', type: 'select', options: ['Home', 'Work', 'Postal', 'Temporary', 'Family', 'Weekend'] },
+                    { id: 'address', label: 'Full Address', type: 'textarea' },
+                    { id: 'city', label: 'City', type: 'text' },
+                    { id: 'province', label: 'Province/State', type: 'text' },
+                    { id: 'postalCode', label: 'Postal Code', type: 'text' },
+                    { id: 'country', label: 'Country', type: 'text' },
+                    { id: 'public', label: 'Share Publicly', type: 'checkbox' }
+                ]
+            }
+        }
+    }
+};
 
-function collectSelectedChanges(modal, currentData, importData) {
-    const sections = modal.querySelectorAll('[data-selected-choice]');
-    const mergedData = { ...currentData };
+// Update the lifeCvSections.personal to use the new structure
+lifeCvSections.personal = { 
+    title: 'Personal & Identity', 
+    icon: 'fa-user', 
+    isCustomizable: true,
+    categories: personalFieldCategories
+};
+
+// Enhanced personal section creation
+function createEnhancedPersonalSection(key, sectionConfig, data) {
+    const sectionWrapper = document.createElement('div');
+    sectionWrapper.className = 'bg-white rounded-lg shadow-sm';
     
-    sections.forEach(section => {
-        const sectionKey = section.querySelector('[data-section]').dataset.section;
-        const choice = section.dataset.selectedChoice;
+
+    
+    const personalData = data || { 
+        basic: {}, 
+        identity: {}, 
+        contact: { emails: [], phones: [], addresses: [] } 
+    };
+    
+    sectionWrapper.innerHTML = `
+        <button class="w-full flex justify-between items-center text-left p-4 accordion-toggle">
+            <div class="flex items-center">
+                <i class="fas fa-user w-6 text-center text-indigo-600"></i>
+                <h2 class="text-lg font-bold text-slate-800 ml-3">Personal & Identity</h2>
+            </div>
+            <i class="fas fa-chevron-down transform transition-transform"></i>
+        </button>
+        <div class="accordion-content">
+            <div class="p-6 border-t border-slate-200">
+                ${generateEnhancedPersonalHTML(personalData)}
+                <div class="mt-6 text-right">
+                    <button class="save-personal-btn bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg text-sm hover:bg-indigo-700">
+                        Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Event listeners
+    sectionWrapper.querySelector('.accordion-toggle').addEventListener('click', toggleAccordion);
+    sectionWrapper.querySelector('.save-personal-btn').addEventListener('click', saveEnhancedPersonalSection);
+    
+    // Contact field management
+    setupContactFieldManagement(sectionWrapper);
+    
+    return sectionWrapper;
+}
+
+function generateEnhancedPersonalHTML(data) {
+    return `
+        <!-- Basic Information -->
+        <div class="mb-8">
+            <h3 class="text-lg font-semibold text-slate-800 mb-4">Basic Information</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Full Name <span class="text-red-500">*</span></label>
+                    <input type="text" name="basic.fullName" value="${data.basic?.fullName || ''}" required class="w-full px-3 py-2 border border-slate-300 rounded-md">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Preferred Name</label>
+                    <input type="text" name="basic.preferredName" value="${data.basic?.preferredName || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Date of Birth</label>
+                    <input type="date" name="basic.dob" value="${data.basic?.dob || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Pronouns</label>
+                    <input type="text" name="basic.pronouns" value="${data.basic?.pronouns || ''}" placeholder="they/them, she/her, he/him" class="w-full px-3 py-2 border border-slate-300 rounded-md">
+                </div>
+            </div>
+        </div>
+
+        <!-- Identity Documents -->
+        <div class="mb-8">
+            <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center">
+                <i class="fas fa-id-card mr-2 text-amber-600"></i>
+                Identity Documents
+                <span class="ml-2 px-2 py-1 text-xs bg-amber-100 text-amber-800 rounded-full">
+                    <i class="fas fa-lock mr-1"></i>Private by Default
+                </span>
+            </h3>
+            <div class="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    ${personalFieldCategories.identity.fields.map(field => `
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">
+                                ${field.label}
+                                ${field.sensitive ? '<i class="fas fa-shield-alt text-amber-600 ml-1"></i>' : ''}
+                            </label>
+                            <input type="${field.type}" name="identity.${field.id}" 
+                                   value="${data.identity?.[field.id] || ''}" 
+                                   class="w-full px-3 py-2 border border-amber-300 rounded-md focus:ring-amber-500 focus:border-amber-500">
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="mt-4">
+                    <button type="button" class="add-identity-field-btn text-sm bg-amber-100 text-amber-700 px-3 py-1 rounded hover:bg-amber-200">
+                        <i class="fas fa-plus mr-1"></i>Add Custom Identity Field
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Information -->
+        ${generateContactManagementHTML(data.contact || {})}
+    `;
+}
+
+function generateContactManagementHTML(contactData) {
+    return `
+        <div class="mb-8">
+            <h3 class="text-lg font-semibold text-slate-800 mb-4">Contact Information</h3>
+            
+            <!-- Email Addresses -->
+            <div class="mb-6">
+                <div class="flex items-center justify-between mb-3">
+                    <h4 class="font-medium text-slate-700">Email Addresses</h4>
+                    <button type="button" class="add-contact-btn text-sm bg-green-100 text-green-700 px-3 py-1 rounded hover:bg-green-200" data-type="email">
+                        <i class="fas fa-plus mr-1"></i>Add Email
+                    </button>
+                </div>
+                <div class="space-y-3" id="emails-container">
+                    ${(contactData.emails || []).map((email, index) => generateContactItemHTML('email', email, index)).join('')}
+                    ${(contactData.emails || []).length === 0 ? generateContactItemHTML('email', {}, 0) : ''}
+                </div>
+            </div>
+            
+            <!-- Phone Numbers -->
+            <div class="mb-6">
+                <div class="flex items-center justify-between mb-3">
+                    <h4 class="font-medium text-slate-700">Phone Numbers</h4>
+                    <button type="button" class="add-contact-btn text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded hover:bg-blue-200" data-type="phone">
+                        <i class="fas fa-plus mr-1"></i>Add Phone
+                    </button>
+                </div>
+                <div class="space-y-3" id="phones-container">
+                    ${(contactData.phones || []).map((phone, index) => generateContactItemHTML('phone', phone, index)).join('')}
+                    ${(contactData.phones || []).length === 0 ? generateContactItemHTML('phone', {}, 0) : ''}
+                </div>
+            </div>
+            
+            <!-- Addresses -->
+            <div class="mb-6">
+                <div class="flex items-center justify-between mb-3">
+                    <h4 class="font-medium text-slate-700">Addresses</h4>
+                    <button type="button" class="add-contact-btn text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200" data-type="address">
+                        <i class="fas fa-plus mr-1"></i>Add Address
+                    </button>
+                </div>
+                <div class="space-y-4" id="addresses-container">
+                    ${(contactData.addresses || []).map((address, index) => generateContactItemHTML('address', address, index)).join('')}
+                    ${(contactData.addresses || []).length === 0 ? generateContactItemHTML('address', {}, 0) : ''}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function generateContactItemHTML(type, data, index) {
+    const template = personalFieldCategories.contact.templates[type];
+    const isAddress = type === 'address';
+    
+    return `
+        <div class="contact-item p-4 border border-slate-200 rounded-lg ${isAddress ? 'bg-purple-50' : type === 'email' ? 'bg-green-50' : 'bg-blue-50'}">
+            <div class="flex items-center justify-between mb-3">
+                <h5 class="font-medium text-slate-800">${template.label} ${index + 1}</h5>
+                ${index > 0 ? `<button type="button" class="remove-contact-btn text-red-500 hover:text-red-700" data-type="${type}" data-index="${index}">
+                    <i class="fas fa-trash"></i>
+                </button>` : ''}
+            </div>
+            <div class="grid grid-cols-1 ${isAddress ? 'md:grid-cols-2' : 'md:grid-cols-3'} gap-3">
+                ${template.fields.map(field => `
+                    <div ${field.id === 'address' ? 'class="md:col-span-2"' : ''}>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">${field.label}</label>
+                        ${field.type === 'select' ? `
+                            <select name="contact.${type}s[${index}].${field.id}" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm">
+                                <option value="">Select ${field.label}</option>
+                                ${field.options.map(option => `
+                                    <option value="${option}" ${data[field.id] === option ? 'selected' : ''}>${option}</option>
+                                `).join('')}
+                            </select>
+                        ` : field.type === 'textarea' ? `
+                            <textarea name="contact.${type}s[${index}].${field.id}" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" placeholder="${field.placeholder || ''}">${data[field.id] || ''}</textarea>
+                        ` : field.type === 'checkbox' ? `
+                            <label class="flex items-center">
+                                <input type="checkbox" name="contact.${type}s[${index}].${field.id}" ${data[field.id] ? 'checked' : ''} class="mr-2">
+                                <span class="text-sm text-slate-600">Allow public sharing</span>
+                            </label>
+                        ` : `
+                            <input type="${field.type}" name="contact.${type}s[${index}].${field.id}" value="${data[field.id] || ''}" placeholder="${field.placeholder || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm">
+                        `}
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
+// Enhanced family section with Family Hub integration
+function createFamilySection(key, sectionConfig, data) {
+    const sectionWrapper = document.createElement('div');
+    sectionWrapper.className = 'bg-white rounded-lg shadow-sm';
+    
+    const familyData = data || [];
+    const hasFamilyHub = checkFamilyHubConnection();
+
+    sectionWrapper.innerHTML = `
+        <button class="w-full flex justify-between items-center text-left p-4 accordion-toggle">
+            <div class="flex items-center">
+                <i class="fas fa-users w-6 text-center text-indigo-600"></i>
+                <h2 class="text-lg font-bold text-slate-800 ml-3">Family & Relationships</h2>
+                ${hasFamilyHub ? '<span class="ml-2 px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">Family Hub Connected</span>' : ''}
+            </div>
+            <i class="fas fa-chevron-down transform transition-transform"></i>
+        </button>
+        <div class="accordion-content">
+            <div class="p-6 border-t border-slate-200">
+                <!-- Family Hub Integration -->
+                <div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="font-semibold text-blue-800">Family Hub Integration</h3>
+                            <p class="text-sm text-blue-600 mt-1">
+                                ${hasFamilyHub 
+                                    ? 'Your family tree is synced with Family Hub. Changes here will reflect there automatically.'
+                                    : 'Connect to Family Hub to create a comprehensive family tree with advanced governance features.'
+                                }
+                            </p>
+                        </div>
+                        <div class="flex space-x-2">
+                            ${hasFamilyHub 
+                                ? `<button class="sync-family-hub-btn px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
+                                    <i class="fas fa-sync mr-1"></i>Sync Now
+                                   </button>`
+                                : `<button class="connect-family-hub-btn px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm">
+                                    <i class="fas fa-link mr-1"></i>Connect to Family Hub
+                                   </button>`
+                            }
+                            <button class="view-family-tree-btn px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm">
+                                <i class="fas fa-sitemap mr-1"></i>View Family Tree
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Family Members List -->
+                <div class="mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-slate-800">Family Members</h3>
+                        <button class="add-family-member-btn bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 text-sm">
+                            <i class="fas fa-plus mr-1"></i>Add Family Member
+                        </button>
+                    </div>
+                    
+                    ${familyData.length > 0 ? `
+                        <div class="space-y-3">
+                            ${familyData.map((member, index) => `
+                                <div class="flex items-center justify-between p-4 border border-slate-200 rounded-lg ${member.isFromFamilyHub ? 'bg-blue-50 border-blue-200' : ''}">
+                                    <div class="flex items-center space-x-4">
+                                        <div class="w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-user text-slate-500"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-semibold text-slate-800">${member.name}</h4>
+                                            <p class="text-sm text-slate-600">${member.relationship}</p>
+                                            ${member.isFromFamilyHub ? '<span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">From Family Hub</span>' : ''}
+                                        </div>
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <button class="text-indigo-600 hover:text-indigo-800 edit-family-member-btn" data-index="${index}">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        ${!member.isFromFamilyHub ? `
+                                            <button class="text-red-600 hover:text-red-800 delete-family-member-btn" data-index="${index}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        ` : ''}
+
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : `
+                        <p class="text-slate-500 text-center py-8">No family members added yet.</p>
+                    `}
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Event listeners
+    sectionWrapper.querySelector('.accordion-toggle').addEventListener('click', toggleAccordion);
+    sectionWrapper.querySelector('.add-family-member-btn').addEventListener('click', () => openFamilyMemberModal());
+    sectionWrapper.querySelector('.view-family-tree-btn').addEventListener('click', showFamilyTreeVisualization);
+    
+    if (hasFamilyHub) {
+        sectionWrapper.querySelector('.sync-family-hub-btn').addEventListener('click', syncWithFamilyHub);
+    } else {
+        sectionWrapper.querySelector('.connect-family-hub-btn').addEventListener('click', connectToFamilyHub);
+    }
+
+    return sectionWrapper;
+}
+
+async function connectToFamilyHub() {
+    // Check if user has a family in Family Hub
+    try {
+        const userDoc = await getDocument('users', currentUser.uid);
+        if (userDoc.familyId) {
+            // User already has a family, sync the data
+            await syncFamilyFromHub(userDoc.familyId);
+        } else {
+            // Show options to create or join a family
+            showFamilyHubConnectionModal();
+        }
+    } catch (error) {
+        console.error('Error connecting to Family Hub:', error);
+        alert('Failed to connect to Family Hub');
+    }
+}
+
+function showFamilyHubConnectionModal() {
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+    modal.innerHTML = `
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div class="p-6 border-b border-slate-200">
+                <h2 class="text-xl font-bold text-slate-800">Connect to Family Hub</h2>
+            </div>
+            <div class="p-6">
+                <p class="text-slate-600 mb-4">You don't have a family profile yet. Would you like to:</p>
+                <div class="space-y-3">
+                    <button class="w-full p-3 border border-slate-300 rounded-lg hover:bg-slate-50 text-left create-family-btn">
+                        <div class="font-semibold text-slate-800">Create a New Family</div>
+                        <div class="text-sm text-slate-600 mt-1">Start your own family tree and invite members</div>
+                    </button>
+                    <button class="w-full p-3 border border-slate-300 rounded-lg hover:bg-slate-50 text-left join-family-btn">
+                        <div class="font-semibold text-slate-800">Join Existing Family</div>
+                        <div class="text-sm text-slate-600 mt-1">Use an invitation code to join a family</div>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6 border-t border-slate-200 flex justify-end">
+                <button type="button" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300" onclick="this.closest('.fixed').remove()">Cancel</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    modal.querySelector('.create-family-btn').addEventListener('click', () => {
+        window.location.href = '/modules/family-hub.html?action=create';
+    });
+    
+    modal.querySelector('.join-family-btn').addEventListener('click', () => {
+        window.location.href = '/modules/family-hub.html?action=join';
+    });
+}
+
+async function syncWithFamilyHub() {
+    try {
+        console.log('Syncing family data with Family Hub...');
         
-        switch (choice) {
-            case 'current':
-                // Keep current data (no change needed)
-                break;
-            case 'imported':
-                mergedData[sectionKey] = importData[sectionKey];
-                break;
-            case 'merge':
-                if (Array.isArray(currentData[sectionKey]) && Array.isArray(importData[sectionKey])) {
-                    mergedData[sectionKey] = [...currentData[sectionKey], ...importData[sectionKey]];
-                } else {
-                    mergedData[sectionKey] = { ...currentData[sectionKey], ...importData[sectionKey] };
-                }
-                break;
+        // Get user's family ID
+        const userDoc = await getDocument('users', currentUser.uid);
+        if (!userDoc.familyId) {
+            alert('No family connection found. Please connect to Family Hub first.');
+            return;
+        }
+        
+        // Fetch family data from Family Hub
+        const familyDoc = await getDocument('families', userDoc.familyId);
+        if (!familyDoc) {
+            alert('Family not found. The family may have been deleted.');
+            return;
+        }
+        
+        // Convert family tree data to LifeCV format
+        const familyMembers = convertFamilyHubToLifeCV(familyDoc, currentUser.uid);
+        
+        // Update LifeCV family section
+        const currentLifeCvData = await getLifeCvData();
+        const updatedLifeCvData = {
+            ...currentLifeCvData,
+            family: familyMembers
+        };
+        
+        await updateDocument('users', currentUser.uid, { 'lifeCv': updatedLifeCvData });
+        
+        // Update local cache
+        lifeCvData = updatedLifeCvData;
+        renderAllSections();
+        
+        alert('Family data synced successfully from Family Hub!');
+        
+    } catch (error) {
+        console.error('Error syncing with Family Hub:', error);
+        alert('Failed to sync with Family Hub. Please try again.');
+    }
+}
+
+function convertFamilyHubToLifeCV(familyData, userId) {
+    const members = [];
+    
+    // Process family members from Family Hub structure
+    if (familyData.members) {
+        familyData.members.forEach(member => {
+            if (member.userId !== userId) { // Don't include self
+                members.push({
+                    name: member.name || `${member.firstName} ${member.lastName}`.trim(),
+                    relationship: member.relationship || 'Family Member',
+                    significance: `Family member from ${familyData.name || 'Family Hub'}`,
+                    contact: member.email || '',
+                    familyHubId: member.userId,
+                    isFromFamilyHub: true,
+                    syncedAt: new Date().toISOString()
+                });
+            }
+        });
+    }
+    
+    return members;
+}
+
+async function exportFamilyToHub() {
+    try {
+        const familyData = lifeCvData.family || [];
+        
+        if (familyData.length === 0) {
+            alert('No family members to export. Add family members first.');
+            return;
+        }
+        
+        // Check if user has Family Hub connection
+        const userDoc = await getDocument('users', currentUser.uid);
+        
+        if (userDoc.familyId) {
+            // Update existing family
+            await updateFamilyHub(userDoc.familyId, familyData);
+        } else {
+            // Create new family in Family Hub
+            await createFamilyHub(familyData);
+        }
+        
+        alert('Family data exported to Family Hub successfully!');
+        
+    } catch (error) {
+        console.error('Error exporting to Family Hub:', error);
+        alert('Failed to export to Family Hub. Please try again.');
+    }
+}
+
+function showFamilyTreeVisualization() {
+    const familyData = lifeCvData.family || [];
+    
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+    modal.innerHTML = `
+        <div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4">
+            <div class="text-center">
+                <h3 class="text-lg font-semibold text-slate-800 mb-4">Family Tree Visualization</h3>
+                <div id="family-tree-container" class="min-h-96">
+                    ${generateFamilyTreeHTML(familyData)}
+                </div>
+            </div>
+            <div class="flex justify-end space-x-3 mt-4">
+                <button type="button" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300" onclick="this.closest('.fixed').remove()">Close</button>
+                <button type="button" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700" onclick="exportFamilyToHub()">
+                    <i class="fas fa-upload mr-1"></i>Export to Family Hub
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+function generateFamilyTreeHTML(familyData) {
+    if (familyData.length === 0) {
+        return `
+
+            <div class="text-center py-12">
+                <i class="fas fa-users text-4xl text-slate-400 mb-4"></i>
+                <h3 class="text-lg font-semibold text-slate-600 mb-2">No Family Members Added</h3>
+                <p class="text-slate-500">Add family members to see your family tree visualization.</p>
+            </div>
+        `;
+    }
+    
+    // Group by relationship
+    const grouped = familyData.reduce((acc, member) => {
+        const rel = member.relationship || 'Other';
+        if (!acc[rel]) acc[rel] = [];
+        acc[rel].push(member);
+        return acc;
+    }, {});
+    
+    return `
+        <div class="family-tree-visualization">
+            <!-- Current User (Center) -->
+            <div class="text-center mb-8">
+                <div class="inline-block p-4 bg-indigo-100 border-2 border-indigo-300 rounded-full">
+                    <i class="fas fa-user text-2xl text-indigo-600"></i>
+                </div>
+                <div class="mt-2 font-semibold text-slate-800">${lifeCvData.personal?.fullName || 'You'}</div>
+                <div class="text-sm text-slate-600">Center of Family Tree</div>
+            </div>
+            
+            <!-- Family Members by Relationship -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                ${Object.entries(grouped).map(([relationship, members]) => `
+                    <div class="relationship-group">
+                        <h4 class="font-semibold text-slate-800 mb-3 text-center">${relationship}s</h4>
+                        <div class="space-y-3">
+                            ${members.map(member => `
+
+                                <div class="flex items-center p-3 border border-slate-200 rounded-lg ${member.isFromFamilyHub ? 'bg-blue-50 border-blue-200' : 'bg-white'}">
+                                    <div class="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center mr-3">
+                                        <i class="fas fa-user text-slate-500"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="font-medium text-slate-800">${member.name}</div>
+                                        ${member.isFromFamilyHub ? '<div class="text-xs text-blue-600">From Family Hub</div>' : ''}
+                                    </div>
+                                </div>
+                            `).join('')}
+
+                        </div>
+                    </div>
+                `).join('')}
+
+            </div>
+        </div>
+    `;
+}
+
+function openFamilyMemberModal(index = -1) {
+    const isEditing = index > -1;
+    const member = isEditing ? (lifeCvData.family || [])[index] : {};
+    
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+    modal.innerHTML = `
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div class="p-6 border-b border-slate-200">
+                <h2 class="text-xl font-bold text-slate-800">${isEditing ? 'Edit' : 'Add'} Family Member</h2>
+            </div>
+            <div class="p-6">
+                <form id="family-member-form">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
+                        <input type="text" name="name" value="${member.name || ''}" required class="w-full px-3 py-2 border border-slate-300 rounded-md">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Relationship</label>
+                        <select name="relationship" required class="w-full px-3 py-2 border border-slate-300 rounded-md">
+                            <option value="">Select Relationship</option>
+                            ${relationshipTypes.map(type => `
+                                <option value="${type}" ${member.relationship === type ? 'selected' : ''}>${type}</option>
+                            `).join('')}
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Significance in Your Life</label>
+                        <textarea name="significance" rows="3" class="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="How this person impacts your life...">${member.significance || ''}</textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Contact Information (Optional)</label>
+                        <input type="text" name="contact" value="${member.contact || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="Email or phone">
+                    </div>
+                </form>
+            </div>
+            <div class="p-6 border-t border-slate-200 flex justify-end space-x-3">
+                <button type="button" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300" onclick="this.closest('.fixed').remove()">Cancel</button>
+                <button type="button" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700" onclick="saveFamilyMember(${index})">Save</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+async function saveFamilyMember(index) {
+    const form = document.getElementById('family-member-form');
+    const formData = new FormData(form);
+    
+    const memberData = {
+        name: formData.get('name'),
+        relationship: formData.get('relationship'),
+        significance: formData.get('significance'),
+        contact: formData.get('contact'),
+        isFromFamilyHub: false,
+        createdAt: new Date().toISOString()
+    };
+    
+    try {
+        const currentFamily = lifeCvData.family || [];
+        
+        if (index > -1) {
+            // Editing existing member
+            currentFamily[index] = { ...currentFamily[index], ...memberData };
+        } else {
+            // Adding new member
+            currentFamily.push(memberData);
+        }
+        
+        await updateDocument('users', currentUser.uid, { 'lifeCv.family': currentFamily });
+        
+        // Close modal
+        document.querySelector('.fixed').remove();
+        
+        alert('Family member saved successfully!');
+        
+    } catch (error) {
+        console.error('Error saving family member:', error);
+        alert('Failed to save family member. Please try again.');
+    }
+}
+
+function checkFamilyHubConnection() {
+    // Check if user has any family members marked as from Family Hub
+    const familyData = lifeCvData.family || [];
+    return familyData.some(member => member.isFromFamilyHub);
+}
+
+// Enhanced public profile creation with safety features
+const enhancedPublicProfileTemplates = {
+    professional: {
+        name: 'Professional',
+        description: 'Clean, corporate design for job applications and networking',
+        sections: ['personal', 'professional', 'experience', 'education', 'skills', 'projects'],
+        theme: 'corporate'
+    },
+    creative: {
+        name: 'Creative Portfolio',
+        description: 'Vibrant design showcasing creative work and personality',
+        sections: ['personal', 'projects', 'skills', 'interests', 'travel', 'milestones'],
+        theme: 'artistic'
+    },
+    holistic: {
+        name: 'Life Story',
+        description: 'Complete life journey for personal branding and community projects',
+        sections: ['personal', 'philosophy', 'family', 'experience', 'education', 'community', 'interests', 'travel', 'milestones'],
+        theme: 'comprehensive'
+    },
+    academic: {
+        name: 'Academic Profile',
+        description: 'Scholarly presentation for academic and research positions',
+        sections: ['personal', 'education', 'experience', 'projects', 'skills', 'community'],
+        theme: 'academic'
+    },
+    community: {
+        name: 'Community Leader',
+        description: 'Emphasis on community impact and social contributions',
+        sections: ['personal', 'philosophy', 'community', 'experience', 'skills', 'milestones', 'interests'],
+        theme: 'community'
+    }
+};
+
+// --- ENHANCED PUBLIC PROFILE CREATION ---
+
+function createEnhancedPublicProfileSection(key, sectionConfig, data) {
+    const sectionWrapper = document.createElement('div');
+    sectionWrapper.className = 'bg-white rounded-lg shadow-sm';
+    
+    const profiles = data.profiles || [];
+
+    sectionWrapper.innerHTML = `
+        <button class="w-full flex justify-between items-center text-left p-4 accordion-toggle">
+            <div class="flex items-center">
+                <i class="fas ${sectionConfig.icon} w-6 text-center text-indigo-600"></i>
+                <h2 class="text-lg font-bold text-slate-800 ml-3">${sectionConfig.title}</h2>
+            </div>
+            <i class="fas fa-chevron-down transform transition-transform"></i>
+        </button>
+        <div class="accordion-content">
+            <div class="p-6 border-t border-slate-200">
+                <!-- Create New Profile -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-slate-800 mb-3">Create New Public Profile</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                        ${Object.entries(enhancedPublicProfileTemplates).map(([templateKey, template]) => `
+                            <div class="border border-slate-200 rounded-lg p-4 hover:border-indigo-300 cursor-pointer template-card" data-template="${templateKey}">
+                                <h4 class="font-semibold text-slate-800 mb-2">${template.name}</h4>
+                                <p class="text-sm text-slate-600 mb-3">${template.description}</p>
+                                <div class="flex flex-wrap gap-1">
+                                    ${template.sections.slice(0, 3).map(section => `
+                                        <span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded">${lifeCvSections[section]?.title || section}</span>
+                                    `).join('')}
+                                    ${template.sections.length > 3 ? `<span class="text-xs text-slate-500">+${template.sections.length - 3} more</span>` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <!-- Your Public Profiles -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-slate-800 mb-3">Your Public Profiles</h3>
+                    ${profiles.length > 0 ? `
+                        <div class="space-y-3">
+                            ${profiles.map((profile, index) => `
+                                <div class="flex items-center justify-between p-4 border border-slate-200 rounded-lg">
+                                    <div class="flex-1">
+                                        <h4 class="font-semibold text-slate-800">${profile.name}</h4>
+                                        <p class="text-sm text-slate-600">${profile.description}</p>
+                                        <div class="flex items-center mt-2 space-x-4">
+                                            <a href="${profile.publicUrl}" target="_blank" class="text-sm text-indigo-600 hover:text-indigo-800">
+                                                <i class="fas fa-external-link-alt mr-1"></i>View Public Page
+                                            </a>
+                                            <button class="text-sm text-slate-600 hover:text-slate-800 mr-3 copy-link-btn" data-url="${profile.publicUrl}">
+                                                <i class="fas fa-copy mr-1"></i>Copy Link
+                                            </button>
+                                            <button class="text-sm text-slate-600 hover:text-slate-800 show-qr-btn" data-url="${profile.publicUrl}">
+                                                <i class="fas fa-qrcode mr-1"></i>QR Code
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <button class="text-indigo-600 hover:text-indigo-800 edit-profile-btn" data-index="${index}">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="text-red-600 hover:text-red-800 delete-profile-btn" data-index="${index}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : `
+                        <p class="text-slate-500 text-center py-8">No public profiles created yet. Choose a template above to get started.</p>
+                    `}
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Attach event listeners
+    sectionWrapper.querySelector('.accordion-toggle').addEventListener('click', toggleAccordion);
+    sectionWrapper.querySelectorAll('.template-card').forEach(card => {
+        card.addEventListener('click', () => openEnhancedProfileCreationModal(card.dataset.template));
+    });
+
+    sectionWrapper.querySelectorAll('.copy-link-btn').forEach(btn => {
+        btn.addEventListener('click', () => copyToClipboard(btn.dataset.url));
+    });
+
+    sectionWrapper.querySelectorAll('.show-qr-btn').forEach(btn => {
+        btn.addEventListener('click', () => showQRCode(btn.dataset.url));
+    });
+
+    return sectionWrapper;
+}
+
+// Function to open enhanced profile creation modal
+function openEnhancedProfileCreationModal(templateKey) {
+    const template = enhancedPublicProfileTemplates[templateKey];
+    
+    // Create modal for enhanced profile customization
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+    modal.innerHTML = `
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-slate-200">
+                <h2 class="text-2xl font-bold text-slate-800">Create ${template.name} Profile</h2>
+                <p class="text-slate-600 mt-1">${template.description}</p>
+            </div>
+            <div class="p-6">
+                <form id="enhanced-profile-creation-form">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Profile Name</label>
+                            <input type="text" name="profileName" required class="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="My ${template.name} Profile">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Public URL Slug</label>
+                            <input type="text" name="urlSlug" required class="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="my-profile">
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Profile Description</label>
+                        <textarea name="description" rows="3" class="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="Brief description of this profile..."></textarea>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <h3 class="text-lg font-semibold text-slate-800 mb-3">Sections to Include</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            ${template.sections.map(sectionKey => `
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="sections" value="${sectionKey}" checked class="rounded mr-2">
+                                    <span class="text-sm">${lifeCvSections[sectionKey]?.title || sectionKey}</span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <h3 class="text-lg font-semibold text-slate-800 mb-3">Privacy Settings</h3>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="radio" name="privacy" value="public" checked class="mr-2">
+                                <span class="text-sm">Public - Anyone can view with the link</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="privacy" value="unlisted" class="mr-2">
+                                <span class="text-sm">Unlisted - Only people with the direct link can view</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Sensitive Data Confirmation -->
+                    <div id="sensitive-data-section" class="mt-6 hidden">
+                        <h3 class="text-lg font-semibold text-slate-800 mb-3">Sensitive Data Confirmation</h3>
+                        <p class="text-sm text-slate-600 mb-2">
+                            This profile will include sensitive information such as your full name, ID number, and date of birth.
+                            Please confirm that you want to include this information.
+                        </p>
+                        <div class="flex items-center mb-4">
+                            <input type="checkbox" id="sensitive-confirm-checkbox" class="mr-2">
+                            <label for="sensitive-confirm-checkbox" class="text-sm text-slate-700">
+                                I understand and agree to share my sensitive information.
+                            </label>
+                        </div>
+                        <div>
+                            <label for="sensitive-confirmation" class="block text-sm font-medium text-slate-700 mb-1">Type your full name to confirm</label>
+                            <input type="text" id="sensitive-confirmation" class="px-3 py-2 border border-slate-300 rounded-md w-full" placeholder="Full Name">
+                        </div>
+                    </div>
+                    
+                    <!-- LifeSync Option -->
+                    <div class="mt-6">
+                        <h3 class="text-lg font-semibold text-slate-800 mb-3">LifeSync Integration</h3>
+                        <div class="flex items-center">
+                            <input type="checkbox" name="enableLifeSync" id="enableLifeSync" class="mr-2">
+                            <label for="enableLifeSync" class="text-sm text-slate-700">
+                                Enable LifeSync to automatically update this profile with your latest LifeCV information.
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="p-6 border-t border-slate-200 flex justify-between">
+                <button type="button" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300" onclick="this.closest('.fixed').remove()">Cancel</button>
+                <div class="flex space-x-3">
+                    <button type="button" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" onclick="previewPublicProfile()">Preview</button>
+                    <button type="button" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700" onclick="createEnhancedPublicProfile('${templateKey}')">Create Profile</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+async function createEnhancedPublicProfile(templateKey) {
+    const form = document.getElementById('enhanced-profile-creation-form');
+    const formData = new FormData(form);
+    
+    // Validate sensitive data confirmation if needed
+    const selectedSections = Array.from(formData.getAll('sections'));
+    const sensitiveDataSection = document.querySelector('#sensitive-data-section');
+    
+    if (!sensitiveDataSection.classList.contains('hidden')) {
+        const confirmation = document.getElementById('sensitive-confirmation').value;
+        const fullName = lifeCvData.personal?.fullName || '';
+        
+        if (confirmation !== fullName) {
+            alert('Please type your full name exactly as it appears in your profile to confirm sharing sensitive information.');
+            return;
+        }
+    }
+    
+    // Auto-generate URL slug
+    const profileName = formData.get('profileName');
+    const urlSlug = generateSlugFromName(lifeCvData.personal?.fullName || 'user', profileName);
+    
+    const profileData = {
+        id: Date.now().toString(),
+        template: templateKey,
+        name: formData.get('profileName'),
+        description: formData.get('description'),
+        urlSlug: urlSlug,
+        privacy: formData.get('privacy'),
+        sections: selectedSections,
+        contactInfo: {
+            emails: Array.from(formData.getAll('selectedEmails')),
+            phones: Array.from(formData.getAll('selectedPhones')),
+            addresses: Array.from(formData.getAll('selectedAddresses'))
+        },
+        lifeSyncEnabled: formData.get('enableLifeSync') === 'on',
+        createdAt: new Date().toISOString(),
+        publicUrl: `https://hub.salatiso.com/profile/${urlSlug}`,
+        isBrandingRemoved: false // Default to showing Hub branding
+    };
+    
+    try {
+        // Save to user's LifeCV data
+        const currentProfiles = lifeCvData.publicProfiles?.profiles || [];
+        currentProfiles.push(profileData);
+        
+        await updateDocument('users', currentUser.uid, { 
+            'lifeCv.publicProfiles.profiles': currentProfiles 
+        });
+        
+        // Generate the actual public page with safety features
+        await generateEnhancedPublicProfilePage(profileData);
+        
+        // If LifeSync is enabled, add to LifeSync sharing
+        if (profileData.lifeSyncEnabled) {
+            await addToLifeSyncSharing(profileData);
+        }
+        
+        // Close modal
+        document.querySelector('.fixed').remove();
+        
+        alert('Enhanced public profile created successfully with safety features!');
+        
+    } catch (error) {
+        console.error('Error creating enhanced public profile:', error);
+        alert('Failed to create public profile. Please try again.');
+    }
+}
+
+async function generateEnhancedPublicProfilePage(profileData) {
+    const userData = lifeCvData;
+    const template = enhancedPublicProfileTemplates[profileData.template];
+    
+    // Filter user data based on selected sections and safety settings
+    const safeUserData = filterUserDataForPublic(userData, profileData);
+    
+    const htmlContent = generateSafePublicProfileHTML(profileData, safeUserData);
+    
+    // Save the generated HTML (in a real implementation, this would be saved to a public hosting service)
+    console.log('Generated safe public profile HTML:', htmlContent);
+    
+    return htmlContent;
+}
+
+function filterUserDataForPublic(userData, profileData) {
+    const safeData = {};
+    
+    // Only include selected sections
+    profileData.sections.forEach(sectionKey => {
+        if (userData[sectionKey]) {
+            safeData[sectionKey] = { ...userData[sectionKey] };
         }
     });
     
-    return mergedData;
-}
-
-function selectAllVersion(modal, version) {
-    const buttons = modal.querySelectorAll('.section-choice-btn');
-    buttons.forEach(btn => {
-        if (btn.dataset.choice === version && !btn.disabled) {
-            btn.click();
+    // Filter sensitive data from personal section
+    if (safeData.personal) {
+        const filteredPersonal = { ...safeData.personal };
+        
+        // Always remove sensitive fields unless explicitly confirmed
+        delete filteredPersonal.idNumber;
+        delete filteredPersonal.dob;
+        
+        // Only include selected contact information
+        if (profileData.contactInfo) {
+            filteredPersonal.emails = (userData.contact?.emails || [])
+                .filter((_, index) => profileData.contactInfo.emails.includes(index.toString()))
+                .map(email => ({ value: email.value, type: email.type }));
+                
+            filteredPersonal.phones = (userData.contact?.phones || [])
+                .filter((_, index) => profileData.contactInfo.phones.includes(index.toString()))
+                .map(phone => ({ value: phone.value, type: phone.type }));
+                
+            // Addresses are never included for safety
+            delete filteredPersonal.address;
         }
-    });
+        
+        safeData.personal = filteredPersonal;
+    }
+    
+    return safeData;
 }
 
-function generateUrlSlug(fullName, profileType) {
+function generateSafePublicProfileHTML(profileData, safeUserData) {
+    const template = enhancedPublicProfileTemplates[profileData.template];
+    const hubBranding = profileData.isBrandingRemoved ? '' : generateHubBranding();
+    const profileContent = generateSafeProfileContent(profileData, safeUserData);
+    
+    return `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>${safeUserData.personal?.fullName || 'Professional Profile'} | The Hub by Salatiso</title>
+            <script src="https://cdn.tailwindcss.com"></script>
+            <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+            <style>
+                body { font-family: 'Inter', sans-serif; }
+                .hub-branding { min-height: ${profileData.isBrandingRemoved ? '0' : '20vh'}; }
+                .profile-content { min-height: ${profileData.isBrandingRemoved ? '100vh' : '80vh'}; }
+                .floating-actions { position: fixed; bottom: 20px; right: 20px; z-index: 50; }
+                @media print { .floating-actions, .hub-branding { display: none; } }
+            </style>
+        </head>
+        <body class="bg-slate-50">
+            <div class="min-h-screen">
+                <!-- Profile Content -->
+                <div class="profile-content">
+                    ${profileContent}
+                </div>
+                
+                <!-- Hub Branding (20% or hidden if removed) -->
+                ${hubBranding}
+            </div>
+            
+            <!-- Floating Action Buttons -->
+            <div class="floating-actions">
+                <div class="flex flex-col space-y-2">
+                    <button onclick="shareProfile()" class="bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors" title="Share Profile">
+                        <i class="fas fa-share w-5 h-5"></i>
+                    </button>
+                    <button onclick="showQRCodeModal()" class="bg-green-600 text-white p-3 rounded-full shadow-lg hover:bg-green-700 transition-colors" title="Show QR Code">
+                        <i class="fas fa-qrcode w-5 h-5"></i>
+                    </button>
+                    <button onclick="downloadProfile()" class="bg-purple-600 text-white p-3 rounded-full shadow-lg hover:bg-purple-700 transition-colors" title="Download PDF">
+                        <i class="fas fa-download w-5 h-5"></i>
+                    </button>
+                    <button onclick="emailProfile()" class="bg-amber-600 text-white p-3 rounded-full shadow-lg hover:bg-amber-700 transition-colors" title="Email Profile">
+                        <i class="fas fa-envelope w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- QR Code Modal -->
+            <div id="qr-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+                <div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4">
+                    <div class="text-center">
+                        <h3 class="text-lg font-semibold text-slate-800 mb-4">Share this Profile</h3>
+                        <div id="qr-code-container" class="inline-block p-4 bg-white border-2 border-slate-200 rounded-lg mb-4">
+                            <!-- QR code will be generated here -->
+                        </div>
+                        <p class="text-xs text-slate-500 mb-4 break-all">${profileData.publicUrl}</p>
+                        <div class="flex space-x-2">
+                            <button onclick="copyProfileLink()" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
+                                <i class="fas fa-copy mr-1"></i>Copy Link
+                            </button>
+                            <button type="button" class="flex-1 px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300" onclick="closeQRModal()">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <script>
+                // Profile interaction functions
+                function shareProfile() {
+                    if (navigator.share) {
+                        navigator.share({
+                            title: '${safeUserData.personal?.fullName || "Professional Profile"}',
+                            text: 'Check out this professional profile',
+                            url: '${profileData.publicUrl}'
+                        });
+                    } else {
+                        copyProfileLink();
+                    }
+                }
+                
+                function showQRCodeModal() {
+                    const modal = document.getElementById('qr-modal');
+                    const container = document.getElementById('qr-code-container');
+                    container.innerHTML = '';
+                    
+                    // Generate QR code
+                    QRCode.toCanvas(container, '${profileData.publicUrl}', {
+                        width: 200,
+                        height: 200,
+                        color: { dark: '#000000', light: '#ffffff' }
+                    });
+                    
+                    modal.classList.remove('hidden');
+                }
+                
+                function closeQRModal() {
+                    document.getElementById('qr-modal').classList.add('hidden');
+                }
+                
+                function copyProfileLink() {
+                    navigator.clipboard.writeText('${profileData.publicUrl}').then(() => {
+                        alert('Profile link copied to clipboard!');
+                    });
+                }
+                
+                function downloadProfile() {
+                    window.print();
+                }
+                
+                function emailProfile() {
+                    const subject = encodeURIComponent('${safeUserData.personal?.fullName || "Professional Profile"}');
+                    const body = encodeURIComponent('Hi, I wanted to share my professional profile with you: ${profileData.publicUrl}');
+                    window.location.href = \`mailto:?subject=\${subject}&body=\${body}\`;
+                }
+                
+                // Create your own profile call-to-action
+                function createOwnProfile() {
+                    window.open('https://hub.salatiso.com/modules/life-cv.html', '_blank');
+                }
+            </script>
+        </body>
+        </html>
+    `;
+}
+
+function generateHubBranding() {
+    return `
+        <div class="hub-branding bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-16">
+            <div class="max-w-6xl mx-auto px-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <div class="flex items-center mb-4">
+                            <i class="fas fa-sitemap text-3xl mr-3"></i>
+                            <h2 class="text-3xl font-bold">The Hub by Salatiso</h2>
+                        </div>
+                        <p class="text-lg mb-4">
+                            Connect, share, and grow your professional presence. Create comprehensive life profiles, 
+                            build family trees, and manage your digital identity with privacy and safety first.
+                        </p>
+                        <div class="flex space-x-4">
+                            <button onclick="createOwnProfile()" class="bg-white text-indigo-600 px-6 py-3 rounded-lg font-semibold hover:bg-slate-100 transition-colors">
+                                Create Your Profile
+                            </button>
+                            <a href="https://hub.salatiso.com" class="border border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-indigo-600 transition-colors">
+                                Learn More
+                            </a>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <div class="bg-white bg-opacity-10 rounded-lg p-6">
+                            <h3 class="text-xl font-semibold mb-4">Why Choose The Hub?</h3>
+                            <div class="space-y-3 text-sm">
+                                <div class="flex items-center">
+                                    <i class="fas fa-shield-alt mr-3"></i>
+                                    <span>Privacy & Safety First</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fas fa-users mr-3"></i>
+                                    <span>Family Tree Management</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fas fa-briefcase mr-3"></i>
+                                    <span>Professional Profiles</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fas fa-sync mr-3"></i>
+                                    <span>LifeSync Integration</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// New functions for email signature and business card management
+function createEmailSignaturesSection(key, sectionConfig, data) {
+    const sectionWrapper = document.createElement('div');
+    sectionWrapper.className = 'bg-white rounded-lg shadow-sm';
+    
+    const signatures = data.signatures || [];
+
+    sectionWrapper.innerHTML = `
+        <button class="w-full flex justify-between items-center text-left p-4 accordion-toggle">
+            <div class="flex items-center">
+                <i class="fas ${sectionConfig.icon} w-6 text-center text-indigo-600"></i>
+                <h2 class="text-lg font-bold text-slate-800 ml-3">${sectionConfig.title}</h2>
+            </div>
+            <i class="fas fa-chevron-down transform transition-transform"></i>
+        </button>
+        <div class="accordion-content">
+            <div class="p-6 border-t border-slate-200">
+                <!-- Create New Signature -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-slate-800 mb-3">Create New Email Signature</h3>
+                    <form id="email-signature-form" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Signature Name</label>
+                            <input type="text" name="signatureName" class="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="My Professional Signature">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
+                            <input type="text" name="fullName" class="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="John Doe">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Job Title</label>
+                            <input type="text" name="jobTitle" class="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="Software Engineer">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Company</label>
+                            <input type="text" name="company" class="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="Salatiso">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Primary Color</label>
+                            <input type="color" name="primaryColor" value="#4f46e5" class="w-full h-10 border border-slate-300 rounded-md">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Font Size</label>
+                            <select name="fontSize" class="w-full px-3 py-2 border border-slate-300 rounded-md">
+                                <option value="12px">12px</option>
+                                <option value="14px" selected>14px</option>
+                                <option value="16px">16px</option>
+                                <option value="18px">18px</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Layout Style</label>
+                            <select name="layoutStyle" class="w-full px-3 py-2 border border-slate-300 rounded-md">
+                                <option value="horizontal" selected>Horizontal</option>
+                                <option value="vertical">Vertical</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Custom Message</label>
+                            <textarea name="customMessage" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="Your custom message..."></textarea>
+                        </div>
+                        
+                        <!-- File Uploads -->
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Profile Photo</label>
+                            <input type="file" name="profilePhoto" accept="image/*" class="w-full border border-slate-300 rounded-md">
+                        </div>
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Company Logo</label>
+                            <input type="file" name="companyLogo" accept="image/*" class="w-full border border-slate-300 rounded-md">
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Your Email Signatures -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-slate-800 mb-3">Your Email Signatures</h3>
+                    ${signatures.length > 0 ? `
+                        <div class="space-y-3">
+                            ${signatures.map((signature, index) => `
+                                <div class="p-4 border border-slate-200 rounded-lg">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <h4 class="font-semibold text-slate-800">${signature.name}</h4>
+                                        <div class="flex space-x-2">
+                                            <button class="text-indigo-600 hover:text-indigo-800 edit-signature-btn" data-index="${index}">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="text-red-600 hover:text-red-800 delete-signature-btn" data-index="${index}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="text-sm text-slate-700">
+                                        ${signature.fullName} - ${signature.jobTitle} @ ${signature.company}
+                                    </div>
+                                    <div class="mt-2">
+                                        <button class="copy-signature-btn bg-indigo-600 text-white font-bold py-1 px-3 rounded-lg text-sm hover:bg-indigo-700" data-index="${index}">
+                                            <i class="fas fa-copy mr-1"></i>Copy Signature HTML
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : `
+                        <p class="text-slate-500 text-center py-8">No email signatures created yet. Use the form above to create one.</p>
+                    `}
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Attach event listeners
+    sectionWrapper.querySelector('.accordion-toggle').addEventListener('click', toggleAccordion);
+    sectionWrapper.querySelectorAll('.template-card').forEach(card => {
+        card.addEventListener('click', () => openEmailSignatureCreationModal(card.dataset.template));
+    });
+    sectionWrapper.querySelectorAll('.copy-signature-btn').forEach(btn => {
+        btn.addEventListener('click', () => copySignatureToClipboard(parseInt(btn.dataset.index)));
+    });
+
+    return sectionWrapper;
+}
+
+// Function to open email signature creation modal
+function openEmailSignatureCreationModal(templateKey) {
+    const template = emailSignatureTemplates[templateKey];
+    
+    // Create modal for email signature customization
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+    modal.innerHTML = `
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div class="p-6 border-b border-slate-200">
+                <h2 class="text-xl font-bold text-slate-800">Create ${template.name} Signature</h2>
+                <p class="text-slate-600 mt-1">${template.description}</p>
+            </div>
+            <div class="p-6">
+                <form id="email-signature-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Signature Name</label>
+                        <input type="text" name="signatureName" class="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="My Professional Signature">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
+                        <input type="text" name="fullName" class="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="John Doe">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Job Title</label>
+                        <input type="text" name="jobTitle" class="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="Software Engineer">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Company</label>
+                        <input type="text" name="company" class="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="Salatiso">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Primary Color</label>
+                        <input type="color" name="primaryColor" value="#4f46e5" class="w-full h-10 border border-slate-300 rounded-md">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Font Size</label>
+                        <select name="fontSize" class="w-full px-3 py-2 border border-slate-300 rounded-md">
+                            <option value="12px">12px</option>
+                            <option value="14px" selected>14px</option>
+                            <option value="16px">16px</option>
+                            <option value="18px">18px</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Layout Style</label>
+                        <select name="layoutStyle" class="w-full px-3 py-2 border border-slate-300 rounded-md">
+                            <option value="horizontal" selected>Horizontal</option>
+                            <option value="vertical">Vertical</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Custom Message</label>
+                        <textarea name="customMessage" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="Your custom message..."></textarea>
+                    </div>
+                    
+                    <!-- File Uploads -->
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Profile Photo</label>
+                        <input type="file" name="profilePhoto" accept="image/*" class="w-full border border-slate-300 rounded-md">
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Company Logo</label>
+                        <input type="file" name="companyLogo" accept="image/*" class="w-full border border-slate-300 rounded-md">
+                    </div>
+                </form>
+            </div>
+            <div class="p-6 border-t border-slate-200 flex justify-between">
+                <button type="button" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300" onclick="this.closest('.fixed').remove()">Cancel</button>
+                <div class="flex space-x-3">
+                    <button type="button" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" onclick="previewEmailSignature()">Preview</button>
+                    <button type="button" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700" onclick="createEmailSignature('${templateKey}')">Create Signature</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+async function getLifeCvData() {
+    try {
+        const userDoc = await getDocument('users', currentUser.uid);
+        return userDoc?.lifeCv || {};
+    } catch (error) {
+        console.error('Error fetching LifeCV data:', error);
+        return {};
+    }
+}
+
+function generateContactSelectionForCard() {
+    const contactData = lifeCvData.contact || {};
+    
+    return `
+        <div class="space-y-4">
+            <!-- Email Selection -->
+            <div>
+                <h4 class="font-medium text-slate-700 mb-2">Email Addresses</h4>
+                <div class="space-y-2">
+                    ${(contactData.emails || []).map((email, index) => `
+                        <label class="flex items-center">
+                            <input type="checkbox" name="selectedEmails" value="${index}" class="mr-2">
+                            <span class="text-sm">${email.value} (${email.type})</span>
+                        </label>
+                    `).join('') || '<p class="text-sm text-slate-500">No email addresses found</p>'}
+                </div>
+            </div>
+            
+            <!-- Phone Selection -->
+            <div>
+                <h4 class="font-medium text-slate-700 mb-2">Phone Numbers</h4>
+                <div class="space-y-2">
+                    ${(contactData.phones || []).map((phone, index) => `
+                        <label class="flex items-center">
+                            <input type="checkbox" name="selectedPhones" value="${index}" class="mr-2">
+                            <span class="text-sm">${phone.value} (${phone.type})</span>
+                        </label>
+                    `).join('') || '<p class="text-sm text-slate-500">No phone numbers found</p>'}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function generateSocialMediaSelection() {
+    const digitalData = lifeCvData.digital || [];
+    
+    return `
+        <div class="space-y-2">
+            ${digitalData.length > 0 ? digitalData.map((platform, index) => `
+                <label class="flex items-center">
+                    <input type="checkbox" name="selectedSocial" value="${index}" class="mr-2">
+                    <span class="text-sm">${platform.platform}: ${platform.username}</span>
+                </label>
+            `).join('') : '<p class="text-sm text-slate-500">No social media profiles found. Add them in the Digital Presence section first.</p>'}
+        </div>
+    `;
+}
+
+function generateContactSelectionForSignature() {
+    return generateContactSelectionForCard(); // Same functionality
+}
+
+function generateSocialMediaSelectionForSignature() {
+    return generateSocialMediaSelection(); // Same functionality
+}
+
+async function copySignatureToClipboard(index) {
+    const signatures = lifeCvData.emailSignatures?.signatures || [];
+    const signature = signatures[index];
+    
+    if (!signature) {
+        alert('Signature not found');
+        return;
+    }
+    
+    const html = generateSignatureHTML(signature);
+    
+    try {
+        await navigator.clipboard.writeText(html);
+        alert('Email signature HTML copied to clipboard! You can now paste it into your email client.');
+    } catch (error) {
+        console.error('Error copying to clipboard:', error);
+        
+        // Fallback: Create a text area and copy
+        const textArea = document.createElement('textarea');
+        textArea.value = html;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        alert('Email signature HTML copied to clipboard!');
+    }
+}
+
+function updateSignaturePreview() {
+    const form = document.getElementById('email-signature-form');
+    if (!form) return;
+    
+    const formData = new FormData(form);
+    const previewContainer = document.getElementById('signature-preview');
+    
+    const signatureData = {
+        fullName: formData.get('fullName'),
+        jobTitle: formData.get('jobTitle'),
+        company: formData.get('company'),
+        primaryColor: formData.get('primaryColor'),
+        fontSize: formData.get('fontSize'),
+        layoutStyle: formData.get('layoutStyle'),
+        customMessage: formData.get('customMessage'),
+        contacts: {
+            emails: ['demo@example.com'], // Demo data for preview
+            phones: ['+1 (555) 123-4567']
+        },
+        socialMedia: [
+            { platform: 'LinkedIn', url: '#' },
+            { platform: 'Twitter', url: '#' }
+        ]
+    };
+    
+    previewContainer.innerHTML = generateSignatureHTML(signatureData);
+}
+
+async function createEmailSignature(templateKey) {
+    const form = document.getElementById('email-signature-form');
+    const formData = new FormData(form);
+    
+    // Handle file uploads
+    let profilePhoto = null;
+    let companyLogo = null;
+    
+    const profilePhotoFile = formData.get('profilePhoto');
+    const companyLogoFile = formData.get('companyLogo');
+    
+    if (profilePhotoFile && profilePhotoFile.size > 0) {
+        const photoPath = `users/${currentUser.uid}/signatures/photos/${Date.now()}_${profilePhotoFile.name}`;
+        profilePhoto = await uploadFile(profilePhotoFile, photoPath);
+    }
+    
+    if (companyLogoFile && companyLogoFile.size > 0) {
+        const logoPath = `users/${currentUser.uid}/signatures/logos/${Date.now()}_${companyLogoFile.name}`;
+        companyLogo = await uploadFile(companyLogoFile, logoPath);
+    }
+    
+    const signatureData = {
+        id: Date.now().toString(),
+        template: templateKey,
+        name: formData.get('signatureName'),
+        fullName: formData.get('fullName'),
+        jobTitle: formData.get('jobTitle'),
+        company: formData.get('company'),
+        primaryColor: formData.get('primaryColor'),
+        fontSize: formData.get('fontSize'),
+        layoutStyle: formData.get('layoutStyle'),
+        customMessage: formData.get('customMessage'),
+        profilePhoto: profilePhoto,
+        companyLogo: companyLogo,
+        contacts: {
+            emails: Array.from(formData.getAll('selectedEmails')),
+            phones: Array.from(formData.getAll('selectedPhones'))
+        },
+        socialMedia: Array.from(formData.getAll('selectedSocial')),
+        createdAt: new Date().toISOString()
+    };
+    
+    try {
+        const currentSignatures = lifeCvData.emailSignatures?.signatures || [];
+        currentSignatures.push(signatureData);
+        
+        await updateDocument('users', currentUser.uid, { 
+            'lifeCv.emailSignatures.signatures': currentSignatures 
+        });
+        
+        // Close modal
+        document.querySelector('.fixed').remove();
+        
+        alert('Email signature created successfully!');
+        
+    } catch (error) {
+        console.error('Error creating email signature:', error);
+        alert('Failed to create email signature. Please try again.');
+    }
+}
+
+async function createBusinessCard(templateKey) {
+    const form = document.getElementById('business-card-form');
+    const formData = new FormData(form);
+    
+    // Handle file uploads
+    let logo = null;
+    let photo = null;
+    
+    const logoFile = formData.get('logo');
+    const photoFile = formData.get('photo');
+    
+    if (logoFile && logoFile.size > 0) {
+        const logoPath = `users/${currentUser.uid}/businessCards/logos/${Date.now()}_${logoFile.name}`;
+        logo = await uploadFile(logoFile, logoPath);
+    }
+    
+    if (photoFile && photoFile.size > 0) {
+               const photoPath = `users/${currentUser.uid}/businessCards/photos/${Date.now()}_${photoFile.name}`;
+        photo = await uploadFile(photoFile, photoPath);
+    }
+    
+    const cardData = {
+        id: Date.now().toString(),
+        template: templateKey,
+        name: formData.get('cardName'),
+        displayName: formData.get('displayName'),
+        title: formData.get('title'),
+        company: formData.get('company'),
+        logo: logo,
+        photo: photo,
+        contacts: {
+            emails: Array.from(formData.getAll('selectedEmails')),
+            phones: Array.from(formData.getAll('selectedPhones'))
+        },
+        socialMedia: Array.from(formData.getAll('selectedSocial')),
+        createdAt: new Date().toISOString()
+    };
+    
+    try {
+        const currentCards = lifeCvData.businessCards?.cards || [];
+        currentCards.push(cardData);
+        
+        await updateDocument('users', currentUser.uid, { 
+            'lifeCv.businessCards.cards': currentCards 
+        });
+        
+        // Close modal
+        document.querySelector('.fixed').remove();
+        
+        alert('Business card created successfully!');
+        
+    } catch (error) {
+        console.error('Error creating business card:', error);
+        alert('Failed to create business card. Please try again.');
+    }
+}
+
+async function addToLifeSyncSharing(profileData) {
+    try {
+        // Add profile to LifeSync sharing system
+        const lifeSyncData = {
+            profileId: profileData.id,
+            profileName: profileData.name,
+            publicUrl: profileData.publicUrl,
+            sections: profileData.sections,
+            sharedAt: new Date().toISOString(),
+            privacy: profileData.privacy
+        };
+        
+        // In a real implementation, this would integrate with the LifeSync system
+        console.log('Added to LifeSync:', lifeSyncData);
+        
+    } catch (error) {
+        console.error('Error adding to LifeSync:', error);
+    }
+}
+
+function formatDataPreview(data, sectionConfig) {
+    if (!data) return '<i class="text-slate-400">No data available</i>';
+    
+    if (Array.isArray(data)) {
+        return `
+
+            <div class="space-y-2">
+                ${data.slice(0, 3).map(item => `
+                    <div class="text-sm">
+                        <span class="font-medium">${Object.values(item)[0] || 'Item'}</span>
+                        ${Object.values(item)[1] ? `<br><span class="text-slate-500">${Object.values(item)[1]}</span>` : ''}
+                    </div>
+                `).join('')}
+                ${data.length > 3 ? `<div class="text-xs text-slate-500">+${data.length - 3} more items</div>` : ''}
+            </div>
+        `;
+    } else {
+        const fields = Object.entries(data).slice(0, 3);
+        return `
+            <div class="space-y-1">
+                ${fields.map(([key, value]) => `
+                    <div class="text-sm">
+                        <span class="font-medium text-slate-600">${key}:</span>
+                        <span class="text-slate-700">${value || '-'}</span>
+                    </div>
+                `).join('')}
+                ${Object.keys(data).length > 3 ? `<div class="text-xs text-slate-500">+${Object.keys(data).length - 3} more fields</div>` : ''}
+            </div>
+        `;
+    }
+}
+
+function generateSlugFromName(fullName, profileType) {
+    // Clean and format the name for URL
     const cleanName = fullName
         .toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, '')
-        .replace(/\s+/g, '-')
-        .replace(/-+/g, '-')
+        .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+        .replace(/\s+/g, '-') // Replace spaces with hyphens
+        .replace(/-+/g, '-') // Remove consecutive hyphens
         .trim();
     
     const cleanType = profileType
@@ -1679,193 +3340,13 @@ function generateUrlSlug(fullName, profileType) {
     return `${cleanName}-${cleanType}-${Date.now().toString().slice(-6)}`;
 }
 
-function checkSensitiveData(modal) {
-    const selectedSections = Array.from(modal.querySelectorAll('input[name="sections"]:checked')).map(cb => cb.value);
-    const sensitiveDataSection = modal.querySelector('#sensitive-data-section');
-    
-    // Define which sections contain sensitive data
-    const sensitiveSections = ['personal', 'financial', 'health'];
-    const hasSensitiveData = selectedSections.some(section => sensitiveSections.includes(section));
-    
-    if (hasSensitiveData) {
-        sensitiveDataSection.classList.remove('hidden');
-    } else {
-        sensitiveDataSection.classList.add('hidden');
-    }
-}
+// Add relationship types for family section
+const relationshipTypes = [
+    "Spouse", "Son", "Daughter", "Father", "Mother", "Brother", "Sister", 
+    "Grandfather", "Grandmother", "Grandson", "Granddaughter", "Uncle", "Aunt", 
+    "Nephew", "Niece", "Cousin", "Father-in-law", "Mother-in-law", "Brother-in-law", 
+    "Sister-in-law", "Stepfather", "Stepmother", "Stepson", "Stepdaughter", 
+    "Godfather", "Godmother", "Close Friend", "Mentor", "Other"
+];
 
-function generateContactSelectionHTML() {
-    const contactData = lifeCvData.contact || {};
-    
-    return `
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <h4 class="font-medium text-slate-700 mb-2">Email Addresses</h4>
-                ${(contactData.emails || []).map((email, index) => `
-                    <label class="flex items-center mb-1">
-                        <input type="checkbox" name="selectedEmails" value="${index}" class="mr-2">
-                        <span class="text-sm">${email.value} (${email.type})</span>
-                    </label>
-                `).join('') || '<p class="text-sm text-slate-500">No email addresses found</p>'}
-            </div>
-            <div>
-                <h4 class="font-medium text-slate-700 mb-2">Phone Numbers</h4>
-                                                                                                                         ${(contactData.phones || []).map((phone, index) => `
-                    <label class="flex items-center mb-1">
-                        <input type="checkbox" name="selectedPhones" value="${index}" class="mr-2">
-                        <span class="text-sm">${phone.value} (${phone.type})</span>
-                    </label>
-                `).join('') || '<p class="text-sm text-slate-500">No phone numbers found</p>'}
-            </div>
-        </div>
-    `;
-}
-
-// --- PUBLIC PROFILE BRANDING SYSTEM ---
-
-function generatePublicProfileHTML(profileData, userData) {
-    const hubBranding = generateHubBranding();
-    const profileContent = generateProfileContent(profileData, userData);
-    
-    return `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>${userData.personal?.fullName || 'Professional Profile'} | The Hub by Salatiso</title>
-            <script src="https://cdn.tailwindcss.com"></script>
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-            <style>
-                body { font-family: 'Inter', sans-serif; }
-                .hub-branding { min-height: 20vh; }
-                .profile-content { min-height: 80vh; }
-            </style>
-        </head>
-        <body class="bg-slate-50">
-            <div class="min-h-screen">
-                <!-- Profile Content (80%) -->
-                <div class="profile-content">
-                    ${profileContent}
-                </div>
-                
-                <!-- Hub Branding (20%) -->
-                <div class="hub-branding">
-                    ${hubBranding}
-                </div>
-            </div>
-            
-            <!-- Share & Download Actions -->
-            <div class="fixed bottom-4 right-4 flex space-x-2">
-                <button onclick="shareProfile()" class="bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700">
-                    <i class="fas fa-share"></i>
-                </button>
-                <button onclick="showQRCode('${profileData.publicUrl}')" class="bg-green-600 text-white p-3 rounded-full shadow-lg hover:bg-green-700">
-                    <i class="fas fa-qrcode"></i>
-                </button>
-                <button onclick="downloadProfile()" class="bg-purple-600 text-white p-3 rounded-full shadow-lg hover:bg-purple-700">
-                    <i class="fas fa-download"></i>
-                </button>
-            </div>
-        </body>
-        </html>
-    `;
-}
-
-function generateHubBranding() {
-    return `
-        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-12">
-            <div class="max-w-4xl mx-auto px-6">
-                <div class="text-center">
-                    <div class="flex items-center justify-center mb-4">
-                        <i class="fas fa-sitemap text-3xl mr-3"></i>
-                        <h2 class="text-2xl font-bold">The Hub by Salatiso</h2>
-                    </div>
-                    <p class="text-sm max-w-md mx-auto">
-                        Connect, share, and grow your professional presence. Your journey, your story.
-                    </p>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-function generateProfileContent(profileData, userData) {
-    const sections = profileData.sections || [];
-    let content = '';
-    
-    sections.forEach(sectionKey => {
-        const sectionData = profileData[sectionKey];
-        const sectionConfig = lifeCvSections[sectionKey];
-        
-        if (sectionConfig) {
-            content += `
-                <div class="mb-8">
-                    <h3 class="text-lg font-semibold text-slate-800 mb-4">${sectionConfig.title}</h3>
-                    ${generateSectionContent(sectionKey, sectionData, userData)}
-                </div>
-            `;
-        }
-    });
-    
-    return content;
-}
-
-function generateSectionContent(sectionKey, sectionData, userData) {
-    const sectionConfig = lifeCvSections[sectionKey];
-    
-    if (sectionConfig.isArray) {
-        // For array sections, generate list items
-        return `
-            <div class="space-y-4">
-                ${sectionData.length > 0 
-                    ? sectionData.map((item, index) => `
-                        <div class="p-4 bg-white rounded-lg shadow border">
-                            ${generateItemContent(sectionKey, item, userData)}
-                        </div>
-                    `).join('')
-                    : '<p class="text-slate-500 text-center py-4">No items to display</p>'
-                }
-            </div>
-        `;
-    } else {
-        // For object sections, generate form-like layout
-        return `
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                ${sectionConfig.fields.map(field => `
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">${field.label}</label>
-                        <div class="text-sm text-slate-600">
-                            ${field.type === 'textarea' 
-                                ? `<p>${sectionData[field.id] || '-'}</p>` 
-                                : `<span>${sectionData[field.id] || '-'}</span>`
-                            }
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-        `;
-    }
-}
-
-function generateItemContent(sectionKey, item, userData) {
-    const fields = lifeCvSections[sectionKey].fields;
-    
-    return `
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            ${fields.map(field => `
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">${field.label}</label>
-                    <div class="text-sm text-slate-600">
-                        ${field.type === 'textarea' 
-                            ? `<p>${item[field.id] || '-'}</p>` 
-                            : `<span>${item[field.id] || '-'}</span>`
-                        }
-                    </div>
-                </div>
-            `).join('')}
-        </div>
-    `;
-}
-
-// --- END OF FILE ---
+// --- END OF ENHANCED LIFE-CV MODULE ---

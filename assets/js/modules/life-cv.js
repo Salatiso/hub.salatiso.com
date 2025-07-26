@@ -41,11 +41,14 @@ const lifeCvSections = {
     ]},
     
     // Family & Relationships
-    family: { title: 'Family & Relationships', icon: 'fa-users', isArray: true, fields: [
+    family: { title: 'Family & Relationships', icon: 'fa-users', isArray: true, isFamilyIntegrated: true,
+    fields: [
         { id: 'relationship', label: 'Relationship Type', type: 'select', options: ['Parent', 'Child', 'Sibling', 'Spouse/Partner', 'Extended Family', 'Close Friend', 'Mentor', 'Other'] },
         { id: 'name', label: 'Name', type: 'text' },
         { id: 'significance', label: 'Significance in Your Life', type: 'textarea' },
         { id: 'contact', label: 'Contact Information', type: 'text' },
+        { id: 'familyHubId', label: 'Family Hub ID', type: 'hidden' },
+        { id: 'isFromFamilyHub', label: 'From Family Hub', type: 'hidden' }
     ]},
     
     // Professional Life
@@ -195,10 +198,99 @@ const publicProfileTemplates = {
     }
 };
 
-// Add public profile section to the main LifeCV structure
-lifeCvSections.publicProfiles = { 
-    title: 'Public Profiles', 
-    icon: 'fa-globe-americas', 
+// Business card templates with different orientations
+const businessCardTemplates = {
+    executive: {
+        name: 'Executive Card',
+        orientation: 'landscape',
+        description: 'Professional landscape business card for executives',
+        theme: 'corporate',
+        dimensions: { width: '3.5in', height: '2in' },
+        preview: 'executive-card-preview.png'
+    },
+    creative: {
+        name: 'Creative Card',
+        orientation: 'portrait',
+        description: 'Vibrant portrait card for creative professionals',
+        theme: 'artistic',
+        dimensions: { width: '2in', height: '3.5in' },
+        preview: 'creative-card-preview.png'
+    },
+    minimal: {
+        name: 'Minimal Card',
+        orientation: 'landscape',
+        description: 'Clean, minimal design for any profession',
+        theme: 'minimal',
+        dimensions: { width: '3.5in', height: '2in' },
+        preview: 'minimal-card-preview.png'
+    },
+    tech: {
+        name: 'Tech Card',
+        orientation: 'portrait',
+        description: 'Modern portrait card for tech professionals',
+        theme: 'tech',
+        dimensions: { width: '2in', height: '3.5in' },
+        preview: 'tech-card-preview.png'
+    },
+    networking: {
+        name: 'Networking Card',
+        orientation: 'landscape',
+        description: 'Comprehensive landscape card for networking events',
+        theme: 'networking',
+        dimensions: { width: '3.5in', height: '2in' },
+        preview: 'networking-card-preview.png'
+    }
+};
+
+// Email signature templates
+const emailSignatureTemplates = {
+    professional: {
+        name: 'Professional Signature',
+        description: 'Clean, corporate email signature',
+        includePhoto: true,
+        includeLogos: true,
+        layout: 'horizontal'
+    },
+    minimal: {
+        name: 'Minimal Signature',
+        description: 'Simple text-based signature',
+        includePhoto: false,
+        includeLogos: false,
+        layout: 'vertical'
+    },
+    creative: {
+        name: 'Creative Signature',
+        description: 'Colorful signature with design elements',
+        includePhoto: true,
+        includeLogos: true,
+        layout: 'horizontal'
+    },
+    tech: {
+        name: 'Tech Signature',
+        description: 'Modern signature for tech professionals',
+        includePhoto: false,
+        includeLogos: true,
+        layout: 'vertical'
+    },
+    executive: {
+        name: 'Executive Signature',
+        description: 'Premium signature for executives',
+        includePhoto: true,
+        includeLogos: true,
+        layout: 'horizontal'
+    }
+};
+
+// Add business cards and email signatures to main sections
+lifeCvSections.businessCards = { 
+    title: 'Business Cards', 
+    icon: 'fa-id-card', 
+    isCustom: true 
+};
+
+lifeCvSections.emailSignatures = { 
+    title: 'Email Signatures', 
+    icon: 'fa-signature', 
     isCustom: true 
 };
 
@@ -233,6 +325,10 @@ function renderAllSections() {
                 container.appendChild(createProfilePicturesSection(key, section, lifeCvData.profilePictures || {}));
             } else if (key === 'publicProfiles') {
                 container.appendChild(createPublicProfilesSection(key, section, lifeCvData.publicProfiles || {}));
+            } else if (key === 'businessCards') {
+                container.appendChild(createBusinessCardsSection(key, section, lifeCvData.businessCards || {}));
+            } else if (key === 'emailSignatures') {
+                container.appendChild(createEmailSignaturesSection(key, section, lifeCvData.emailSignatures || {}));
             }
         } else {
             container.appendChild(createSectionElement(key, section, sectionData));
@@ -847,6 +943,258 @@ async function importLifeCvData(importData) {
     }
 }
 
+// Enhanced import function with version comparison
+async function importLifeCvDataWithComparison(importData) {
+    try {
+        console.log('Starting import with version comparison...');
+        
+        if (!importData || typeof importData !== 'object') {
+            throw new Error('Invalid import data format');
+        }
+
+        const currentData = await getLifeCvData();
+        
+        // Check if there's existing data to compare
+        const hasExistingData = Object.keys(currentData).some(key => 
+            currentData[key] && (Array.isArray(currentData[key]) ? currentData[key].length > 0 : Object.keys(currentData[key]).length > 0)
+        );
+
+        if (hasExistingData) {
+            // Show comparison modal
+            await showVersionComparisonModal(currentData, importData);
+        } else {
+            // No existing data, proceed with direct import
+            await directImport(importData);
+        }
+        
+    } catch (error) {
+        console.error('Import with comparison error:', error);
+        throw error;
+    }
+}
+
+function showVersionComparisonModal(currentData, importData) {
+    return new Promise((resolve, reject) => {
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+        modal.innerHTML = `
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-7xl max-h-[95vh] overflow-y-auto">
+                <div class="p-6 border-b border-slate-200">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2">Import Data Comparison</h2>
+                    <p class="text-slate-600">Review the differences between your current data and the imported data. Choose which version to keep for each section.</p>
+                </div>
+                
+                <div class="p-6">
+                    <div id="comparison-sections" class="space-y-6">
+                        <!-- Comparison content will be generated here -->
+                    </div>
+                </div>
+                
+                <div class="p-6 border-t border-slate-200 flex justify-between items-center">
+                    <div class="flex space-x-3">
+                        <button id="select-all-current" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                            Keep All Current
+                        </button>
+                        <button id="select-all-imported" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                            Use All Imported
+                        </button>
+                        <button id="merge-all" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700">
+                            Merge All (Combine Both)
+                        </button>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button id="cancel-comparison" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300">
+                            Cancel
+                        </button>
+                        <button id="apply-changes" class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-semibold">
+                            Apply Selected Changes
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        generateComparisonContent(currentData, importData, modal);
+        document.body.appendChild(modal);
+
+        // Event handlers
+        modal.querySelector('#cancel-comparison').onclick = () => {
+            modal.remove();
+            reject(new Error('Import cancelled by user'));
+        };
+
+        modal.querySelector('#apply-changes').onclick = async () => {
+            try {
+                const mergedData = collectSelectedChanges(modal, currentData, importData);
+                await directImport(mergedData);
+                modal.remove();
+                resolve();
+            } catch (error) {
+                reject(error);
+            }
+        };
+
+        // Bulk selection handlers
+        modal.querySelector('#select-all-current').onclick = () => selectAllVersion(modal, 'current');
+        modal.querySelector('#select-all-imported').onclick = () => selectAllVersion(modal, 'imported');
+        modal.querySelector('#merge-all').onclick = () => selectAllVersion(modal, 'merge');
+    });
+}
+
+function generateComparisonContent(currentData, importData, modal) {
+    const container = modal.querySelector('#comparison-sections');
+    const allSections = new Set([...Object.keys(currentData), ...Object.keys(importData)]);
+    
+    allSections.forEach(sectionKey => {
+        const currentSection = currentData[sectionKey];
+        const importedSection = importData[sectionKey];
+        
+        if (!currentSection && !importedSection) return;
+        
+        const sectionConfig = lifeCvSections[sectionKey];
+        const sectionTitle = sectionConfig?.title || sectionKey;
+        
+        const sectionDiv = document.createElement('div');
+        sectionDiv.className = 'border border-slate-200 rounded-lg p-4';
+        sectionDiv.innerHTML = `
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-slate-800">${sectionTitle}</h3>
+                <div class="flex space-x-2">
+                    <button class="section-choice-btn px-3 py-1 text-sm rounded border" 
+                            data-section="${sectionKey}" data-choice="current" 
+                            ${!currentSection ? 'disabled' : ''}>
+                        Keep Current
+                    </button>
+                    <button class="section-choice-btn px-3 py-1 text-sm rounded border"
+                            data-section="${sectionKey}" data-choice="imported"
+                            ${!importedSection ? 'disabled' : ''}>
+                        Use Imported
+                    </button>
+                    <button class="section-choice-btn px-3 py-1 text-sm rounded border"
+                            data-section="${sectionKey}" data-choice="merge"
+                            ${(!currentSection || !importedSection) ? 'disabled' : ''}>
+                        Merge Both
+                    </button>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-blue-50 border border-blue-200 rounded p-3">
+                    <h4 class="font-medium text-blue-800 mb-2">Current Data</h4>
+                    <div class="text-sm text-blue-700">
+                        ${formatDataPreview(currentSection, sectionConfig)}
+                    </div>
+                </div>
+                <div class="bg-green-50 border border-green-200 rounded p-3">
+                    <h4 class="font-medium text-green-800 mb-2">Imported Data</h4>
+                    <div class="text-sm text-green-700">
+                        ${formatDataPreview(importedSection, sectionConfig)}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(sectionDiv);
+    });
+    
+    // Add choice handlers
+    container.querySelectorAll('.section-choice-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const section = btn.dataset.section;
+            const choice = btn.dataset.choice;
+            
+            // Update button states
+            container.querySelectorAll(`[data-section="${section}"]`).forEach(b => {
+                b.classList.remove('bg-indigo-600', 'text-white');
+                b.classList.add('bg-white', 'text-slate-700');
+            });
+            
+            btn.classList.remove('bg-white', 'text-slate-700');
+            btn.classList.add('bg-indigo-600', 'text-white');
+            
+            // Store choice
+            btn.closest('.border').dataset.selectedChoice = choice;
+        });
+    });
+}
+
+function formatDataPreview(data, sectionConfig) {
+    if (!data) return '<i class="text-slate-400">No data available</i>';
+    
+    const fields = sectionConfig.fields || [];
+    const isArray = Array.isArray(data);
+    
+    if (isArray) {
+        return data.map(item => `
+            <div class="mb-2">
+                ${fields.map(field => `
+                    <div class="flex">
+                        <span class="font-semibold text-slate-800 mr-2">${field.label}:</span>
+                        <span class="text-slate-700">${item[field.id] || '-'}</span>
+                    </div>
+                `).join('')}
+            </div>
+        `).join('');
+    } else {
+        return fields.map(field => `
+            <div class="flex">
+                <span class="font-semibold text-slate-800 mr-2">${field.label}:</span>
+                <span class="text-slate-700">${data[field.id] || '-'}</span>
+            </div>
+        `).join('');
+    }
+}
+
+// Direct import function (after version comparison)
+async function directImport(importData) {
+    try {
+        console.log('Direct importing LifeCV data...');
+        
+        // Validate required structure
+        if (!importData || typeof importData !== 'object') {
+            throw new Error('Invalid import data format');
+        }
+
+        // Get current LifeCV data
+        const currentData = await getLifeCvData();
+        
+        // Merge with existing data
+        const mergedData = { ...currentData };
+        
+        // Merge each section
+        Object.keys(importData).forEach(section => {
+            if (importData[section]) {
+                if (Array.isArray(importData[section])) {
+                    // For array sections, replace existing items
+                    mergedData[section] = importData[section].map(item => ({
+                        ...item,
+                        source: 'AI File Import',
+                        importedAt: new Date().toISOString()
+                    }));
+                } else {
+                    // For object sections, merge properties
+                    mergedData[section] = { ...mergedData[section], ...importData[section] };
+                }
+            }
+        });
+
+        // Save to Firebase
+        await updateDocument('users', currentUser.uid, { 'lifeCv': mergedData });
+        
+        // Update local cache
+        lifeCvData = mergedData;
+        
+        // Re-render the LifeCV sections
+        renderAllSections();
+        
+        alert("Data imported successfully!");
+        
+    } catch (error) {
+        console.error('Direct import error:', error);
+        alert('Failed to import data. Please try again.');
+    }
+}
+
 // Error message for file import
 function showImportErrorMessage(errorMessage) {
     const message = document.createElement('div');
@@ -1149,9 +1497,12 @@ function openProfileCreationModal(templateKey) {
                     </div>
                 </form>
             </div>
-            <div class="p-6 border-t border-slate-200 flex justify-end space-x-3">
+            <div class="p-6 border-t border-slate-200 flex justify-between">
                 <button type="button" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300" onclick="this.closest('.fixed').remove()">Cancel</button>
-                <button type="button" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700" onclick="createPublicProfile('${templateKey}')">Create Profile</button>
+                <div class="flex space-x-3">
+                    <button type="button" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" onclick="previewPublicProfile()">Preview</button>
+                    <button type="button" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700" onclick="createPublicProfile('${templateKey}')">Create Profile</button>
+                </div>
             </div>
         </div>
     `;
@@ -1218,302 +1569,303 @@ function copyToClipboard(text) {
 }
 
 function showQRCode(url) {
-    // You would integrate with a QR code library here
-    // For now, we'll show a placeholder
-    alert(`QR Code for: ${url}\n\n(QR code generation would be implemented here)`);
-}
-
-// Initialize the LifeCV when Firebase is ready
-document.addEventListener('firebase-ready', () => {
-    console.log('Firebase ready event received, initializing LifeCV...');
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            console.log('User authenticated, initializing LifeCV for:', user.email);
-            init(user);
-        } else {
-            console.log('No user authenticated');
-        }
-    });
-});
-
-// Also listen for auth state changes directly
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        console.log('Auth state changed, user authenticated:', user.email);
-        init(user);
-    }
-});
-
-// Internet Search Variables
-let selectedSearchResults = [];
-
-// Function to get current LifeCV data
-async function getLifeCvData() {
-    try {
-        const userDoc = await getDocument('users', currentUser.uid);
-        return userDoc?.lifeCv || {};
-    } catch (error) {
-        console.error('Error getting LifeCV data:', error);
-        return {};
-    }
-}
-
-// Function to process selected results to LifeCV format
-function processSelectedResultsToLifeCV() {
-    console.log('Processing selected results:', selectedSearchResults);
-    
-    const importData = {
-        experience: [],
-        education: [],
-        skills: [],
-        projects: [],
-        digital: [],
-        awards: []
-    };
-
-    selectedSearchResults.forEach(selected => {
-        const titleEl = selected.element.querySelector('h4');
-        const descEl = selected.element.querySelector('p');
-        const linkEl = selected.element.querySelector('a[href]');
-        
-        const title = titleEl ? titleEl.textContent.trim() : 'Unknown';
-        const description = descEl ? descEl.textContent.trim() : '';
-        const url = linkEl ? linkEl.href : '';
-        const source = selected.element.querySelector('.text-slate-400')?.textContent?.trim() || '';
-
-        // Map to LifeCV structure based on category
-        switch (selected.category) {
-            case 'work':
-                importData.experience.push({
-                    jobTitle: extractJobTitle(title, description),
-                    company: extractCompany(title, description, source),
-                    industry: '',
-                    location: '',
-                    startDate: '',
-                    endDate: '',
-                    description: description,
-                    skills: '',
-                    source: 'Internet Search',
-                    sourceUrl: url,
-                    importedAt: new Date().toISOString()
-                });
-                break;
-                
-            case 'education':
-                importData.education.push({
-                    qualification: extractQualification(title, description),
-                    institution: extractInstitution(title, description, source),
-                    field: '',
-                    yearCompleted: '',
-                    grade: '',
-                    significance: description,
-                    source: 'Internet Search',
-                    sourceUrl: url,
-                    importedAt: new Date().toISOString()
-                });
-                break;
-                
-            case 'skills':
-                importData.skills.push({
-                    category: 'Technical',
-                    skillName: extractSkillName(title, description),
-                    proficiency: 'Intermediate',
-                    context: description,
-                    source: 'Internet Search',
-                    sourceUrl: url,
-                    importedAt: new Date().toISOString()
-                });
-                break;
-                
-            case 'projects':
-                importData.projects.push({
-                    name: title,
-                    type: 'Professional',
-                    description: description,
-                    role: '',
-                    technologies: '',
-                    outcome: '',
-                    url: url,
-                    source: 'Internet Search',
-                    importedAt: new Date().toISOString()
-                });
-                break;
-                
-            case 'awards':
-                importData.awards.push({
-                    title: title,
-                    date: '',
-                    awarder: extractAwarder(title, description, source),
-                    summary: description,
-                    source: 'Internet Search',
-                    sourceUrl: url,
-                    importedAt: new Date().toISOString()
-                });
-                break;
-                
-            case 'profiles':
-                importData.digital.push({
-                    platform: extractPlatform(source, url),
-                    username: extractUsername(title, url),
-                    url: url,
-                    purpose: 'Professional',
-                    privacy: 'Public',
-                    source: 'Internet Search',
-                    importedAt: new Date().toISOString()
-                });
-                break;
-        }
-    });
-
-    return importData;
-}
-
-// Function to merge import data with existing data
-function mergeImportDataWithExisting(importData, existingData) {
-    const merged = { ...existingData };
-    
-    // Merge array fields
-    const arrayFields = ['experience', 'education', 'skills', 'projects', 'digital', 'awards'];
-    arrayFields.forEach(field => {
-        if (importData[field] && importData[field].length > 0) {
-            if (!merged[field]) merged[field] = [];
-            merged[field] = [...merged[field], ...importData[field]];
-        }
-    });
-    
-    return merged;
-}
-
-// Main import function
-async function importSelectedResults() {
-    if (selectedSearchResults.length === 0) return;
-
-    try {
-        // Get the current LifeCV data
-        const currentLifeCvData = await getLifeCvData();
-        
-        // Process selected results into LifeCV format
-        const importData = processSelectedResultsToLifeCV();
-        
-        // Merge with existing data
-        const mergedData = mergeImportDataWithExisting(importData, currentLifeCvData);
-        
-        // Save to Firebase
-        await updateDocument('users', currentUser.uid, { 'lifeCv': mergedData });
-        
-        // Update local cache
-        lifeCvData = mergedData;
-        
-        // Re-render the LifeCV sections
-        renderAllSections();
-        
-        // Show success message
-        showImportSuccessMessage(selectedSearchResults.length);
-        
-        // Close modal and reset
-        document.getElementById('internet-search-modal').classList.add('hidden');
-        selectedSearchResults = [];
-        
-        return { success: true, count: selectedSearchResults.length };
-        
-    } catch (error) {
-        console.error('Import error:', error);
-        throw error;
-    }
-}
-
-// Function to show import success message
-function showImportSuccessMessage(count) {
-    const message = document.createElement('div');
-    message.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-    message.innerHTML = `
-        <div class="flex items-center">
-            <i class="fas fa-check-circle mr-2"></i>
-            Successfully imported ${count} item${count === 1 ? '' : 's'} to your LifeCV!
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+    modal.innerHTML = `
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div class="p-6 border-b border-slate-200">
+                <h2 class="text-xl font-bold text-slate-800">QR Code</h2>
+                <p class="text-slate-600 text-sm mt-1">Scan to view profile</p>
+            </div>
+            <div class="p-6 text-center">
+                <div id="qr-code-container" class="inline-block p-4 bg-white border-2 border-slate-200 rounded-lg">
+                    <!-- QR code will be generated here -->
+                </div>
+                <p class="text-xs text-slate-500 mt-3 break-all">${url}</p>
+            </div>
+            <div class="p-6 border-t border-slate-200 flex justify-between">
+                <button type="button" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300" onclick="this.closest('.fixed').remove()">Close</button>
+                <div class="flex space-x-2">
+                    <button type="button" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" onclick="downloadQRCode('${url}')">
+                        <i class="fas fa-download mr-1"></i>Download
+                    </button>
+                    <button type="button" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700" onclick="shareQRCode('${url}')">
+                        <i class="fas fa-share mr-1"></i>Share
+                    </button>
+                </div>
+            </div>
         </div>
     `;
     
-    document.body.appendChild(message);
+    document.body.appendChild(modal);
     
-    setTimeout(() => {
-        message.remove();
-    }, 4000);
+    // Generate QR code using qrcode.js library
+    generateQRCodeImage(url, modal.querySelector('#qr-code-container'));
 }
 
-// Export functions to global scope for HTML access (KEEP ONLY THIS ONE)
-window.lifeCvModule = {
-    importSelectedResults,
-    selectedSearchResults,
-    setSelectedSearchResults: (results) => { selectedSearchResults = results; },
-    getSelectedSearchResults: () => selectedSearchResults,
-    addSelectedResult: (result) => selectedSearchResults.push(result),
-    removeSelectedResult: (category, index) => {
-        selectedSearchResults = selectedSearchResults.filter(
-            item => !(item.category === category && item.index === index)
-        );
-    },
-    clearSelectedResults: () => { selectedSearchResults = []; },
-    
-    // File import functions
-    handleFileImport,
-    processTextWithAI,
-    importLifeCvData,
-    showImportSuccessMessage,
-    showImportErrorMessage,
-    initializeFileImport
-};
-
-// Helper functions for data extraction (keep these at the end)
-function extractJobTitle(title, description) {
-    return title.split(' - ')[0] || title.split(' | ')[0] || title;
-}
-
-function extractCompany(title, description, source) {
-    if (source && !['linkedin.com', 'github.com', 'twitter.com'].some(s => source.includes(s))) {
-        return source.replace(/^www\./, '').split('.')[0];
-    }
-    const parts = title.split(' - ');
-    return parts.length > 1 ? parts[1] : source || 'Unknown Company';
-}
-
-function extractQualification(title, description) {
-    return title.split(' - ')[0] || title;
-}
-
-function extractInstitution(title, description, source) {
-    return extractCompany(title, description, source);
-}
-
-function extractSkillName(title, description) {
-    return title.split(' - ')[0] || title.split(' ')[0] || title;
-}
-
-function extractAwarder(title, description, source) {
-    return extractCompany(title, description, source);
-}
-
-function extractPlatform(source, url) {
-    if (!source && !url) return 'Unknown';
-    
-    const domain = source || new URL(url).hostname;
-    
-    if (domain.includes('linkedin')) return 'LinkedIn';
-    if (domain.includes('github')) return 'GitHub';
-    if (domain.includes('twitter')) return 'Twitter';
-    if (domain.includes('facebook')) return 'Facebook';
-    if (domain.includes('instagram')) return 'Instagram';
-    
-    return domain.replace(/^www\./, '').split('.')[0];
-}
-
-function extractUsername(title, url) {
-    if (!url) return title.split(' ')[0] || '';
-    
-    try {
-        const urlObj = new URL(url);
-        const pathParts = urlObj.pathname.split('/').filter(part => part);
-        return pathParts.length > 0 ? pathParts[0] : title.split(' ')[0] || '';
-    } catch (e) {
-        return title.split(' ')[0] || '';
+function generateQRCodeImage(url, container) {
+    // Using QRCode.js library (would need to be included in HTML)
+    if (typeof QRCode !== 'undefined') {
+        new QRCode(container, {
+            text: url,
+            width: 200,
+            height: 200,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    } else {
+        // Fallback to online QR code service
+        const qrImg = document.createElement('img');
+        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
+        qrImg.alt = 'QR Code';
+        qrImg.className = 'mx-auto';
+        container.appendChild(qrImg);
     }
 }
+
+// --- MISSING HELPER FUNCTIONS ---
+
+function collectSelectedChanges(modal, currentData, importData) {
+    const sections = modal.querySelectorAll('[data-selected-choice]');
+    const mergedData = { ...currentData };
+    
+    sections.forEach(section => {
+        const sectionKey = section.querySelector('[data-section]').dataset.section;
+        const choice = section.dataset.selectedChoice;
+        
+        switch (choice) {
+            case 'current':
+                // Keep current data (no change needed)
+                break;
+            case 'imported':
+                mergedData[sectionKey] = importData[sectionKey];
+                break;
+            case 'merge':
+                if (Array.isArray(currentData[sectionKey]) && Array.isArray(importData[sectionKey])) {
+                    mergedData[sectionKey] = [...currentData[sectionKey], ...importData[sectionKey]];
+                } else {
+                    mergedData[sectionKey] = { ...currentData[sectionKey], ...importData[sectionKey] };
+                }
+                break;
+        }
+    });
+    
+    return mergedData;
+}
+
+function selectAllVersion(modal, version) {
+    const buttons = modal.querySelectorAll('.section-choice-btn');
+    buttons.forEach(btn => {
+        if (btn.dataset.choice === version && !btn.disabled) {
+            btn.click();
+        }
+    });
+}
+
+function generateUrlSlug(fullName, profileType) {
+    const cleanName = fullName
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim();
+    
+    const cleanType = profileType
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-');
+    
+    return `${cleanName}-${cleanType}-${Date.now().toString().slice(-6)}`;
+}
+
+function checkSensitiveData(modal) {
+    const selectedSections = Array.from(modal.querySelectorAll('input[name="sections"]:checked')).map(cb => cb.value);
+    const sensitiveDataSection = modal.querySelector('#sensitive-data-section');
+    
+    // Define which sections contain sensitive data
+    const sensitiveSections = ['personal', 'financial', 'health'];
+    const hasSensitiveData = selectedSections.some(section => sensitiveSections.includes(section));
+    
+    if (hasSensitiveData) {
+        sensitiveDataSection.classList.remove('hidden');
+    } else {
+        sensitiveDataSection.classList.add('hidden');
+    }
+}
+
+function generateContactSelectionHTML() {
+    const contactData = lifeCvData.contact || {};
+    
+    return `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <h4 class="font-medium text-slate-700 mb-2">Email Addresses</h4>
+                ${(contactData.emails || []).map((email, index) => `
+                    <label class="flex items-center mb-1">
+                        <input type="checkbox" name="selectedEmails" value="${index}" class="mr-2">
+                        <span class="text-sm">${email.value} (${email.type})</span>
+                    </label>
+                `).join('') || '<p class="text-sm text-slate-500">No email addresses found</p>'}
+            </div>
+            <div>
+                <h4 class="font-medium text-slate-700 mb-2">Phone Numbers</h4>
+                                                                                                                         ${(contactData.phones || []).map((phone, index) => `
+                    <label class="flex items-center mb-1">
+                        <input type="checkbox" name="selectedPhones" value="${index}" class="mr-2">
+                        <span class="text-sm">${phone.value} (${phone.type})</span>
+                    </label>
+                `).join('') || '<p class="text-sm text-slate-500">No phone numbers found</p>'}
+            </div>
+        </div>
+    `;
+}
+
+// --- PUBLIC PROFILE BRANDING SYSTEM ---
+
+function generatePublicProfileHTML(profileData, userData) {
+    const hubBranding = generateHubBranding();
+    const profileContent = generateProfileContent(profileData, userData);
+    
+    return `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>${userData.personal?.fullName || 'Professional Profile'} | The Hub by Salatiso</title>
+            <script src="https://cdn.tailwindcss.com"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+            <style>
+                body { font-family: 'Inter', sans-serif; }
+                .hub-branding { min-height: 20vh; }
+                .profile-content { min-height: 80vh; }
+            </style>
+        </head>
+        <body class="bg-slate-50">
+            <div class="min-h-screen">
+                <!-- Profile Content (80%) -->
+                <div class="profile-content">
+                    ${profileContent}
+                </div>
+                
+                <!-- Hub Branding (20%) -->
+                <div class="hub-branding">
+                    ${hubBranding}
+                </div>
+            </div>
+            
+            <!-- Share & Download Actions -->
+            <div class="fixed bottom-4 right-4 flex space-x-2">
+                <button onclick="shareProfile()" class="bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700">
+                    <i class="fas fa-share"></i>
+                </button>
+                <button onclick="showQRCode('${profileData.publicUrl}')" class="bg-green-600 text-white p-3 rounded-full shadow-lg hover:bg-green-700">
+                    <i class="fas fa-qrcode"></i>
+                </button>
+                <button onclick="downloadProfile()" class="bg-purple-600 text-white p-3 rounded-full shadow-lg hover:bg-purple-700">
+                    <i class="fas fa-download"></i>
+                </button>
+            </div>
+        </body>
+        </html>
+    `;
+}
+
+function generateHubBranding() {
+    return `
+        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-12">
+            <div class="max-w-4xl mx-auto px-6">
+                <div class="text-center">
+                    <div class="flex items-center justify-center mb-4">
+                        <i class="fas fa-sitemap text-3xl mr-3"></i>
+                        <h2 class="text-2xl font-bold">The Hub by Salatiso</h2>
+                    </div>
+                    <p class="text-sm max-w-md mx-auto">
+                        Connect, share, and grow your professional presence. Your journey, your story.
+                    </p>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function generateProfileContent(profileData, userData) {
+    const sections = profileData.sections || [];
+    let content = '';
+    
+    sections.forEach(sectionKey => {
+        const sectionData = profileData[sectionKey];
+        const sectionConfig = lifeCvSections[sectionKey];
+        
+        if (sectionConfig) {
+            content += `
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-slate-800 mb-4">${sectionConfig.title}</h3>
+                    ${generateSectionContent(sectionKey, sectionData, userData)}
+                </div>
+            `;
+        }
+    });
+    
+    return content;
+}
+
+function generateSectionContent(sectionKey, sectionData, userData) {
+    const sectionConfig = lifeCvSections[sectionKey];
+    
+    if (sectionConfig.isArray) {
+        // For array sections, generate list items
+        return `
+            <div class="space-y-4">
+                ${sectionData.length > 0 
+                    ? sectionData.map((item, index) => `
+                        <div class="p-4 bg-white rounded-lg shadow border">
+                            ${generateItemContent(sectionKey, item, userData)}
+                        </div>
+                    `).join('')
+                    : '<p class="text-slate-500 text-center py-4">No items to display</p>'
+                }
+            </div>
+        `;
+    } else {
+        // For object sections, generate form-like layout
+        return `
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                ${sectionConfig.fields.map(field => `
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">${field.label}</label>
+                        <div class="text-sm text-slate-600">
+                            ${field.type === 'textarea' 
+                                ? `<p>${sectionData[field.id] || '-'}</p>` 
+                                : `<span>${sectionData[field.id] || '-'}</span>`
+                            }
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+}
+
+function generateItemContent(sectionKey, item, userData) {
+    const fields = lifeCvSections[sectionKey].fields;
+    
+    return `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            ${fields.map(field => `
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">${field.label}</label>
+                    <div class="text-sm text-slate-600">
+                        ${field.type === 'textarea' 
+                            ? `<p>${item[field.id] || '-'}</p>` 
+                            : `<span>${item[field.id] || '-'}</span>`
+                        }
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+// --- END OF FILE ---

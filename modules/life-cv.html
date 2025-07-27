@@ -263,4 +263,14 @@
                         setTimeout(() => {
                             if (loadingIndicator) {
                                 loadingIndicator.style.display = 'none';
-                           
+                            }
+                        }, 1000);
+                    } catch (error) {
+                        console.error('Initialization error:', error);
+                        if (loadingIndicator) {
+                            loadingIndicator.style.display = 'none';
+                        }
+                        // Show error boundary
+                        const errorBoundary = document.getElementById('error-boundary');
+                        const errorMessage = document.getElementById('error-message');
+                        if

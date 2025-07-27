@@ -109,20 +109,17 @@
 
     <!-- Load components first -->
     <script>
-        // Load header and sidebar
-        fetch('../components/header.html')
-            .then(response => response.text())
-            .then(html => {
-                document.getElementById('header-placeholder').innerHTML = html;
-            });
-
-        fetch('../components/sidebar.html')
-            .then(response => response.text())
-            .then(html => {
-                document.getElementById('sidebar-placeholder').innerHTML = html;
-            });
+        // Load header and sidebar from the correct app.js system
+        // Remove the component loading since app.js handles this
+        document.addEventListener('DOMContentLoaded', () => {
+            // Let app.js handle the UI components
+        });
     </script>
 
+    <!-- Core App Scripts - Add these BEFORE the life-cv module -->
+    <script type="module" src="../assets/js/firebase-config.js"></script>
+    <script type="module" src="../assets/js/app.js"></script>
+    
     <!-- Main JavaScript module -->
     <script type="module" src="../assets/js/modules/life-cv.js"></script>
     

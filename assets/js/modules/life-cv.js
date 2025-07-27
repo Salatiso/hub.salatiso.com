@@ -83,6 +83,22 @@ async function initLifeCV() {
     }
 }
 
+// Make initLifeCV globally available
+window.initLifeCV = initLifeCV;
+
+// Initialize when Firebase is ready (same pattern as other modules)
+document.addEventListener('firebase-ready', () => {
+    console.log('Firebase ready event received, initializing LifeCV...');
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            console.log('User authenticated, initializing LifeCV for:', user.email);
+            initLifeCV();
+        } else {
+            console.log('No user authenticated');
+        }
+    });
+});
+
 /**
  * Add import/export functionality
  */

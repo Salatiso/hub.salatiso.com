@@ -29,6 +29,7 @@ export async function init(user, callback) {
     onSnapshot(userDocRef, (doc) => {
         if (doc.exists()) {
             const userData = doc.data();
+            console.log('Raw user data from Firestore:', userData);
             
             // Check for existing data under different keys
             if (userData.lifeCv) {
@@ -37,17 +38,22 @@ export async function init(user, callback) {
                 // Save migrated data
                 setDoc(userDocRef, { lifeCvData }, { merge: true });
             } else if (userData.lifeCvData) {
+                console.log('Found data under lifeCvData');
                 lifeCvData = userData.lifeCvData;
             } else {
+                console.log('No existing data found, creating default');
                 // Create initial document
                 lifeCvData = getDefaultLifeCvData();
                 setDoc(userDocRef, { lifeCvData }, { merge: true });
             }
         } else {
+            console.log('No user document exists, creating default');
             // Create initial document
             lifeCvData = getDefaultLifeCvData();
             setDoc(userDocRef, { lifeCvData }, { merge: true });
         }
+        
+        console.log('Final lifeCvData:', lifeCvData);
         
         if (onDataUpdateCallback) {
             onDataUpdateCallback(lifeCvData);
@@ -61,93 +67,39 @@ export async function init(user, callback) {
  * Migrate existing data structure to new format
  */
 function migrateExistingData(existingData) {
-    console.log('Migrating existing data structure...');
+    console.log('Migrating existing data:', existingData);
     
-    const migrated = {
-        personalInfo: {
-            name: { value: existingData.personal?.fullName || '', isPublic: true },
-            email: { value: existingData.personal?.email || '', isPublic: true },
-            phone: { value: existingData.personal?.phone || '', isPublic: false },
-            address: { value: existingData.personal?.address || '', isPublic: false },
-            dateOfBirth: { value: existingData.personal?.dob || '', isPublic: false },
-            profilePicture: { value: '', isPublic: true }
-        },
-        education: migrateArraySection(existingData.education, {
-            institution: 'institution',
-            degree: 'qualification',
-            field: 'field',
-            startDate: '',
-            endDate: 'yearCompleted',
-            gpa: 'grade',
-            description: 'significance'
-        }),
-        experience: migrateArraySection(existingData.experience, {
-            company: 'company',
-            position: 'jobTitle',
-            startDate: 'startDate',
-            endDate: 'endDate',
-            current: false,
-            description: 'description',
-            achievements: 'skills'
-        }),
-        skills: migrateArraySection(existingData.skills, {
-            name: 'skillName',
-            level: 'proficiency',
-            category: 'category',
-            yearsOfExperience: ''
-        }),
-        certifications: migrateArraySection(existingData.certifications, {
-            name: 'name',
-            issuer: 'issuer',
-            dateObtained: 'date',
-            expiryDate: 'expires',
-            credentialId: 'credentialId',
-            url: 'url'
-        }),
-        projects: migrateArraySection(existingData.projects, {
-            name: 'name',
-            description: 'description',
-            technologies: 'technologies',
-            startDate: '',
-            endDate: '',
-            url: 'url',
-            githubUrl: ''
-        }),
-        languages: migrateArraySection(existingData.languages, {
-            language: 'language',
-            proficiency: 'proficiency',
-            certifications: 'context'
-        }),
-        interests: migrateArraySection(existingData.interests, {
-            name: 'interest',
-            description: 'description',
-            level: 'level'
-        })
-    };
+    const migrated = getDefaultLifeCvData();
     
-    console.log('Data migration completed');
-    return migrated;
-}
-
-/**
- * Helper function to migrate array sections
- */
-function migrateArraySection(sourceArray, fieldMapping) {
-    if (!Array.isArray(sourceArray)) return [];
+    // Handle different possible data structures
+    if (existingData.personalInfo) {
+        migrated.personalInfo = existingData.personalInfo;
+    }
     
-    return sourceArray.map(item => {
-        const migratedItem = {};
-        
-        for (const [newField, oldField] of Object.entries(fieldMapping)) {
-            const value = typeof oldField === 'string' && oldField ? item[oldField] : '';
-            migratedItem[newField] = {
-                value: value || '',
-                isPublic: true
-            };
+    // Migrate education array
+    if (existingData.education && Array.isArray(existingData.education)) {
+        migrated.education = existingData.education;
+    }
+    
+    // Migrate experience array
+    if (existingData.experience && Array.isArray(existingData.experience)) {
+        migrated.experience = existingData.experience;
+    }
+    
+    // Migrate skills array
+    if (existingData.skills && Array.isArray(existingData.skills)) {
+        migrated.skills = existingData.skills;
+    }
+    
+    // Migrate other arrays
+    ['certifications', 'projects', 'languages', 'interests'].forEach(key => {
+        if (existingData[key] && Array.isArray(existingData[key])) {
+            migrated[key] = existingData[key];
         }
-        
-        return migratedItem;
     });
+    
+    console.log('Migrated data:', migrated);
+    return migrated;
 }
 
 /**

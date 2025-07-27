@@ -1729,7 +1729,7 @@ async function deleteFamilyMember(index) {
     if (!confirm('Are you sure you want to remove this family member?')) return;
     
     try {
-        const currentFamily = lifeCvData.family || [];
+        const currentFamily = lifeCvData.family || {};
         currentFamily.splice(index, 1);
         
         await updateDocument('users', currentUser.uid, { 'lifeCv.family': currentFamily });
@@ -2426,28 +2426,36 @@ function configureEmailSignature(templateId) {
                                        value="${existingSignature.color || '#000000'}"
                                        class="w-full h-10 p-0 border border-slate-300 rounded-md">
                             </div>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="include-photo" ${existingSignature.includePhoto !== false ? 'checked' : ''} class="mr-2">
+                                    <span class="text-sm text-slate-700">Include profile photo</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="include-contact" ${existingSignature.includeContact !== false ? 'checked' : ''} class="mr-2">
+                                    <span class="text-sm text-slate-700">Include contact information</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="include-social" ${existingSignature.includeSocial !== false ? 'checked' : ''} class="mr-2">
+                                    <span class="text-sm text-slate-700">Include social media links</span>
+                                </label>
+                            </div>
                         </div>
                     </div>
                     <div>
                         <h3 class="text-lg font-semibold text-slate-800 mb-4">Preview</h3>
                         <div class="bg-slate-50 p-4 rounded-lg border">
-                            <div class="text-center">
-                                <div class="w-full max-w-xs mx-auto">
-                                    <div class="p-4 bg-white rounded-lg shadow">
-                                        <div class="text-lg font-bold text-slate-800 mb-2" id="preview-signoff">${existingSignature.signoff || 'Best regards,'}</div>
-                                        <div class="text-sm text-slate-600 mb-4" id="preview-disclaimer">${existingSignature.disclaimer || ''}</div>
-                                        <div class="flex items-center justify-center mb-2">
-                                            <img src="${currentUser.photoURL || 'default-profile.png'}"
-                                                 class="w-16 h-16 rounded-full border-2 border-indigo-500" 
-                                                 id="preview-photo">
-                                        </div>
-                                        <div class="text-sm text-slate-700" id="preview-contact">
-                                            ${existingSignature.email ? `<div><i class="fas fa-envelope mr-2"></i>${existingSignature.email}</div>` : ''}
-                                            ${existingSignature.phone ? `<div><i class="fas fa-phone mr-2"></i>${existingSignature.phone}</div>` : ''}
-                                            ${existingSignature.website ? `<div><i class="fas fa-globe mr-2"></i>${existingSignature.website}</div>` : ''}
-                                            ${existingSignature.linkedin ? `<div><i class="fab fa-linkedin mr-2"></i>${existingSignature.linkedin}</div>` : ''}
-                                            ${existingSignature.address ? `<div><i class="fas fa-map-marker-alt mr-2"></i>${existingSignature.address}</div>` : ''}
-                                        </div>
+                            <div class="bg-white p-4 rounded-lg shadow">
+                                <div class="text-lg font-bold text-slate-800 mb-2" id="preview-signoff">${existingSignature.signoff || 'Best regards,'}</div>
+                                <div class="text-sm text-slate-600 mb-4" id="preview-disclaimer">${existingSignature.disclaimer || ''}</div>
+                                <div class="flex items-center mb-2">
+                                    <img src="${currentUser.photoURL || '/assets/images/default-profile.png'}"
+                                         class="w-16 h-16 rounded-full border-2 border-indigo-500 mr-4" 
+                                         id="preview-photo">
+                                    <div class="text-sm text-slate-700" id="preview-contact">
+                                        <div><strong>${lifeCvData.personal?.fullName?.value || 'Your Name'}</strong></div>
+                                        <div>${lifeCvData.personal?.email?.value || currentUser.email}</div>
+                                        <div>Your Company</div>
                                     </div>
                                 </div>
                             </div>
@@ -2465,125 +2473,6 @@ function configureEmailSignature(templateId) {
     `;
     
     document.body.appendChild(modal);
-}
-
-async function saveEmailSignature(templateId) {
-    const modal = document.querySelector('.fixed');
-    
-    const signatureConfig = {
-        signoff: modal.querySelector('#signature-signoff').value,
-        disclaimer: modal.querySelector('#signature-disclaimer').value,
-        font: modal.querySelector('#signature-font').value,
-        fontSize: parseInt(modal.querySelector('#signature-fontsize').value),
-        color: modal.querySelector('#signature-color').value,
-        includePhoto: modal.querySelector('#include-photo').checked,
-        includeContact: modal.querySelector('#include-contact').checked,
-        includeSocial: modal.querySelector('#include-social').checked,
-        lastModified: new Date().toISOString(),
-        isActive: true
-    };
-    
-    try {
-        if (!lifeCvData.emailSignatures) {
-            lifeCvData.emailSignatures = { signatures: {} };
-        }
-        
-        lifeCvData.emailSignatures.signatures[templateId] = signatureConfig;
-        
-        await updateDocument('users', currentUser.uid, { 'lifeCv.emailSignatures': lifeCvData.emailSignatures });
-        
-        modal.remove();
-        renderAllSections();
-        
-        showNotification('Email signature saved successfully!', 'success');
-        
-    } catch (error) {
-        console.error('Error saving email signature:', error);
-        alert('Failed to save email signature. Please try again.');
-    }
-}
-
-function copyEmailSignature(templateId) {
-    const signature = lifeCvData.emailSignatures?.signatures?.[templateId];
-    if (!signature) {
-        showNotification('Signature not found', 'error');
-        return;
-    }
-    
-    const signatureText = `
-        ${signature.signoff}
-        ${signature.disclaimer}
-        ${signature.email ? `Email: ${signature.email}` : ''}
-        ${signature.phone ? `Phone: ${signature.phone}` : ''}
-        ${signature.website ? `Website: ${signature.website}` : ''}
-        ${signature.linkedin ? `LinkedIn: ${signature.linkedin}` : ''}
-        ${signature.address ? `Address: ${signature.address}` : ''}
-    `.trim();
-    
-    copyToClipboard(signatureText);
-    showNotification('Email signature copied to clipboard!', 'success');
-}
-
-async function deleteEmailSignature(templateId) {
-    if (!confirm('Are you sure you want to delete this email signature?')) {
-        return;
-    }
-    
-    try {
-        if (lifeCvData.emailSignatures?.signatures) {
-            delete lifeCvData.emailSignatures.signatures[templateId];
-            
-            await updateDocument('users', currentUser.uid, { 'lifeCv.emailSignatures': lifeCvData.emailSignatures });
-            renderAllSections();
-            
-            showNotification('Email signature deleted successfully!', 'success');
-        }
-    } catch (error) {
-        console.error('Error deleting email signature:', error);
-        alert('Failed to delete email signature. Please try again.');
-    }
-}
-
-// === LIFE SYNC SECTION ===
-
-function createLifeSyncSection(key, sectionConfig, data) {
-    const sectionWrapper = document.createElement('div');
-    sectionWrapper.className = 'bg-white rounded-lg shadow-sm mb-4';
-    
-    const connections = data.connections || {};
-    
-    sectionWrapper.innerHTML = `
-        <button class="w-full flex justify-between items-center text-left p-4 accordion-toggle">
-            <div class="flex items-center">
-                <i class="fas ${sectionConfig.icon} w-6 text-center text-indigo-600"></i>
-                <h2 class="text-lg font-bold text-slate-800 ml-3">${sectionConfig.title}</h2>
-                <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    ${Object.keys(connections).length} connections
-                </span>
-            </div>
-            <i class="fas fa-chevron-down transform transition-transform"></i>
-        </button>
-        <div class="accordion-content">
-            <div class="p-6 border-t border-slate-200">
-                <div class="space-y-4">
-                    ${Object.entries(lifeSyncPurposes).map(([purposeKey, purpose]) => `
-                        <div class="bg-slate-50 p-4 rounded-lg border">
-                            <h3 class="font-semibold text-slate-800 mb-2">${purpose.name}</h3>
-                            <p class="text-sm text-slate-600 mb-3">${purpose.description}</p>
-                            <button class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-indigo-700" 
-                                    onclick="startLifeSync('${purposeKey}')">
-                                <i class="fas fa-sync-alt mr-2"></i>Start LifeSync
-                            </button>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-        </div>
-    `;
-    
-    sectionWrapper.querySelector('.accordion-toggle').addEventListener('click', toggleAccordion);
-    
-    return sectionWrapper;
 }
 
 // Privacy confirmation for sensitive data

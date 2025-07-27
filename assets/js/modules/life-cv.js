@@ -11,7 +11,7 @@ import { auth, db, uploadFile } from '../firebase-config.js';
 
 // Import all specialized LifeCV modules
 import * as DataService from '../services/life-cv-data-service.js';
-import LifeCVRenderer from './life-cv-renderer.js';
+import * as renderer from '../ui/lifecv-renderer.js';
 import * as Dashboard from '../ui/lifecv-dashboard.js';
 import * as Modals from '../ui/lifecv-modals.js';
 import * as Events from '../ui/lifecv-events.js';
@@ -43,39 +43,21 @@ export async function initLifeCV() {
         console.log(`LifeCV Initializer: User authenticated (UID: ${user.uid})`);
 
         // 2. Initialize all sub-modules in the correct order
-        // Pass necessary dependencies like auth, db, and the user object.
         await DataService.init(user, handleDataUpdate);
         await Dashboard.init();
-        const renderer = new LifeCVRenderer();
-        await renderer.init();
-        await Modals.init({
-            currentUser,
-            db,
-            uploadFile,
-            dataService: DataService,
-            renderer: renderer
-        });
-        await Events.init({
-            dataService: DataService,
-            modals: Modals,
-            renderer: renderer
-        });
-
-        // 3. The initial data fetch is triggered by the onSnapshot listener
-        // in DataService, which then calls handleDataUpdate.
+        await Modals.init();
+        await Events.init();
 
         isInitialized = true;
         console.log("LifeCV Initializer: All modules initialized successfully.");
 
         // 4. Hide loading indicator ONLY after everything is ready
-        // Add a small delay to prevent flickering
         setTimeout(() => {
             loadingIndicator.classList.add('hidden');
         }, 200);
 
     } catch (error) {
         console.error("LifeCV Initializer: A critical error occurred during initialization.", error);
-        // The global error handler in life-cv.html will show the error boundary UI
         throw error; // Re-throw to be caught by the global handler
     }
 }
@@ -86,22 +68,16 @@ export async function initLifeCV() {
  */
 function waitForAuth() {
     return new Promise((resolve, reject) => {
-        // Set a timeout to prevent getting stuck indefinitely
-        const authTimeout = setTimeout(() => {
-            reject(new Error("Authentication timed out. Please check your connection and try again."));
-        }, 10000); // 10-second timeout
-
         const unsubscribe = onAuthStateChanged(auth, (user) => {
-            clearTimeout(authTimeout); // Clear the timeout once we get a response
-            unsubscribe(); // Stop listening to further auth changes here
+            unsubscribe();
             if (user) {
                 resolve(user);
             } else {
-                console.log("User is not logged in. Redirecting to login page.");
-                // Redirect to login if not authenticated
-                window.location.href = './login.html';
-                reject(new Error("User not authenticated."));
+                reject(new Error('User not authenticated. Please log in first.'));
             }
+        }, (error) => {
+            unsubscribe();
+            reject(error);
         });
     });
 }

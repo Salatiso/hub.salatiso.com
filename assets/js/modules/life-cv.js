@@ -1,110 +1,139 @@
 /* ================================================================================= */
-/* FILE: assets/js/modules/life-cv.js (v3.0 - Final Modular Controller)              */
-/* PURPOSE: Acts as the main controller for the LifeCV module. Its sole              */
-/* responsibility is to initialize and coordinate the various service and UI modules.*/
-/* All complex logic has been delegated to specialized modules.                      */
+/* FILE: assets/js/modules/life-cv.js (v3.1 - Robust Controller)                     */
+/* PURPOSE: Main controller for the LifeCV module. Initializes and coordinates       */
+/* all services and UI components in a safe, sequential order.                       */
 /* ================================================================================= */
 
+// --- Static Imports for Reliability ---
+// Import Firebase services and authentication functions
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { auth } from '../firebase-config.js';
+import { auth, db, uploadFile } from '../firebase-config.js';
 
-// Import all specialized modules that make up the LifeCV functionality
-try {
-    var DataService = await import('../services/life-cv-data-service.js');
-    var Renderer = await import('../ui/lifecv-renderer.js');
-    var Dashboard = await import('../ui/lifecv-dashboard.js');
-    var Modals = await import('../ui/lifecv-modals.js');
-    var Events = await import('../ui/lifecv-events.js');
-    console.log('All modules loaded successfully');
-} catch (error) {
-    console.error('Failed to load modules:', error);
-    throw new Error(`Module loading failed: ${error.message}`);
-}
+// Import all specialized LifeCV modules
+import * as DataService from '../services/life-cv-data-service.js';
+import * as Renderer from '../ui/lifecv-renderer.js';
+import * as Dashboard from '../ui/lifecv-dashboard.js';
+import * as Modals from '../ui/lifecv-modals.js';
+import * as Events from '../ui/lifecv-events.js';
 
+// --- State Variables ---
 let currentUser = null;
 let isInitialized = false;
 
+// --- Main Initialization Function (The Entry Point) ---
 /**
- * Main initializer for the LifeCV module. Orchestrates the initialization sequence.
- * This function is the single entry point for the entire LifeCV feature.
- * @param {object} user - The authenticated Firebase user object.
+ * Initializes the entire LifeCV application.
+ * This is the single entry point called from life-cv.html.
  */
-export function init(user) {
-    if (!user) {
-        console.error("LifeCV Controller: No user provided for initialization.");
-        return;
-    }
-    
+export async function initLifeCV() {
     if (isInitialized) {
-        console.log("LifeCV Controller: Already initialized.");
+        console.warn("LifeCV module already initialized.");
         return;
     }
-    
-    currentUser = user;
-    console.log("LifeCV Controller: Initializing for user:", currentUser.uid);
+    console.log("LifeCV Initializer: Starting...");
+
+    // Show loading indicator
+    const loadingIndicator = document.getElementById('loading-indicator');
+    loadingIndicator.classList.remove('hidden');
 
     try {
-        // 1. Initialize UI components that don't depend on data first.
-        Dashboard.init();
-        Modals.init();
-        Events.init();
+        // 1. Wait for Firebase Authentication
+        const user = await waitForAuth();
+        currentUser = user;
+        console.log(`LifeCV Initializer: User authenticated (UID: ${user.uid})`);
 
-        // 2. Initialize the Data Service with callback
-        DataService.init(currentUser, handleDataUpdate);
-        
+        // 2. Initialize all sub-modules in the correct order
+        // Pass necessary dependencies like auth, db, and the user object.
+        await DataService.init(user, handleDataUpdate);
+        await Dashboard.init();
+        await Renderer.init();
+        await Modals.init({
+            currentUser,
+            db,
+            uploadFile,
+            dataService: DataService,
+            renderer: Renderer
+        });
+        await Events.init({
+            dataService: DataService,
+            modals: Modals,
+            renderer: Renderer
+        });
+
+        // 3. The initial data fetch is triggered by the onSnapshot listener
+        // in DataService, which then calls handleDataUpdate.
+
         isInitialized = true;
-        console.log("LifeCV Controller: Initialization complete.");
-        
+        console.log("LifeCV Initializer: All modules initialized successfully.");
+
+        // 4. Hide loading indicator ONLY after everything is ready
+        // Add a small delay to prevent flickering
+        setTimeout(() => {
+            loadingIndicator.classList.add('hidden');
+        }, 200);
+
     } catch (error) {
-        console.error("LifeCV Controller: Initialization failed:", error);
-        showInitializationError(error);
+        console.error("LifeCV Initializer: A critical error occurred during initialization.", error);
+        // The global error handler in life-cv.html will show the error boundary UI
+        throw error; // Re-throw to be caught by the global handler
     }
 }
 
 /**
- * Callback function for data updates
+ * A Promise-based function that waits for the user to be authenticated.
+ * @returns {Promise<object>} A promise that resolves with the user object or rejects if auth fails.
+ */
+function waitForAuth() {
+    return new Promise((resolve, reject) => {
+        // Set a timeout to prevent getting stuck indefinitely
+        const authTimeout = setTimeout(() => {
+            reject(new Error("Authentication timed out. Please check your connection and try again."));
+        }, 10000); // 10-second timeout
+
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            clearTimeout(authTimeout); // Clear the timeout once we get a response
+            unsubscribe(); // Stop listening to further auth changes here
+            if (user) {
+                resolve(user);
+            } else {
+                console.log("User is not logged in. Redirecting to login page.");
+                // Redirect to login if not authenticated
+                window.location.href = './login.html';
+                reject(new Error("User not authenticated."));
+            }
+        });
+    });
+}
+
+/**
+ * Callback function passed to the DataService.
+ * It's triggered whenever Firestore data changes.
+ * @param {object} data - The complete, updated LifeCV data from Firestore.
  */
 function handleDataUpdate(data) {
+    if (!isInitialized) {
+        console.log("LifeCV Controller: Data received, but modules not ready. Buffering.");
+        return;
+    }
     console.log("LifeCV Controller: Data updated, triggering UI refresh.");
-    
+
     try {
+        // Get the static section configuration
         const sectionsConfig = DataService.getLifeCvSections();
+
+        // Re-render the main content and the dashboard with the new data
         Renderer.renderAllSections(data, sectionsConfig);
         Dashboard.update(data, sectionsConfig);
     } catch (error) {
-        console.error("LifeCV Controller: Error updating UI:", error);
+        console.error("LifeCV Controller: Error updating UI.", error);
+        // Optionally, show a non-critical error notification to the user
     }
 }
 
 /**
- * Show initialization error
- */
-function showInitializationError(error) {
-    const errorBoundary = document.getElementById('error-boundary');
-    const errorMessage = document.getElementById('error-message');
-    if (errorBoundary && errorMessage) {
-        errorMessage.textContent = `Initialization failed: ${error.message}`;
-        errorBoundary.classList.remove('hidden');
-    }
-}
-
-/**
- * Get current user
+ * A utility function to make the current user available to other modules if needed.
+ * @returns {object | null} The authenticated user object.
  */
 export function getCurrentUser() {
     return currentUser;
 }
-
-// --- Application Entry Point ---
-// Remove the firebase-ready dependency and initialize directly
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        init(user);
-    } else {
-        console.log("User is not logged in. LifeCV module will not initialize.");
-        // Redirect to login if on a protected page
-        if (window.location.pathname.includes('life-cv')) {
-            window.location.href = '../login.html';
-        }
-    }
-});

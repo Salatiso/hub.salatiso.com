@@ -4,12 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LifeCV - Your Complete Life Profile</title>
-    <link rel="icon" type="image/x-icon" href="../assets/images/favicon.ico">
+    <!-- Corrected favicon path -->
+    <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- QR Code Generator Library -->
     <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+    <!-- Corrected CSS paths -->
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/modules.css">
     <style>
+        /* Custom styles for accordion, camera, etc. remain unchanged */
         .accordion-content {
             display: none;
             overflow: hidden;
@@ -25,242 +30,110 @@
         .lifecycle-notification {
             z-index: 60;
         }
-        
-        /* Camera modal styles */
         #webcam-video, #webcam-video-modal {
             border-radius: 0.5rem;
             max-width: 100%;
         }
-        
         #capture-canvas, #capture-canvas-modal {
             border-radius: 0.5rem;
-            max-width: 100%;
-        }
-        
-        /* Smooth animations */
-        .transition-all {
-            transition: all 0.3s ease;
-        }
-        
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                max-height: 0;
-            }
-            to {
-                opacity: 1;
-                max-height: 1000px;
-            }
-        }
-
-        /* Privacy toggle styles */
-        .privacy-toggle {
-            color: #94a3b8;
-            transition: color 0.2s;
-        }
-        .privacy-toggle.public {
-            color: #059669;
-        }
-        .privacy-toggle:hover {
-            color: #4f46e5;
+            display: none; /* Hidden by default */
         }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen">
-    <!-- Navigation -->
-    <nav class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <div class="flex items-center">
-                        <i class="fas fa-user-circle text-indigo-600 text-2xl mr-3"></i>
-                        <h1 class="text-xl font-bold text-slate-800">LifeCV</h1>
+<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans">
+
+    <!-- Loading Indicator -->
+    <div id="loading-indicator" class="fixed inset-0 bg-white dark:bg-slate-900 bg-opacity-90 dark:bg-opacity-90 flex flex-col items-center justify-center z-[100]">
+        <i class="fas fa-spinner fa-spin text-4xl text-indigo-600"></i>
+        <p class="mt-4 text-lg font-semibold">Loading LifeCV...</p>
+    </div>
+
+    <!-- Error Boundary -->
+    <div id="error-boundary" class="hidden fixed inset-0 bg-red-50 dark:bg-red-900 bg-opacity-90 flex flex-col items-center justify-center z-[99]">
+        <i class="fas fa-exclamation-triangle text-4xl text-red-600"></i>
+        <p class="mt-4 text-lg font-semibold">An Error Occurred</p>
+        <p id="error-message" class="mt-2 text-center max-w-md">Could not load LifeCV data. Please try refreshing the page.</p>
+        <button onclick="window.location.reload()" class="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Refresh</button>
+    </div>
+
+    <div class="flex h-screen">
+        <!-- Sidebar will be loaded from components -->
+        <div id="sidebar-placeholder"></div>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col overflow-hidden">
+            <!-- Header will be loaded from components -->
+            <div id="header-placeholder"></div>
+
+            <!-- Scrollable Content Area -->
+            <div class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+                <div class="max-w-7xl mx-auto">
+                    
+                    <!-- Dashboard Placeholder -->
+                    <div id="lifecv-dashboard-placeholder"></div>
+
+                    <!-- Main LifeCV Sections -->
+                    <div id="lifecv-sections-container" class="mt-8">
+                         <h2 class="text-2xl font-bold text-slate-700 dark:text-slate-300 mb-4">Your LifeCV</h2>
+                         <div id="lifecv-sections" class="space-y-4">
+                            <!-- Sections will be rendered here by JavaScript -->
+                         </div>
                     </div>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <button onclick="exportLifeCvData()" 
-                            class="flex items-center text-slate-600 hover:text-slate-800 px-3 py-2 rounded-md hover:bg-slate-100 transition-colors">
-                        <i class="fas fa-download mr-2"></i>Export
-                    </button>
-                    <label class="flex items-center text-slate-600 hover:text-slate-800 px-3 py-2 rounded-md hover:bg-slate-100 cursor-pointer transition-colors">
-                        <i class="fas fa-upload mr-2"></i>Import
-                        <input type="file" accept=".json" onchange="importLifeCvData(event)" class="hidden">
-                    </label>
-                    <div class="w-px h-6 bg-slate-300"></div>
-                    <button onclick="auth.signOut()" 
-                            class="flex items-center text-red-600 hover:text-red-800 px-3 py-2 rounded-md hover:bg-red-50 transition-colors">
-                        <i class="fas fa-sign-out-alt mr-2"></i>Sign Out
-                    </button>
-                </div>
             </div>
-        </div>
-    </nav>
-    
-    <!-- Dashboard Section -->
-    <div id="lifecv-dashboard-placeholder" class="container mx-auto px-4 py-6 max-w-7xl">
-        <!-- Dashboard content will be rendered here -->
+        </main>
     </div>
+
+    <!-- Modals will be injected here -->
+    <div id="modal-placeholder"></div>
     
-    <!-- Main LifeCV Container -->
-    <div id="lifecv-sections" class="container mx-auto px-4 py-6 max-w-4xl">
-        <!-- LifeCV sections will be rendered here -->
-    </div>
-    
-    <!-- Hidden Camera Elements -->
-    <video id="camera-stream" style="display: none;" autoplay muted playsinline></video>
-    <canvas id="camera-canvas" style="display: none;"></canvas>
-    
-    <!-- Camera Modal -->
-    <div id="camera-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 hidden">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl">
-            <div class="p-6 border-b border-slate-200">
-                <h2 class="text-xl font-bold text-slate-800">
-                    <i class="fas fa-camera mr-2"></i>Take Profile Picture
-                </h2>
-            </div>
-            <div class="p-6">
-                <div class="relative bg-slate-100 rounded-lg overflow-hidden mb-4">
-                    <video id="webcam-video" autoplay muted playsinline class="w-full h-64 object-cover rounded-lg"></video>
-                    <canvas id="capture-canvas" class="w-full h-64 object-cover rounded-lg hidden"></canvas>
-                </div>
-            </div>
-            <div class="p-6 border-t border-slate-200 flex justify-end space-x-3">
-                <button id="cancel-capture-btn" type="button" 
-                        class="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300">
-                    Cancel
-                </button>
-                <button id="capture-btn" type="button" 
-                        class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
-                    <i class="fas fa-camera mr-2"></i>Capture
-                </button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- PII Confirmation Modal -->
-    <div id="pii-confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 hidden">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div class="p-6 border-b border-slate-200">
-                <h2 class="text-xl font-bold text-red-800">
-                    <i class="fas fa-exclamation-triangle mr-2"></i>Sensitive Information Warning
-                </h2>
-            </div>
-            <div class="p-6">
-                <p class="text-slate-700 mb-4">
-                    You are about to make sensitive personal information public. This action should be carefully considered.
-                </p>
-                <p class="text-slate-600 text-sm mb-4">
-                    To confirm, please type your full name exactly as it appears in your profile:
-                </p>
-                <p class="font-medium text-slate-800 mb-2" id="pii-user-fullname">"Your Name"</p>
-                <input type="text" id="pii-confirm-input" 
-                       class="w-full px-3 py-2 border border-slate-300 rounded-md"
-                       placeholder="Type your full name here">
-            </div>
-            <div class="p-6 border-t border-slate-200 flex justify-end space-x-3">
-                <button id="pii-cancel-btn" type="button" 
-                        class="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300">
-                    Cancel
-                </button>
-                <button id="pii-confirm-btn" type="button" 
-                        class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700" disabled>
-                    Confirm & Make Public
-                </button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Public Presence Modal -->
-    <div id="public-presence-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 hidden">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl">
-            <div class="p-6 border-b border-slate-200">
-                <h2 class="text-xl font-bold text-slate-800">Public Presence Management</h2>
-            </div>
-            <div class="p-6">
-                <p class="text-slate-600 mb-4">
-                    This feature will allow you to create public profiles, business cards, and email signatures.
-                </p>
-                <div class="bg-blue-50 p-4 rounded-lg">
-                    <p class="text-blue-800 text-sm">
-                        <i class="fas fa-info-circle mr-2"></i>
-                        Public presence features are coming in a future update.
-                    </p>
-                </div>
-            </div>
-            <div class="p-6 border-t border-slate-200 flex justify-end">
-                <button id="public-presence-close-btn" type="button" 
-                        class="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300">
-                    Close
-                </button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Loading indicator -->
-    <div id="loading-indicator" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 shadow-xl">
-            <div class="flex items-center">
-                <i class="fas fa-spinner fa-spin text-indigo-600 mr-3 text-xl"></i>
-                <span class="text-slate-700">Loading your LifeCV...</span>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Error Boundary -->
-    <div id="error-boundary" class="fixed inset-0 bg-red-600 bg-opacity-90 flex items-center justify-center z-[70] hidden">
-        <div class="bg-white rounded-lg p-6 shadow-xl max-w-md">
-            <div class="flex items-center mb-4">
-                <i class="fas fa-exclamation-triangle text-red-600 mr-3 text-xl"></i>
-                <h2 class="text-lg font-bold text-slate-800">Application Error</h2>
-            </div>
-            <p id="error-message" class="text-slate-600 mb-4">Something went wrong. Please try refreshing the page.</p>
-            <button onclick="location.reload()" 
-                    class="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
-                Refresh Page
-            </button>
-        </div>
-    </div>
-    
-    <!-- Scripts -->
+    <!-- Notification Container -->
+    <div id="notification-container" class="fixed bottom-5 right-5 z-[100]"></div>
+
+    <!--
+    ================================================================
+    SCRIPT LOADING
+    - All scripts are loaded as modules to ensure correct order and scope.
+    - The main entry point is life-cv.js, which handles all initialization.
+    ================================================================
+    -->
     <script type="module">
-        // Global error handler
+        import { initLifeCV } from './assets/js/modules/life-cv.js';
+
+        // Global error handlers to catch issues anywhere in the app
+        const showError = (message) => {
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const errorBoundary = document.getElementById('error-boundary');
+            const errorMessage = document.getElementById('error-message');
+            if (loadingIndicator) loadingIndicator.classList.add('hidden');
+            if (errorBoundary && errorMessage) {
+                errorMessage.textContent = message || 'An unexpected error occurred. Please check the console and refresh.';
+                errorBoundary.classList.remove('hidden');
+            }
+        };
+
         window.addEventListener('error', (event) => {
-            console.error('Global error:', event.error);
-            const errorBoundary = document.getElementById('error-boundary');
-            const errorMessage = document.getElementById('error-message');
-            if (errorBoundary && errorMessage) {
-                errorMessage.textContent = event.error.message || 'An unexpected error occurred';
-                errorBoundary.classList.remove('hidden');
-            }
-        });
-        
-        window.addEventListener('unhandledrejection', (event) => {
-            console.error('Unhandled promise rejection:', event.reason);
-            const errorBoundary = document.getElementById('error-boundary');
-            const errorMessage = document.getElementById('error-message');
-            if (errorBoundary && errorMessage) {
-                errorMessage.textContent = event.reason.message || 'A network or data error occurred';
-                errorBoundary.classList.remove('hidden');
-            }
+            console.error('Global error caught:', event.error);
+            showError(event.message);
         });
 
-        // Import and initialize
-        import { init } from '../assets/js/modules/life-cv.js';
-        import { auth } from '../assets/js/firebase-config.js';
-        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        
-        // Make auth globally available
-        window.auth = auth;
-        
-        // Initialize when DOM is ready
+        window.addEventListener('unhandledrejection', (event) => {
+            console.error('Unhandled promise rejection:', event.reason);
+            showError(event.reason?.message || 'A network or data error occurred.');
+        });
+
+        // Initialize the application
         document.addEventListener('DOMContentLoaded', () => {
-            const loadingIndicator = document.getElementById('loading-indicator');
-            
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    console.log('User authenticated, initializing LifeCV...');
-                    try {
-                        init(user);
-                        // Hide loading after a short delay
-                        setTimeout(() => {
-                            if
+            // Load shared components
+            fetch('./components/header.html').then(res => res.text()).then(data => document.getElementById('header-placeholder').innerHTML = data);
+            fetch('./components/sidebar.html').then(res => res.text()).then(data => document.getElementById('sidebar-placeholder').innerHTML = data);
+
+            // Start the LifeCV module
+            initLifeCV().catch(error => {
+                console.error("Failed to initialize LifeCV module:", error);
+                showError(error.message);
+            });
+        });
+    </script>
+</body>
+</html>

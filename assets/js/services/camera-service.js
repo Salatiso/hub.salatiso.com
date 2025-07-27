@@ -49,22 +49,19 @@ export default class CameraService {
      * @returns {Promise<void>} A promise that resolves when the stream starts, or rejects on error.
      */
     async start() {
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            console.error("Camera API is not available in this browser.");
-            throw new Error("Camera not supported.");
+        if (!this.ensureElements()) {
+            throw new Error('Required video and canvas elements not found');
         }
 
         try {
             this.stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: "user" }, // Prefer the front-facing camera
-                audio: false 
+                video: { width: 640, height: 480 } 
             });
             this.videoElement.srcObject = this.stream;
-            await this.videoElement.play();
-            console.log("Camera stream started.");
-        } catch (err) {
-            console.error("Error accessing camera: ", err);
-            throw new Error("Could not access the camera. Please ensure you have given permission.");
+            return true;
+        } catch (error) {
+            console.error('Error accessing camera:', error);
+            throw error;
         }
     }
 
@@ -75,7 +72,9 @@ export default class CameraService {
         if (this.stream) {
             this.stream.getTracks().forEach(track => track.stop());
             this.stream = null;
-            console.log("Camera stream stopped.");
+        }
+        if (this.videoElement) {
+            this.videoElement.srcObject = null;
         }
     }
 
@@ -83,24 +82,19 @@ export default class CameraService {
      * Captures a single frame from the video stream.
      * @returns {Promise<Blob>} A promise that resolves with the captured image as a Blob.
      */
-    capture() {
-        return new Promise((resolve, reject) => {
-            if (!this.stream) {
-                return reject(new Error("Camera stream is not active."));
-            }
+    async capture() {
+        if (!this.ensureElements() || !this.stream) {
+            throw new Error('Camera not initialized or elements not found');
+        }
 
-            const context = this.canvasElement.getContext('2d');
-            this.canvasElement.width = this.videoElement.videoWidth;
-            this.canvasElement.height = this.videoElement.videoHeight;
-            context.drawImage(this.videoElement, 0, 0, this.videoElement.videoWidth, this.videoElement.videoHeight);
-
-            this.canvasElement.toBlob(blob => {
-                if (blob) {
-                    resolve(blob);
-                } else {
-                    reject(new Error("Failed to create blob from canvas."));
-                }
-            }, 'image/png');
+        const context = this.canvasElement.getContext('2d');
+        this.canvasElement.width = this.videoElement.videoWidth;
+        this.canvasElement.height = this.videoElement.videoHeight;
+        
+        context.drawImage(this.videoElement, 0, 0);
+        
+        return new Promise(resolve => {
+            this.canvasElement.toBlob(resolve, 'image/png');
         });
     }
 }

@@ -11,7 +11,7 @@ import { auth, db, uploadFile } from '../firebase-config.js';
 
 // Import all specialized LifeCV modules
 import * as DataService from '../services/life-cv-data-service.js';
-import * as Renderer from '../ui/lifecv-renderer.js';
+import LifeCVRenderer from './life-cv-renderer.js';
 import * as Dashboard from '../ui/lifecv-dashboard.js';
 import * as Modals from '../ui/lifecv-modals.js';
 import * as Events from '../ui/lifecv-events.js';
@@ -46,18 +46,19 @@ export async function initLifeCV() {
         // Pass necessary dependencies like auth, db, and the user object.
         await DataService.init(user, handleDataUpdate);
         await Dashboard.init();
-        await Renderer.init();
+        const renderer = new LifeCVRenderer();
+        await renderer.init();
         await Modals.init({
             currentUser,
             db,
             uploadFile,
             dataService: DataService,
-            renderer: Renderer
+            renderer: renderer
         });
         await Events.init({
             dataService: DataService,
             modals: Modals,
-            renderer: Renderer
+            renderer: renderer
         });
 
         // 3. The initial data fetch is triggered by the onSnapshot listener
@@ -122,7 +123,7 @@ function handleDataUpdate(data) {
         const sectionsConfig = DataService.getLifeCvSections();
 
         // Re-render the main content and the dashboard with the new data
-        Renderer.renderAllSections(data, sectionsConfig);
+        renderer.renderAllSections(data, sectionsConfig);
         Dashboard.update(data, sectionsConfig);
     } catch (error) {
         console.error("LifeCV Controller: Error updating UI.", error);

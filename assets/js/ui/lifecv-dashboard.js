@@ -233,4 +233,61 @@ function updateRecommendations(recommendations) {
         recommendationsEl.innerHTML = `
             <div class="flex items-center p-3 bg-green-50 rounded-md border border-green-200">
                 <i class="fas fa-check-circle text-green-500 mr-3"></i>
-                <p class="text-sm text-green-700">Your LifeCV is looking great! Keep it updated with new achievements.</p>// filepath: e:\Google Drive\@Work\Web Development\GitHub\hub.salatiso.com\assets\js\ui\lifecv-dashboard.js
+                <p class="text-sm text-green-700">Your LifeCV is looking great! Keep it updated with new achievements.</p>
+            </div>
+        `;
+        return;
+    }
+
+    recommendationsEl.innerHTML = recommendations.map(rec => `
+        <div class="flex items-center justify-between p-3 bg-slate-50 rounded-md border border-slate-200 hover:bg-slate-100 transition-colors">
+            <div class="flex items-center">
+                <div class="w-2 h-2 rounded-full mr-3 ${getPriorityColor(rec.priority)}"></div>
+                <span class="text-sm text-slate-700">${rec.message}</span>
+            </div>
+            <button class="text-indigo-600 hover:text-indigo-800 text-sm font-medium px-2 py-1 rounded hover:bg-indigo-50 transition-colors" 
+                    onclick="scrollToSection('${rec.section}')">
+                <i class="fas fa-arrow-right mr-1"></i>Fix
+            </button>
+        </div>
+    `).join('');
+}
+
+/**
+ * Get priority color class
+ */
+function getPriorityColor(priority) {
+    const colors = {
+        high: 'bg-red-500',
+        medium: 'bg-yellow-500',
+        low: 'bg-blue-500'
+    };
+    return colors[priority] || colors.medium;
+}
+
+/**
+ * Scroll to a specific section
+ */
+window.scrollToSection = function(sectionKey) {
+    const container = document.getElementById('lifecv-sections');
+    if (!container) return;
+    
+    // Find the section and open it
+    const sections = container.querySelectorAll('.accordion-toggle');
+    sections.forEach(section => {
+        const content = section.nextElementSibling;
+        const chevron = section.querySelector('i:last-child');
+        
+        // Check if this is the target section
+        if (section.textContent.toLowerCase().includes(sectionKey.toLowerCase()) || 
+            section.querySelector('h2').textContent.toLowerCase().includes(sectionKey.toLowerCase())) {
+            
+            // Open the accordion
+            content.classList.add('show');
+            chevron.classList.add('rotate-180');
+            
+            // Scroll to it
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    });
+};

@@ -228,8 +228,16 @@ function attachEventListeners() {
         const content = document.getElementById(`content-${sectionKey}`);
         const chevron = content.previousElementSibling.querySelector('.chevron-icon');
         
-        content.classList.toggle('show');
-        chevron.classList.toggle('rotate-180');
+        // Toggle the show class and chevron rotation
+        if (content.style.display === 'none' || content.style.display === '') {
+            content.style.display = 'block';
+            content.classList.add('show');
+            chevron.classList.add('rotate-180');
+        } else {
+            content.style.display = 'none';
+            content.classList.remove('show');
+            chevron.classList.remove('rotate-180');
+        }
     };
     
     // Update field value

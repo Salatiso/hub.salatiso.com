@@ -478,6 +478,21 @@ export function init(user) {
     });
 }
 
+// Import camera and lifesync services
+import CameraService from '../services/camera-service.js';
+import { lifeSyncService } from '../services/lifesync-service.js';
+import { generateQRCode } from '../utils/qr-code-generator.js';
+
+// Initialize camera service
+let cameraService = null;
+
+function initializeCameraService() {
+    if (!cameraService) {
+        cameraService = new CameraService('webcam-video', 'capture-canvas');
+    }
+    return cameraService;
+}
+
 // === DATA MIGRATION & COMPATIBILITY ===
 
 function migrateLegacyData() {
@@ -1052,7 +1067,6 @@ function openContactModal(type, index = -1) {
     };
     
     const template = templates[type];
-    const config = lifeCvSections.contact.types[type];
     
     const modal = document.createElement('div');
     modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
@@ -1060,7 +1074,7 @@ function openContactModal(type, index = -1) {
         <div class="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div class="p-6 border-b border-slate-200">
                 <h2 class="text-xl font-bold text-slate-800">
-                    ${isEditing ? 'Edit' : 'Add'} ${config.label.slice(0, -1)}
+                    ${isEditing ? 'Edit' : 'Add'} ${lifeCvSections.contact.types[type].label.slice(0, -1)}
                 </h2>
             </div>
             <div class="p-6">
@@ -1094,7 +1108,7 @@ function openContactModal(type, index = -1) {
                             <input type="checkbox" name="isPublic" ${item.isPublic ? 'checked' : ''} class="mr-2">
                             <span class="text-sm text-slate-700">Make this information public</span>
                         </label>
-                        ${config.sensitive ? `
+                        ${template.sensitive ? `
                             <p class="text-xs text-amber-600 mt-1">
                                 <i class="fas fa-exclamation-triangle mr-1"></i>
                                 This information is considered sensitive and requires confirmation to make public.
@@ -1361,149 +1375,196 @@ async function deletePicture(url) {
 
 // === WEBCAM FUNCTIONALITY ===
 
+// Enhanced webcam modal with proper camera service integration
 function openWebcamModal() {
     const modal = document.createElement('div');
     modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
     modal.innerHTML = `
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-lg">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl">
             <div class="p-6 border-b border-slate-200">
-                <h2 class="text-xl font-bold text-slate-800">Capture Profile Picture</h2>
+                <h2 class="text-xl font-bold text-slate-800">
+                    <i class="fas fa-camera mr-2"></i>Take Profile Picture
+                </h2>
             </div>
             <div class="p-6">
-                <div class="relative">
-                    <video id="webcam-video" class="w-full rounded-lg" autoplay playsinline></video>
-                    <canvas id="webcam-canvas" class="hidden"></canvas>
-                    <div id="webcam-preview" class="hidden">
-                        <img id="captured-image" class="w-full rounded-lg" />
+                <div class="relative bg-slate-100 rounded-lg overflow-hidden mb-4" id="camera-container">
+                    <video id="webcam-video-modal" autoplay muted playsinline 
+                           class="w-full h-64 object-cover rounded-lg"></video>
+                    <canvas id="capture-canvas-modal" class="w-full h-64 object-cover rounded-lg hidden"></canvas>
+                    
+                    <!-- Camera controls overlay -->
+                    <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-4">
+                        <button id="capture-btn" 
+                                class="bg-white bg-opacity-90 hover:bg-opacity-100 text-slate-800 px-4 py-2 rounded-full shadow-lg transition-all">
+                            <i class="fas fa-camera"></i>
+                        </button>
+                        <button id="switch-camera-btn" 
+                                class="bg-white bg-opacity-90 hover:bg-opacity-100 text-slate-800 px-4 py-2 rounded-full shadow-lg transition-all">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
                     </div>
                 </div>
-                <div id="webcam-error" class="hidden mt-4 p-3 bg-red-100 text-red-700 rounded-lg">
-                    <p>Unable to access camera. Please check your permissions.</p>
+                
+                <!-- Photo preview area -->
+                <div id="photo-preview" class="hidden">
+                    <div class="relative">
+                        <img id="captured-photo" class="w-full h-64 object-cover rounded-lg" src="">
+                        <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-4">
+                            <button onclick="retakePhoto()" 
+                                    class="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-full shadow-lg transition-all">
+                                <i class="fas fa-redo mr-2"></i>Retake
+                            </button>
+                            <button onclick="saveCapturedPhoto()" 
+                                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full shadow-lg transition-all">
+                                <i class="fas fa-check mr-2"></i>Use Photo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Status messages -->
+                <div id="camera-status" class="hidden mt-4 p-3 rounded-lg">
+                    <p class="text-sm"></p>
                 </div>
             </div>
-            <div class="p-6 border-t border-slate-200 flex justify-end space-x-3">
-                <button type="button" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300" 
-                        onclick="closeWebcamModal()">Cancel</button>
-                <button type="button" id="capture-btn" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
-                    <i class="fas fa-camera mr-1"></i>Capture
-                </button>
-                <button type="button" id="save-capture-btn" class="hidden px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
-                    <i class="fas fa-save mr-1"></i>Save Photo
-                </button>
-                <button type="button" id="retake-btn" class="hidden px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700">
-                    <i class="fas fa-redo mr-1"></i>Retake
+            <div class="p-6 border-t border-slate-200 flex justify-end">
+                <button type="button" onclick="closeWebcamModal()" 
+                        class="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300 transition-colors">
+                    Cancel
                 </button>
             </div>
         </div>
     `;
     
     document.body.appendChild(modal);
+    
+    // Initialize camera
     initializeWebcam();
 }
 
 async function initializeWebcam() {
-    const video = document.getElementById('webcam-video');
-    const errorDiv = document.getElementById('webcam-error');
+    const statusDiv = document.getElementById('camera-status');
+    const videoElement = document.getElementById('webcam-video-modal');
     const captureBtn = document.getElementById('capture-btn');
     
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { width: 640, height: 480 } 
-        });
+        statusDiv.className = 'mt-4 p-3 rounded-lg bg-blue-50';
+        statusDiv.innerHTML = '<p class="text-sm text-blue-800">Initializing camera...</p>';
+        statusDiv.classList.remove('hidden');
         
-        video.srcObject = stream;
+        // Initialize camera service with modal elements
+        cameraService = new CameraService('webcam-video-modal', 'capture-canvas-modal');
+        await cameraService.start();
         
+        statusDiv.classList.add('hidden');
+        
+        // Attach capture event
         captureBtn.addEventListener('click', capturePhoto);
-        document.getElementById('save-capture-btn').addEventListener('click', saveCapturedPhoto);
-        document.getElementById('retake-btn').addEventListener('click', retakePhoto);
         
     } catch (error) {
-        console.error('Error accessing webcam:', error);
-        video.style.display = 'none';
-        errorDiv.classList.remove('hidden');
-        captureBtn.disabled = true;
+        console.error('Camera initialization failed:', error);
+        statusDiv.className = 'mt-4 p-3 rounded-lg bg-red-50';
+        statusDiv.innerHTML = `
+            <p class="text-sm text-red-800">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                Camera access failed: ${error.message}
+            </p>
+        `;
+        statusDiv.classList.remove('hidden');
     }
 }
 
-function capturePhoto() {
-    const video = document.getElementById('webcam-video');
-    const canvas = document.getElementById('webcam-canvas');
-    const preview = document.getElementById('webcam-preview');
-    const capturedImg = document.getElementById('captured-image');
-    const captureBtn = document.getElementById('capture-btn');
-    const saveBtn = document.getElementById('save-capture-btn');
-    const retakeBtn = document.getElementById('retake-btn');
-    
-    const context = canvas.getContext('2d');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    
-    context.drawImage(video, 0, 0);
-    
-    const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
-    capturedImg.src = imageDataUrl;
-    
-    video.style.display = 'none';
-    preview.classList.remove('hidden');
-    captureBtn.classList.add('hidden');
-    saveBtn.classList.remove('hidden');
-    retakeBtn.classList.remove('hidden');
+async function capturePhoto() {
+    try {
+        const blob = await cameraService.capture();
+        
+        // Convert blob to data URL for preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const capturedPhoto = document.getElementById('captured-photo');
+            capturedPhoto.src = e.target.result;
+            
+            // Store blob for later use
+            window.capturedPhotoBlob = blob;
+            
+            // Show preview, hide camera
+            document.getElementById('camera-container').classList.add('hidden');
+            document.getElementById('photo-preview').classList.remove('hidden');
+        };
+        reader.readAsDataURL(blob);
+        
+    } catch (error) {
+        console.error('Photo capture failed:', error);
+        showNotification('Failed to capture photo. Please try again.', 'error');
+    }
 }
 
 function retakePhoto() {
-    const video = document.getElementById('webcam-video');
-    const preview = document.getElementById('webcam-preview');
-    const captureBtn = document.getElementById('capture-btn');
-    const saveBtn = document.getElementById('save-capture-btn');
-    const retakeBtn = document.getElementById('retake-btn');
+    // Hide preview, show camera
+    document.getElementById('photo-preview').classList.add('hidden');
+    document.getElementById('camera-container').classList.remove('hidden');
     
-    video.style.display = 'block';
-    preview.classList.add('hidden');
-    captureBtn.classList.remove('hidden');
-    saveBtn.classList.add('hidden');
-    retakeBtn.classList.add('hidden');
+    // Clear stored blob
+    window.capturedPhotoBlob = null;
 }
 
 async function saveCapturedPhoto() {
-    const canvas = document.getElementById('webcam-canvas');
+    if (!window.capturedPhotoBlob) {
+        showNotification('No photo captured. Please take a photo first.', 'error');
+        return;
+    }
     
     try {
-        // Convert canvas to blob
-        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.8));
+        const fileName = `profile-picture-${Date.now()}.png`;
+        const downloadURL = await uploadFile(window.capturedPhotoBlob, `profile-pictures/${currentUser.uid}/${fileName}`);
         
-        const fileName = `profile-pics/${currentUser.uid}/${Date.now()}-webcam.jpg`;
-        const downloadURL = await uploadFile(fileName, blob);
-        
+        // Add to profile pictures
         if (!lifeCvData.profilePictures) {
-            lifeCvData.profilePictures = { images: [], primary: null };
+            lifeCvData.profilePictures = { pictures: [], primaryPicture: null };
         }
         
-        lifeCvData.profilePictures.images.push(downloadURL);
+        const newPicture = {
+            id: Date.now().toString(),
+            url: downloadURL,
+            filename: fileName,
+            uploadedAt: new Date().toISOString(),
+            type: 'webcam'
+        };
         
-        if (!lifeCvData.profilePictures.primary) {
-            lifeCvData.profilePictures.primary = downloadURL;
+        lifeCvData.profilePictures.pictures.push(newPicture);
+        
+        // Set as primary if it's the first picture
+        if (!lifeCvData.profilePictures.primaryPicture) {
+            lifeCvData.profilePictures.primaryPicture = newPicture.id;
         }
         
         await updateDocument('users', currentUser.uid, { 'lifeCv.profilePictures': lifeCvData.profilePictures });
         
         closeWebcamModal();
         renderAllSections();
+        showNotification('Profile picture saved successfully!', 'success');
         
     } catch (error) {
-        console.error('Error saving captured photo:', error);
-        alert('Failed to save photo. Please try again.');
+        console.error('Error saving photo:', error);
+        showNotification('Failed to save photo. Please try again.', 'error');
     }
 }
 
 function closeWebcamModal() {
-    const modal = document.querySelector('.fixed');
-    const video = document.getElementById('webcam-video');
-    
-    if (video && video.srcObject) {
-        video.srcObject.getTracks().forEach(track => track.stop());
+    // Stop camera stream
+    if (cameraService) {
+        cameraService.stop();
+        cameraService = null;
     }
     
-    modal.remove();
+    // Remove modal
+    const modal = document.querySelector('.fixed.inset-0');
+    if (modal) {
+        modal.remove();
+    }
+    
+    // Clear stored blob
+    window.capturedPhotoBlob = null;
 }
 
 // === FAMILY SECTION WITH FAMILY HUB INTEGRATION ===
@@ -2047,8 +2108,6 @@ function createBusinessCardsSection(key, sectionConfig, data) {
                                     <h4 class="font-semibold text-slate-800">${template.name}</h4>
                                     <span class="px-2 py-1 bg-slate-100 text-slate-700 rounded-full text-xs">${template.orientation}</span>
                                 </div>
-                                <div class="mb-3">
-                                    <div class="w-full h-32 bg-slate-100 rounded-lg flex items-center justify-center">
                                         <span class="text-slate-500 text-sm">Preview</span>
                                     </div>
                                 </div>

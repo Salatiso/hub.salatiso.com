@@ -612,4 +612,91 @@ function showPIIWarningModal(data = {}) {
             <div class="bg-white rounded-xl shadow-xl max-w-lg w-full">
                 <!-- Header -->
                 <div class="flex items-center justify-between p-6 border-b border-slate-200">
-                    // filepath: e:\Google Drive\@Work\Web Development\GitHub\hub.salatiso.com\assets\js\ui\lifecv-modals-advanced.js
+                    <div class="flex items-center space-x-3">
+                        <div class="p-2 bg-red-100 rounded-lg">
+                            <i class="fas fa-exclamation-triangle text-red-600"></i>
+                        </div>
+                        <h2 class="text-xl font-bold text-slate-900">Personal Information Detected</h2>
+                    </div>
+                </div>
+                
+                <!-- Content -->
+                <div class="p-6">
+                    <div class="mb-4">
+                        <p class="text-slate-700 mb-4">We've detected personally identifiable information (PII) in your import that may need special privacy consideration:</p>
+                        
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                            <h4 class="font-medium text-red-800 mb-2">Detected PII Fields:</h4>
+                            <ul class="text-sm text-red-700 space-y-1" id="pii-fields-list">
+                                ${(data.piiFields || []).map(field => `<li>• ${field}</li>`).join('')}
+                            </ul>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <h4 class="font-medium text-slate-800">Privacy Options:</h4>
+                            <div class="space-y-2">
+                                <label class="flex items-start">
+                                    <input type="radio" name="pii-action" value="private" class="mt-1 mr-3" checked>
+                                    <div>
+                                        <span class="font-medium text-slate-700">Set as Private</span>
+                                        <p class="text-sm text-slate-600">Mark these fields as private (recommended)</p>
+                                    </div>
+                                </label>
+                                <label class="flex items-start">
+                                    <input type="radio" name="pii-action" value="public" class="mt-1 mr-3">
+                                    <div>
+                                        <span class="font-medium text-slate-700">Keep as Public</span>
+                                        <p class="text-sm text-slate-600">These fields will be visible when sharing</p>
+                                    </div>
+                                </label>
+                                <label class="flex items-start">
+                                    <input type="radio" name="pii-action" value="exclude" class="mt-1 mr-3">
+                                    <div>
+                                        <span class="font-medium text-slate-700">Exclude from Import</span>
+                                        <p class="text-sm text-slate-600">Don't import these fields at all</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Footer -->
+                <div class="flex items-center justify-between p-6 border-t border-slate-200 bg-slate-50">
+                    <button class="modal-close px-4 py-2 text-slate-600 hover:text-slate-800">Cancel Import</button>
+                    <button id="continue-import-btn" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                        Continue Import
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('modal-placeholder').innerHTML = modalHTML;
+    
+    // Setup PII handling
+    const continueBtn = document.getElementById('continue-import-btn');
+    
+    continueBtn.addEventListener('click', () => {
+        const selectedAction = document.querySelector('input[name="pii-action"]:checked').value;
+        
+        // Handle the PII according to user choice
+        if (data.callback) {
+            data.callback({
+                action: selectedAction,
+                fields: data.piiFields || []
+            });
+        }
+        
+        hideModal();
+        
+        // Show appropriate notification
+        const messages = {
+            private: 'PII fields set to private and imported',
+            public: 'PII fields imported as public',
+            exclude: 'PII fields excluded from import'
+        };
+        
+        showNotification(messages[selectedAction], 'success');
+    });
+}

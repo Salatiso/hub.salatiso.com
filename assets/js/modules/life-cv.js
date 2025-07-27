@@ -9,11 +9,17 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/fi
 import { auth } from '../firebase-config.js';
 
 // Import all specialized modules that make up the LifeCV functionality
-import * as DataService from '../services/life-cv-data-service.js';
-import * as Renderer from '../ui/lifecv-renderer.js';
-import * as Dashboard from '../ui/lifecv-dashboard.js';
-import * as Modals from '../ui/lifecv-modals.js';
-import * as Events from '../ui/lifecv-events.js';
+try {
+    var DataService = await import('../services/life-cv-data-service.js');
+    var Renderer = await import('../ui/lifecv-renderer.js');
+    var Dashboard = await import('../ui/lifecv-dashboard.js');
+    var Modals = await import('../ui/lifecv-modals.js');
+    var Events = await import('../ui/lifecv-events.js');
+    console.log('All modules loaded successfully');
+} catch (error) {
+    console.error('Failed to load modules:', error);
+    throw new Error(`Module loading failed: ${error.message}`);
+}
 
 let currentUser = null;
 let isInitialized = false;

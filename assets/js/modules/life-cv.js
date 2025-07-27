@@ -1429,7 +1429,7 @@ function openWebcamModal() {
             </div>
             <div class="p-6 border-t border-slate-200 flex justify-end">
                 <button type="button" onclick="closeWebcamModal()" 
-                        class="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300 transition-colors">
+                        class="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300">
                     Cancel
                 </button>
             </div>
@@ -2950,58 +2950,37 @@ async function saveSection(event) {
     }
 }
 
-// === IMPORT/EXPORT FUNCTIONALITY ===
-function attachImportListeners() {
-    console.log('Import listeners attached');
-    // This will be implemented in future iterations
-}
+// Cleanup function for when user leaves page
+window.addEventListener('beforeunload', () => {
+    // Stop camera if active
+    if (cameraService) {
+        cameraService.stop();
+    }
+    
+    // Clean up sync listeners
+    if (window.activeSyncListeners) {
+        window.activeSyncListeners.forEach(unsubscribe => unsubscribe());
+    }
+});
 
-// Export LifeCV data
-function exportLifeCvData() {
-    const dataStr = JSON.stringify(lifeCvData, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    
-    const exportFileDefaultName = `lifecv-${currentUser.uid}-${new Date().toISOString().split('T')[0]}.json`;
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
-    
-    showNotification('LifeCV data exported successfully!', 'success');
-}
-
-// Import LifeCV data
-function importLifeCvData(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = async function(e) {
+// Enhanced error handling for async functions
+function withErrorHandling(asyncFn) {
+    return async function(...args) {
         try {
-            const importedData = JSON.parse(e.target.result);
-            
-            // Validate the data structure
-            if (typeof importedData !== 'object') {
-                throw new Error('Invalid data format');
-            }
-            
-            // Merge with existing data
-            const mergedData = { ...lifeCvData, ...importedData };
-            
-            await updateDocument('users', currentUser.uid, { 'lifeCv': mergedData });
-            
-            showNotification('LifeCV data imported successfully!', 'success');
-            renderAllSections();
-            
+            return await asyncFn.apply(this, args);
         } catch (error) {
-            console.error('Error importing data:', error);
-            showNotification('Failed to import data. Please check the file format.', 'error');
+            console.error(`Error in ${asyncFn.name}:`, error);
+            showNotification(`Operation failed: ${error.message}`, 'error');
+            throw error;
         }
     };
-    
-    reader.readAsText(file);
 }
+
+// Wrap critical functions with error handling
+window.saveSection = withErrorHandling(saveSection);
+window.saveItem = withErrorHandling(saveItem);
+window.deleteItem = withErrorHandling(deleteItem);
+window.saveCapturedPhoto = withErrorHandling(saveCapturedPhoto);
 
 // Make export function globally available
 window.exportLifeCvData = exportLifeCvData;

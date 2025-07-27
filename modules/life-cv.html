@@ -3,28 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LifeCV - Your Digital Life Portfolio</title>
-    
-    <!-- Tailwind CSS CDN -->
+    <title>LifeCV - Your Complete Life Profile</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- QR Code Generator Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+    <!-- PDF.js for PDF parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <!-- Mammoth.js for DOCX parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
     
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Remove CSS links that cause 404 errors - Tailwind handles the styling -->
     <style>
         /* Essential CSS inline to avoid server issues */
         .hidden { display: none !important; }
         .show { display: block !important; }
         .rotate-180 { transform: rotate(180deg); }
         .notification { max-width: 400px; word-wrap: break-word; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); }
-        .accordion-content { display: none; transition: all 0.3s ease; }
-        .accordion-content.show { display: block; }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+        .accordion-content.show { max-height: 2000px; }
         .search-matched { border-color: #3b82f6 !important; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important; }
+        .gradient-border { background: linear-gradient(45deg, #4f46e5, #7c3aed, #ec4899); border-radius: 12px; padding: 2px; }
+        .gradient-border-inner { background: white; border-radius: 10px; }
+        .search-result-item { transition: all 0.3s ease; transform: translateY(10px); opacity: 0; }
+        .search-result-item.animate-in { transform: translateY(0); opacity: 1; }
+        .search-result-item:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); }
+        .profile-pic-gallery img { border: 4px solid transparent; transition: border-color 0.2s; }
+        .profile-pic-gallery img.primary { border-color: #4f46e5; }
+        .shimmer { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        #app-container { visibility: hidden; }
     </style>
 </head>
 
-<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans">
+<body class="bg-slate-100 min-h-screen" data-module="life-cv">
     <!-- Loading Indicator -->
     <div id="loading-indicator" class="fixed inset-0 bg-white bg-opacity-90 flex items-center justify-center z-50">
         <div class="text-center">
@@ -47,132 +58,148 @@
         </div>
     </div>
 
-    <div id="app-container" class="flex h-screen">
-        <!-- Sidebar Placeholder -->
+    <div id="app-container" class="flex h-screen bg-slate-100">
+        <!-- Sidebar will be injected here -->
         <div id="sidebar-placeholder"></div>
 
-        <!-- Main Content Wrapper -->
-        <div class="main-content-wrapper flex-1 flex flex-col">
-            <!-- Header Placeholder -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Header will be injected here -->
             <div id="header-placeholder"></div>
 
-            <main class="content-area flex-1 overflow-y-auto p-6">
-                <div class="max-w-7xl mx-auto">
-                    <!-- Search Section -->
-                    <div class="search-section">
-                        <div class="flex items-center space-x-4">
-                            <div class="flex-1">
-                                <div class="relative">
-                                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-                                    <input type="text" id="section-search" placeholder="Search sections, fields, or data..." 
-                                           class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                                </div>
-                            </div>
-                            <button onclick="clearSearch()" class="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors">
-                                <i class="fas fa-times mr-2"></i>Clear
-                            </button>
+            <!-- Main Content -->
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-slate-100 p-6">
+                <div class="max-w-6xl mx-auto">
+                    <!-- Page Header -->
+                    <div class="mb-8 text-center">
+                        <div class="inline-block p-3 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full mb-4">
+                            <i class="fas fa-user-circle text-white text-3xl"></i>
                         </div>
-                        <div id="search-results" class="mt-3 hidden">
-                            <p class="text-sm text-slate-600 mb-2">Search results:</p>
-                            <div id="search-results-list" class="space-y-2"></div>
+                        <h1 class="text-4xl font-bold text-slate-900 mb-2">LifeCV</h1>
+                        <p class="text-lg text-slate-600 max-w-2xl mx-auto">Your comprehensive, living curriculum vitae. The master source for your digital homestead.</p>
+                    </div>
+
+                    <!-- Import Hub -->
+                    <div class="gradient-border mb-8">
+                        <div class="gradient-border-inner p-8">
+                            <div class="text-center mb-6">
+                                <h2 class="text-2xl font-bold text-slate-800 mb-2">Import & Sync</h2>
+                                <p class="text-slate-600">Quickly populate your LifeCV by importing data from existing sources.</p>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                                <!-- JSON Import -->
+                                <button id="json-import-btn" class="group bg-white hover:bg-slate-50 p-6 rounded-xl border border-slate-200 hover:border-indigo-300 transition-all duration-300 text-left shadow-sm hover:shadow-md">
+                                    <div class="flex items-start flex-col">
+                                        <div class="flex-shrink-0 p-3 bg-indigo-100 rounded-lg group-hover:bg-indigo-200 transition-colors mb-3">
+                                            <i class="fas fa-code text-indigo-600 text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold text-slate-800 mb-1">Import from JSON</h3>
+                                            <p class="text-sm text-slate-600 leading-relaxed">Paste your LifeCV data in JSON format for instant import.</p>
+                                        </div>
+                                    </div>
+                                </button>
+
+                                <!-- File Import -->
+                                <label for="file-import-input" class="group bg-white hover:bg-slate-50 p-6 rounded-xl border border-slate-200 hover:border-green-300 transition-all duration-300 cursor-pointer text-left shadow-sm hover:shadow-md">
+                                    <div class="flex items-start flex-col">
+                                        <div class="flex-shrink-0 p-3 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors mb-3">
+                                            <i class="fas fa-file-alt text-green-600 text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold text-slate-800 mb-1">Upload Document</h3>
+                                            <p class="text-sm text-slate-600 leading-relaxed">Upload CV/resume (PDF, DOCX, TXT) to auto-extract information.</p>
+                                        </div>
+                                    </div>
+                                </label>
+                                <input type="file" id="file-import-input" class="hidden" accept=".txt,.pdf,.docx,.doc">
+
+                                <!-- Internet Search -->
+                                <button id="internet-search-btn" class="group bg-white hover:bg-slate-50 p-6 rounded-xl border border-slate-200 hover:border-purple-300 transition-all duration-300 text-left shadow-sm hover:shadow-md">
+                                    <div class="flex items-start flex-col">
+                                        <div class="flex-shrink-0 p-3 bg-purple-100 rounded-lg group-hover:bg-purple-200 transition-colors mb-3">
+                                            <i class="fas fa-search text-purple-600 text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold text-slate-800 mb-1">Search Internet</h3>
+                                            <p class="text-sm text-slate-600 leading-relaxed">Discover your professional information across the web.</p>
+                                        </div>
+                                    </div>
+                                </button>
+
+                                <!-- AI Assistant -->
+                                <button id="ai-instructions-btn" class="group bg-white hover:bg-slate-50 p-6 rounded-xl border border-slate-200 hover:border-blue-300 transition-all duration-300 text-left shadow-sm hover:shadow-md">
+                                    <div class="flex items-start flex-col">
+                                        <div class="flex-shrink-0 p-3 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition-colors mb-3">
+                                            <i class="fas fa-robot text-blue-600 text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold text-slate-800 mb-1">AI Instructions</h3>
+                                            <p class="text-sm text-slate-600 leading-relaxed">Get AI prompts to convert any resume to LifeCV format.</p>
+                                        </div>
+                                    </div>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Dashboard Placeholder -->
                     <div id="lifecv-dashboard-placeholder"></div>
 
-                    <!-- Main LifeCV Sections -->
-                    <div id="lifecv-sections-container" class="mt-8">
-                         <h2 class="text-2xl font-bold text-slate-700 dark:text-slate-300 mb-4">Your LifeCV</h2>
-                         <div id="lifecv-sections" class="space-y-4">
-                            <!-- Sections will be rendered here by JavaScript -->
-                         </div>
+                    <!-- Main LifeCV Container -->
+                    <div id="lifecv-container" class="space-y-6">
+                        <!-- Sections will be dynamically loaded here -->
+                        <div class="text-center py-16">
+                            <div class="inline-block p-4 bg-slate-200 rounded-full mb-4">
+                                <i class="fas fa-sync-alt text-slate-500 text-2xl"></i>
+                            </div>
+                            <p class="text-slate-500 text-lg">Loading your LifeCV...</p>
+                        </div>
                     </div>
                 </div>
             </main>
         </div>
     </div>
-
-    <!-- Camera elements for the camera service -->
-    <div id="camera-elements" style="display: none;">
-        <video id="webcam-video" autoplay muted></video>
-        <canvas id="capture-canvas"></canvas>
-        <video id="webcam-video-modal" autoplay muted></video>
-        <canvas id="capture-canvas-modal"></canvas>
-    </div>
-
-    <!-- Modals will be injected here -->
+    
+    <!-- Hidden Camera Elements -->
+    <video id="webcam-video" style="display: none;" autoplay muted playsinline></video>
+    <canvas id="capture-canvas" style="display: none;"></canvas>
+    
+    <!-- Modal Placeholder -->
     <div id="modal-placeholder"></div>
     
     <!-- Notification Container -->
     <div id="notification-container" class="fixed bottom-5 right-5 z-[100]"></div>
 
-    <!-- Load components first -->
-    <script>
-        // Load header and sidebar from the correct app.js system
-        // Remove the component loading since app.js handles this
-        document.addEventListener('DOMContentLoaded', () => {
-            // Let app.js handle the UI components
-        });
-    </script>
-
-    <!-- Core App Scripts - Add these BEFORE the life-cv module -->
+    <!-- Core App Scripts -->
     <script type="module" src="../assets/js/firebase-config.js"></script>
     <script type="module" src="../assets/js/app.js"></script>
-    
-    <!-- Main JavaScript module -->
     <script type="module" src="../assets/js/modules/life-cv.js"></script>
-    
+
     <script>
-        // Global error handlers
-        const showError = (message) => {
-            const loadingIndicator = document.getElementById('loading-indicator');
-            const errorBoundary = document.getElementById('error-boundary');
-            
-            if (loadingIndicator) loadingIndicator.classList.add('hidden');
-            if (errorBoundary) {
-                errorBoundary.classList.remove('hidden');
-                const errorMessage = errorBoundary.querySelector('p');
-                if (errorMessage) errorMessage.textContent = message;
-            }
+        // Global configuration
+        window.lifeCvConfig = {
+            googleApiKey: "AIzaSyDfm0Bvir6j_72RdxfxZYfGjWdJNXvwK9k",
+            searchEngineId: "5122dffc3f9614d0a",
+            enableInternetSearch: true,
+            enableAiProcessing: true
         };
 
+        // Global error handlers
         window.addEventListener('error', (event) => {
-            // Ignore Chrome extension errors
-            if (event.message && event.message.includes('Extension context invalidated')) {
-                return;
-            }
-            if (event.message && event.message.includes('message channel closed')) {
+            if (event.message && (event.message.includes('Extension context invalidated') || 
+                                 event.message.includes('message channel closed'))) {
                 return;
             }
             console.error('Global error caught:', event.error);
         });
 
         window.addEventListener('unhandledrejection', (event) => {
-            // Ignore Chrome extension promise rejections
             if (event.reason && event.reason.message && event.reason.message.includes('message channel closed')) {
                 event.preventDefault();
                 return;
             }
             console.error('Unhandled promise rejection:', event.reason);
-        });
-
-        // Initialize LifeCV when DOM is ready
-        document.addEventListener('DOMContentLoaded', async () => {
-            try {
-                // Wait a moment for components to load
-                setTimeout(async () => {
-                    if (typeof initLifeCV !== 'undefined') {
-                        await initLifeCV();
-                    } else {
-                        console.error('initLifeCV function not found');
-                        showError('Failed to initialize LifeCV module.');
-                    }
-                }, 100);
-            } catch (error) {
-                console.error('Error during LifeCV initialization:', error);
-                showError('Failed to start LifeCV. Please refresh the page.');
-            }
         });
     </script>
 </body>

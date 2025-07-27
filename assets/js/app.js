@@ -9,6 +9,9 @@ import { auth } from './firebase-config.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { initTranslations, applyTranslations } from './translations-engine.js';
 
+// Add LifeCV imports at the top
+import { init as initLifeCV } from './modules/life-cv.js';
+
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- 1. DEFINE SHARED UI COMPONENTS ---
@@ -431,5 +434,27 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
+    // Add to the module initialization section
+    async function initializeModule(user) {
+        const currentModule = getCurrentModule();
+        
+        try {
+            showLoadingState();
+            
+            switch (currentModule) {
+                case 'life-cv':
+                    await initLifeCV(user);
+                    break;
+                // ...existing cases...
+            }
+            
+            hideLoadingState();
+            
+        } catch (error) {
+            console.error(`Error initializing ${currentModule}:`, error);
+            showErrorState(error);
+        }
+    }
 
 });

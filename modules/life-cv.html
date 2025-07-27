@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LifeCV - Your Complete Life Profile</title>
-    <!-- Corrected favicon path -->
-    <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
+    <!-- Corrected favicon path to go up one directory -->
+    <link rel="icon" type="image/x-icon" href="../assets/images/favicon.ico">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- QR Code Generator Library -->
     <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
-    <!-- Corrected CSS paths -->
-    <link rel="stylesheet" href="assets/css/main.css">
-    <link rel="stylesheet" href="assets/css/modules.css">
+    <!-- Corrected CSS paths to go up one directory -->
+    <link rel="stylesheet" href="../assets/css/main.css">
+    <link rel="stylesheet" href="../assets/css/modules.css">
     <style>
         /* Custom styles for accordion, camera, etc. remain unchanged */
         .accordion-content {
@@ -98,7 +98,8 @@
     ================================================================
     -->
     <script type="module">
-        import { initLifeCV } from './assets/js/modules/life-cv.js';
+        // Corrected path to go up one directory
+        import { initLifeCV } from '../assets/js/modules/life-cv.js';
 
         // Global error handlers to catch issues anywhere in the app
         const showError = (message) => {
@@ -124,9 +125,9 @@
 
         // Initialize the application
         document.addEventListener('DOMContentLoaded', () => {
-            // Load shared components
-            fetch('./components/header.html').then(res => res.text()).then(data => document.getElementById('header-placeholder').innerHTML = data);
-            fetch('./components/sidebar.html').then(res => res.text()).then(data => document.getElementById('sidebar-placeholder').innerHTML = data);
+            // Load shared components using corrected paths
+            fetch('../components/header.html').then(res => res.text()).then(data => document.getElementById('header-placeholder').innerHTML = data);
+            fetch('../components/sidebar.html').then(res => res.text()).then(data => document.getElementById('sidebar-placeholder').innerHTML = data);
 
             // Start the LifeCV module
             initLifeCV().catch(error => {

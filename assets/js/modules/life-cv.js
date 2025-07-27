@@ -1,28 +1,28 @@
-/* ================================================================================= */
-/* FILE: assets/js/modules/life-cv.js (COMPLETE SPECIFICATION IMPLEMENTATION)       */
-/* PURPOSE: Full LifeCV implementation with all features per technical specification */
-/* VERSION: 2.0 - Complete Overhaul                                                 */
-/* ================================================================================= */
-
-import { auth, db } from '../firebase-config.js';
-import { getDocument, updateDocument, addDocument } from '../database.js';
-import { uploadFile, deleteFile } from '../storage.js';
-import { doc, onSnapshot, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-
-let currentUser = null;
-let lifeCvData = {}; // Local cache for user's LifeCV data
-let completenessScore = 0;
-let analysisData = {};
-
-// Enhanced data structure with privacy and metadata
-const createFieldObject = (value = '', isPublic = false, sensitive = false) => ({
-    value: value,
-    isPublic: sensitive ? false : isPublic, // Sensitive fields default to private
-    lastModified: new Date().toISOString(),
-    sensitive: sensitive || false
-});
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeCV - Your Complete Life Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .accordion-content {
+            display: none;
+        }
+        .accordion-content.show {
+            display: block;
+        }
+        .rotate-180 {
+            transform: rotate(180deg);
+        }
+        .lifecycle-notification {
+            z-index: 60;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen">
+    <!-- Navigation -->
 // Define the holistic structure of the LifeCV with enhanced metadata
 const lifeCvSections = {
     profilePictures: { 
@@ -634,7 +634,7 @@ function renderDashboard() {
                 </div>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
                 <div class="bg-white bg-opacity-20 rounded-lg p-4">
                     <div class="text-2xl font-bold">${completeSections}</div>
                     <div class="text-sm text-indigo-100">Complete Sections</div>
@@ -646,6 +646,15 @@ function renderDashboard() {
                 <div class="bg-white bg-opacity-20 rounded-lg p-4">
                     <div class="text-2xl font-bold">${Object.keys(lifeCvData.lifeSync?.connections || {}).length || 0}</div>
                     <div class="text-sm text-indigo-100">LifeSync Connections</div>
+                </div>
+                <div class="bg-white bg-opacity-20 rounded-lg p-4 flex flex-col space-y-2">
+                    <button onclick="exportLifeCvData()" class="text-xs bg-white bg-opacity-20 hover:bg-opacity-30 px-2 py-1 rounded transition-colors">
+                        <i class="fas fa-download mr-1"></i>Export
+                    </button>
+                    <label class="text-xs bg-white bg-opacity-20 hover:bg-opacity-30 px-2 py-1 rounded cursor-pointer transition-colors">
+                        <i class="fas fa-upload mr-1"></i>Import
+                        <input type="file" accept=".json" onchange="importLifeCvData(event)" class="hidden">
+                    </label>
                 </div>
             </div>
         </div>

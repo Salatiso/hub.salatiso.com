@@ -227,45 +227,40 @@
             console.error('Global error:', event.error);
             const errorBoundary = document.getElementById('error-boundary');
             const errorMessage = document.getElementById('error-message');
-            errorMessage.textContent = event.error.message || 'An unexpected error occurred';
-            errorBoundary.classList.remove('hidden');
+            if (errorBoundary && errorMessage) {
+                errorMessage.textContent = event.error.message || 'An unexpected error occurred';
+                errorBoundary.classList.remove('hidden');
+            }
         });
         
         window.addEventListener('unhandledrejection', (event) => {
             console.error('Unhandled promise rejection:', event.reason);
             const errorBoundary = document.getElementById('error-boundary');
             const errorMessage = document.getElementById('error-message');
-            errorMessage.textContent = event.reason.message || 'A network or data error occurred';
-            errorBoundary.classList.remove('hidden');
+            if (errorBoundary && errorMessage) {
+                errorMessage.textContent = event.reason.message || 'A network or data error occurred';
+                errorBoundary.classList.remove('hidden');
+            }
         });
 
-        // Import modules
+        // Import and initialize
         import { init } from '../assets/js/modules/life-cv.js';
         import { auth } from '../assets/js/firebase-config.js';
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         
-        // Make auth globally available for sign out
+        // Make auth globally available
         window.auth = auth;
         
-        // Initialize when user is authenticated
-        onAuthStateChanged(auth, (user) => {
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
             const loadingIndicator = document.getElementById('loading-indicator');
             
-            if (user) {
-                try {
-                    init(user);
-                    setTimeout(() => {
-                        loadingIndicator.style.display = 'none';
-                    }, 1000);
-                } catch (error) {
-                    console.error('Initialization error:', error);
-                    loadingIndicator.style.display = 'none';
-                    throw error;
-                }
-            } else {
-                window.location.href = '../login.html';
-            }
-        });
-    </script>
-</body>
-</html>
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    try {
+                        init(user);
+                        // Hide loading after a short delay
+                        setTimeout(() => {
+                            if (loadingIndicator) {
+                                loadingIndicator.style.display = 'none';
+                           

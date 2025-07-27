@@ -11,14 +11,17 @@
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Custom CSS with correct paths -->
-    <link rel="stylesheet" href="../assets/css/style.css">
-    <link rel="stylesheet" href="../assets/css/main.css">
-    <link rel="stylesheet" href="../assets/css/modules.css">
-    <link rel="stylesheet" href="../assets/css/quiz.css">
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==">
+    <!-- Remove CSS links that cause 404 errors - Tailwind handles the styling -->
+    <style>
+        /* Essential CSS inline to avoid server issues */
+        .hidden { display: none !important; }
+        .show { display: block !important; }
+        .rotate-180 { transform: rotate(180deg); }
+        .notification { max-width: 400px; word-wrap: break-word; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); }
+        .accordion-content { display: none; transition: all 0.3s ease; }
+        .accordion-content.show { display: block; }
+        .search-matched { border-color: #3b82f6 !important; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important; }
+    </style>
 </head>
 
 <body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans">
@@ -167,13 +170,3 @@
     </script>
 </body>
 </html>
-
-/* Create these empty files to prevent 404 errors: */
-/* File: assets/css/style.css */
-/* Main styles - empty for now */
-
-/* File: assets/css/modules.css */
-/* Module-specific styles - empty for now */
-
-/* File: assets/css/quiz.css */
-/* Quiz-specific styles - empty for now */

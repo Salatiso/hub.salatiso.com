@@ -28,7 +28,21 @@ export async function init(user, callback) {
     
     onSnapshot(userDocRef, (doc) => {
         if (doc.exists()) {
-            lifeCvData = doc.data().lifeCvData || {};
+            const userData = doc.data();
+            
+            // Check for existing data under different keys
+            if (userData.lifeCv) {
+                console.log('Found existing data under lifeCv, migrating...');
+                lifeCvData = migrateExistingData(userData.lifeCv);
+                // Save migrated data
+                setDoc(userDocRef, { lifeCvData }, { merge: true });
+            } else if (userData.lifeCvData) {
+                lifeCvData = userData.lifeCvData;
+            } else {
+                // Create initial document
+                lifeCvData = getDefaultLifeCvData();
+                setDoc(userDocRef, { lifeCvData }, { merge: true });
+            }
         } else {
             // Create initial document
             lifeCvData = getDefaultLifeCvData();
@@ -40,6 +54,99 @@ export async function init(user, callback) {
         }
     }, (error) => {
         console.error('Error listening to Firestore:', error);
+    });
+}
+
+/**
+ * Migrate existing data structure to new format
+ */
+function migrateExistingData(existingData) {
+    console.log('Migrating existing data structure...');
+    
+    const migrated = {
+        personalInfo: {
+            name: { value: existingData.personal?.fullName || '', isPublic: true },
+            email: { value: existingData.personal?.email || '', isPublic: true },
+            phone: { value: existingData.personal?.phone || '', isPublic: false },
+            address: { value: existingData.personal?.address || '', isPublic: false },
+            dateOfBirth: { value: existingData.personal?.dob || '', isPublic: false },
+            profilePicture: { value: '', isPublic: true }
+        },
+        education: migrateArraySection(existingData.education, {
+            institution: 'institution',
+            degree: 'qualification',
+            field: 'field',
+            startDate: '',
+            endDate: 'yearCompleted',
+            gpa: 'grade',
+            description: 'significance'
+        }),
+        experience: migrateArraySection(existingData.experience, {
+            company: 'company',
+            position: 'jobTitle',
+            startDate: 'startDate',
+            endDate: 'endDate',
+            current: false,
+            description: 'description',
+            achievements: 'skills'
+        }),
+        skills: migrateArraySection(existingData.skills, {
+            name: 'skillName',
+            level: 'proficiency',
+            category: 'category',
+            yearsOfExperience: ''
+        }),
+        certifications: migrateArraySection(existingData.certifications, {
+            name: 'name',
+            issuer: 'issuer',
+            dateObtained: 'date',
+            expiryDate: 'expires',
+            credentialId: 'credentialId',
+            url: 'url'
+        }),
+        projects: migrateArraySection(existingData.projects, {
+            name: 'name',
+            description: 'description',
+            technologies: 'technologies',
+            startDate: '',
+            endDate: '',
+            url: 'url',
+            githubUrl: ''
+        }),
+        languages: migrateArraySection(existingData.languages, {
+            language: 'language',
+            proficiency: 'proficiency',
+            certifications: 'context'
+        }),
+        interests: migrateArraySection(existingData.interests, {
+            name: 'interest',
+            description: 'description',
+            level: 'level'
+        })
+    };
+    
+    console.log('Data migration completed');
+    return migrated;
+}
+
+/**
+ * Helper function to migrate array sections
+ */
+function migrateArraySection(sourceArray, fieldMapping) {
+    if (!Array.isArray(sourceArray)) return [];
+    
+    return sourceArray.map(item => {
+        const migratedItem = {};
+        
+        for (const [newField, oldField] of Object.entries(fieldMapping)) {
+            const value = typeof oldField === 'string' && oldField ? item[oldField] : '';
+            migratedItem[newField] = {
+                value: value || '',
+                isPublic: true
+            };
+        }
+        
+        return migratedItem;
     });
 }
 

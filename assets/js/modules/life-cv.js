@@ -434,25 +434,14 @@ function handleDataUpdate(data) {
     }
 }
 
-// Add this export at the top with other imports/exports
-export { getCurrentUser } from '../auth/auth-service.js';
-
-// Or if you have getCurrentUser defined locally in this file, make sure to export it:
-export function getCurrentUser() {
-    // If you have a local implementation, put it here
-    // Otherwise, the re-export above will work
-    return currentUser;
-}
-
-// Make sure all other functions that lifecv-modals.js needs are exported:
-export { 
+// Keep only the exports that are actually defined in this file:
+export {
     initLifeCV,
     exportLifeCvData,
     importLifeCvData,
     searchData,
     clearSearchHighlights,
-    getCurrentUser,
-    // Add any other functions that modals might need
+    // Remove getCurrentUser from here since it's imported directly in lifecv-modals.js
     lifeCvData,
     lifeCvSections,
     updateDocument,

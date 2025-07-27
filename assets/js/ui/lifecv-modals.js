@@ -108,13 +108,21 @@ async function uploadProfilePicture(fileOrBlob, source = 'upload') {
         const user = getCurrentUser();
         if (!user) throw new Error('No authenticated user');
 
-        // Show loading state
+        // Validate file size (max 5MB)
+        if (fileOrBlob.size > 5 * 1024 * 1024) {
+            throw new Error('File size must be less than 5MB');
+        }
+
+        // Validate file type for uploads
+        if (source === 'upload' && !fileOrBlob.type.startsWith('image/')) {
+            throw new Error('Please select a valid image file');
+        }
+
         showNotification('Uploading picture...', 'info');
 
-        const fileName = `profile-picture-${Date.now()}.${source === 'camera' ? 'png' : 'jpg'}`;
+        const fileName = `profile-picture-${Date.now()}.${source === 'camera' ? 'png' : fileOrBlob.name.split('.').pop() || 'jpg'}`;
         const downloadURL = await uploadFile(fileOrBlob, `profile-pictures/${user.uid}/${fileName}`);
 
-        // Add to profile pictures
         const lifeCvData = getLifeCvData();
         if (!lifeCvData.profilePictures) {
             lifeCvData.profilePictures = { pictures: [] };
@@ -137,7 +145,7 @@ async function uploadProfilePicture(fileOrBlob, source = 'upload') {
 
     } catch (error) {
         console.error('Error uploading picture:', error);
-        showNotification('Failed to upload picture. Please try again.', 'error');
+        showNotification(`Upload failed: ${error.message}`, 'error');
     }
 }
 

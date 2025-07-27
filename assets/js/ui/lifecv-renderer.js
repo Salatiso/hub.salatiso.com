@@ -4,21 +4,37 @@
 /* and configuration, and returns rendered HTML strings.                             */
 /* ================================================================================= */
 
+let renderDebounceTimer;
+
 /**
  * Renders all sections and injects them into the DOM.
  * @param {object} data - The user's complete LifeCV data.
  * @param {object} sectionsConfig - The configuration object for all sections.
  */
 export function renderAllSections(data, sectionsConfig) {
+    // Debounce rapid re-renders
+    clearTimeout(renderDebounceTimer);
+    renderDebounceTimer = setTimeout(() => {
+        performRender(data, sectionsConfig);
+    }, 100);
+}
+
+function performRender(data, sectionsConfig) {
     const container = document.getElementById('lifecv-sections');
     if (!container) {
         console.error('Container #lifecv-sections not found');
         return;
     }
     
+    // Store scroll position
+    const scrollPosition = window.scrollY;
+    
     container.innerHTML = Object.entries(sectionsConfig).map(([key, section]) => {
         return generateSectionHTML(key, section, data);
     }).join('');
+
+    // Restore scroll position
+    window.scrollTo(0, scrollPosition);
 
     // Reattach event listeners after rendering
     attachSectionEventListeners();

@@ -7,6 +7,7 @@
 import { db } from '../firebase-config.js';
 import { doc, onSnapshot, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 import { setObjectValueByPath } from '../utils/helpers.js';
+import { sanitizeInput, validateEmail, validateUrl, validatePhoneNumber } from '../utils/validators.js';
 
 let lifeCvData = {}; // Local cache for user's LifeCV data
 let currentUser = null;
@@ -167,11 +168,53 @@ export async function saveLifeCvData() {
 }
 
 /**
+ * Validates a field's value based on its type.
+ * @param {object} field - The field configuration object.
+ * @param {*} value - The value to validate.
+ * @returns {boolean} True if valid, false otherwise.
+ */
+function validateFieldValue(field, value) {
+    if (!value) return true; // Allow empty values
+    
+    switch (field.type) {
+        case 'email':
+            return validateEmail(value);
+        case 'url':
+            return validateUrl(value);
+        case 'tel':
+            return validatePhoneNumber(value);
+        default:
+            return true;
+    }
+}
+
+/**
  * Updates a specific field and debounces the save operation.
  * @param {string} path - The dot-notation path to the field.
  * @param {*} value - The new value for the field.
  */
 export function updateField(path, value) {
+    // Sanitize string inputs
+    if (typeof value === 'string') {
+        value = sanitizeInput(value);
+    }
+    
+    // Validate based on field type if available
+    const pathParts = path.split('.');
+    if (pathParts.length >= 2) {
+        const sectionKey = pathParts[0];
+        const fieldId = pathParts[1];
+        const section = lifeCvSections[sectionKey];
+        
+        if (section?.fields) {
+            const field = section.fields.find(f => f.id === fieldId);
+            if (field && !validateFieldValue(field, value)) {
+                console.warn(`Invalid value for field ${field.label}: ${value}`);
+                return; // Don't save invalid data
+            }
+        }
+    }
+    
     setObjectValueByPath(lifeCvData, path, value);
     setObjectValueByPath(lifeCvData, path.replace('.value', '.lastModified'), new Date().toISOString());
 

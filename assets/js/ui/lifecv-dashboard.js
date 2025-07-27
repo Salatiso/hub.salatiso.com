@@ -97,33 +97,44 @@ function createInlineDashboard() {
     `;
 }
 
-/**
- * Updates the dashboard with the latest data.
- * @param {object} data - The user's complete LifeCV data.
- * @param {object} sectionsConfig - The configuration object for all sections.
- */
+// Add caching to prevent unnecessary recalculations
+let lastDataHash = '';
+let cachedAnalysis = null;
+
 export function update(data, sectionsConfig) {
+    // Create a simple hash of the data
+    const dataHash = JSON.stringify(data).length + Object.keys(data).length;
+    
+    // Only recalculate if data has changed
+    if (dataHash !== lastDataHash) {
+        cachedAnalysis = calculateCompleteness(data, sectionsConfig);
+        lastDataHash = dataHash;
+    }
+    
     const nameEl = document.getElementById('dashboard-user-name');
     const titleEl = document.getElementById('dashboard-user-title');
     const picEl = document.getElementById('dashboard-profile-pic');
     
-    // Update basic info
-    if (nameEl) nameEl.textContent = data.personal?.fullName?.value || 'Your Name';
+    // Update basic info with null checks
+    if (nameEl && nameEl.textContent !== (data.personal?.fullName?.value || 'Your Name')) {
+        nameEl.textContent = data.personal?.fullName?.value || 'Your Name';
+    }
     if (titleEl) titleEl.textContent = getFirstCareerTitle(data) || 'Your Professional Title';
-    if (picEl) picEl.src = getPrimaryPictureUrl(data);
+    if (picEl) {
+        const newSrc = getPrimaryPictureUrl(data);
+        if (picEl.src !== newSrc) {
+            picEl.src = newSrc;
+        }
+    }
 
-    // Calculate completeness
-    const { completeness, recommendations } = calculateCompleteness(data, sectionsConfig);
+    const { completeness, recommendations } = cachedAnalysis;
     
     const badgeEl = document.getElementById('dashboard-completeness-badge');
     const barEl = document.getElementById('dashboard-progress-bar');
     if (badgeEl) badgeEl.textContent = `${completeness}%`;
     if (barEl) barEl.style.width = `${completeness}%`;
 
-    // Update stats
     updateStats(data);
-    
-    // Update recommendations
     updateRecommendations(recommendations);
 }
 

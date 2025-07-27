@@ -118,11 +118,12 @@ async function exportLifeCvData() {
         link.download = `lifecv-backup-${new Date().toISOString().split('T')[0]}.json`;
         link.click();
         
-        // Use a notification function that's available globally or create one
-        console.log('LifeCV data exported successfully!');
+        // Use the imported notification function
+        Modals.showNotification('LifeCV data exported successfully!', 'success');
         
     } catch (error) {
         console.error('Export failed:', error);
+        Modals.showNotification('Export failed. Please try again.', 'error');
     }
 }
 

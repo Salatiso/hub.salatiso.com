@@ -7,7 +7,7 @@ import CameraService from '../services/camera-service.js';
 import { getLifeCvData, saveLifeCvData, updateField, getLifeCvSections } from '../services/life-cv-data-service.js';
 import { uploadFile } from '../firebase-config.js';
 import { getCurrentUser } from '../auth/auth-service.js';
-import { lifeCvData, lifeCvSections, updateDocument, showNotification } from '../modules/life-cv.js';
+import { lifeCvData, lifeCvSections, updateDocument } from '../modules/life-cv.js';
 
 let cameraService;
 let currentModal = null;
@@ -447,16 +447,50 @@ async function saveItemFromModal(sectionKey, index, modal) {
 }
 
 /**
- * Show notification (imported from events module)
+ * Check if already declared to prevent redeclaration
  */
-function showNotification(message, type = 'info') {
-    // Import the notification function from events module
-    if (window.showNotification) {
-        window.showNotification(message, type);
-    } else {
-        console.log(`${type.toUpperCase()}: ${message}`);
+if (typeof showNotification === 'undefined') {
+    function showNotification(message, type = 'info', duration = 3000) {
+        // Remove any existing notifications
+        const existingNotifications = document.querySelectorAll('.notification');
+        existingNotifications.forEach(n => n.remove());
+        
+        // Create new notification
+        const notification = document.createElement('div');
+        notification.className = `notification fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300 transform translate-x-full`;
+        
+        // Set type-specific styling
+        const typeClasses = {
+            'success': 'bg-green-500 text-white',
+            'error': 'bg-red-500 text-white',
+            'warning': 'bg-yellow-500 text-black',
+            'info': 'bg-blue-500 text-white'
+        };
+        
+        notification.className += ` ${typeClasses[type] || typeClasses.info}`;
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        
+        // Animate in
+        setTimeout(() => {
+            notification.style.transform = 'translateX(0)';
+        }, 10);
+        
+        // Auto remove
+        setTimeout(() => {
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 300);
+        }, duration);
     }
 }
+
+// Export the function
+export { showNotification };
 
 /**
  * Close any open modal

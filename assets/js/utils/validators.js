@@ -24,3 +24,17 @@ export function validateUrl(url) {
 export function validateRequired(value) {
     return value !== null && value !== undefined && value.trim() !== '';
 }
+
+// Add this function if it doesn't exist, or ensure it's exported if it does exist
+export const sanitizeInput = (input) => {
+    if (typeof input !== 'string') {
+        return String(input);
+    }
+    
+    // Basic HTML sanitization - remove script tags and dangerous attributes
+    return input
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+        .replace(/on\w+="[^"]*"/gi, '')
+        .replace(/javascript:/gi, '')
+        .trim();
+};

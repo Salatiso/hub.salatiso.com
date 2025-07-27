@@ -2693,6 +2693,51 @@ function toggleAccordion(event) {
     }
 }
 
+// === NOTIFICATION SYSTEM ===
+function showNotification(message, type = 'info') {
+    // Remove existing notifications
+    const existingNotifications = document.querySelectorAll('.lifecycle-notification');
+    existingNotifications.forEach(notif => notif.remove());
+    
+    const notification = document.createElement('div');
+    notification.className = `lifecycle-notification fixed top-4 right-4 z-[60] px-6 py-4 rounded-lg shadow-lg transform transition-all duration-300 translate-x-full`;
+    
+    const typeStyles = {
+        success: 'bg-green-600 text-white',
+        error: 'bg-red-600 text-white',
+        warning: 'bg-yellow-600 text-white',
+        info: 'bg-blue-600 text-white'
+    };
+    
+    const icons = {
+        success: 'fa-check-circle',
+        error: 'fa-exclamation-circle',
+        warning: 'fa-exclamation-triangle',
+        info: 'fa-info-circle'
+    };
+    
+    notification.className += ` ${typeStyles[type] || typeStyles.info}`;
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas ${icons[type] || icons.info} mr-3"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => {
+        notification.classList.remove('translate-x-full');
+    }, 100);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        notification.classList.add('translate-x-full');
+        setTimeout(() => notification.remove(), 300);
+    }, 5000);
+}
+
 // Create form fields for standard sections
 function createFormFieldsHtml(sectionKey, fields, sectionData) {
     if (!fields) return '<p class="text-slate-500">No fields configured for this section.</p>';

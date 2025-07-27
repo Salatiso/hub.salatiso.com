@@ -258,46 +258,9 @@
             
             onAuthStateChanged(auth, (user) => {
                 if (user) {
+                    console.log('User authenticated, initializing LifeCV...');
                     try {
                         init(user);
                         // Hide loading after a short delay
                         setTimeout(() => {
-                            if (loadingIndicator) {
-                                loadingIndicator.style.display = 'none';
-                            }
-                        }, 1000);
-                    } catch (error) {
-                        console.error('Initialization error:', error);
-                        if (loadingIndicator) {
-                            loadingIndicator.style.display = 'none';
-                        }
-                        // Show error boundary
-                        const errorBoundary = document.getElementById('error-boundary');
-                        const errorMessage = document.getElementById('error-message');
-                        if (errorBoundary && errorMessage) {
-                            errorMessage.textContent = `Failed to load LifeCV: ${error.message}`;
-                            errorBoundary.classList.remove('hidden');
-                        }
-                    }
-                } else {
-                    // User not logged in - redirect to login
-                    console.log('User not authenticated, redirecting to login');
-                    if (loadingIndicator) {
-                        loadingIndicator.style.display = 'none';
-                    }
-                    window.location.href = '../login.html';
-                }
-            });
-        });
-
-        // Global export/import functions
-        window.exportLifeCvData = function() {
-            console.log('Export functionality not yet implemented');
-        };
-
-        window.importLifeCvData = function(event) {
-            console.log('Import functionality not yet implemented');
-        };
-    </script>
-</body>
-</html>
+                            if

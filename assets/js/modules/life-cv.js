@@ -88,7 +88,7 @@ function waitForAuth() {
 // Fix the import/export functions that use these variables:
 // You need to access these through the DataService module instead
 
-export async function exportLifeCvData() {
+async function exportLifeCvData() {
     try {
         // Get data through the service instead of directly
         const lifeCvData = DataService.getLifeCvData();
@@ -126,7 +126,7 @@ export async function exportLifeCvData() {
     }
 }
 
-export async function importLifeCvData(event) {
+async function importLifeCvData(event) {
     const file = event.target.files[0];
     if (!file) return;
     
@@ -286,7 +286,7 @@ function mergeLifeCvData(existing, imported) {
     return merged;
 }
 
-export function searchData(query) {
+function searchData(query) {
     const searchResults = document.getElementById('search-results');
     const searchResultsList = document.getElementById('search-results-list');
     
@@ -372,7 +372,7 @@ function searchInItem(item, sectionKey, sectionConfig, query, results, contextPr
     });
 }
 
-export function clearSearchHighlights() {
+function clearSearchHighlights() {
     document.querySelectorAll('.search-highlight').forEach(el => {
         el.outerHTML = el.innerHTML;
     });

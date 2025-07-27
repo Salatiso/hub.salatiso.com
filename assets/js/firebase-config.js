@@ -25,27 +25,11 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Export the initialized services for other files to use
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const storage = getStorage(app);
+// Firebase configuration - placeholder for now
+export const auth = null;
+export const db = null;
+export const uploadFile = null;
 
-/**
- * Upload file to Firebase Storage
- * @param {File|Blob} file - File or blob to upload
- * @param {string} path - Storage path
- * @returns {Promise<string>} Download URL
- */
-export async function uploadFile(file, path) {
-    try {
-        const storageRef = ref(storage, path);
-        const snapshot = await uploadBytes(storageRef, file);
-        const downloadURL = await getDownloadURL(snapshot.ref);
-        return downloadURL;
-    } catch (error) {
-        console.error('Upload failed:', error);
-        throw new Error(`Upload failed: ${error.message}`);
-    }
-}
+console.warn('Firebase not configured yet');
 
 

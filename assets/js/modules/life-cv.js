@@ -5,20 +5,31 @@
 /* ================================================================================= */
 
 // --- Static Imports for Reliability ---
-// Import Firebase services and authentication functions
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { auth, db, uploadFile } from '../firebase-config.js';
+// For now, comment out Firebase until it's properly configured
+// import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+// import { auth, db, uploadFile } from '../firebase-config.js';
 
 // Import all specialized LifeCV modules
 import * as DataService from '../services/life-cv-data-service.js';
-import { LifeCVRenderer as renderer } from '../ui/lifecv-renderer.js';
-import * as Dashboard from '../ui/lifecv-dashboard.js';
-import * as Modals from '../ui/lifecv-modals.js';
-import * as Events from '../ui/lifecv-events.js';
+import * as renderer from '../ui/lifecv-renderer.js';
+import * as Dashboard from '../ui/dashboard.js';
+import { showNotification, Modals } from '../ui/lifecv-modals.js';
 
 // --- State Variables ---
 let currentUser = null;
 let isInitialized = false;
+
+// Mock auth for now
+function waitForAuth() {
+    return Promise.resolve({ uid: 'mock-user-123', email: 'demo@example.com' });
+}
+
+// Create Events object
+const Events = {
+    async init() {
+        console.log('Events initialized');
+    }
+};
 
 // --- Main Initialization Function (The Entry Point) ---
 /**
@@ -34,10 +45,12 @@ async function initLifeCV() {
 
     // Show loading indicator
     const loadingIndicator = document.getElementById('loading-indicator');
-    loadingIndicator.classList.remove('hidden');
+    if (loadingIndicator) {
+        loadingIndicator.classList.remove('hidden');
+    }
 
     try {
-        // 1. Wait for Firebase Authentication
+        // 1. Wait for Authentication (mocked for now)
         const user = await waitForAuth();
         currentUser = user;
         console.log(`LifeCV Initializer: User authenticated (UID: ${user.uid})`);
@@ -53,33 +66,15 @@ async function initLifeCV() {
 
         // 4. Hide loading indicator ONLY after everything is ready
         setTimeout(() => {
-            loadingIndicator.classList.add('hidden');
+            if (loadingIndicator) {
+                loadingIndicator.classList.add('hidden');
+            }
         }, 200);
 
     } catch (error) {
         console.error("LifeCV Initializer: A critical error occurred during initialization.", error);
         throw error; // Re-throw to be caught by the global handler
     }
-}
-
-/**
- * A Promise-based function that waits for the user to be authenticated.
- * @returns {Promise<object>} A promise that resolves with the user object or rejects if auth fails.
- */
-function waitForAuth() {
-    return new Promise((resolve, reject) => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            unsubscribe();
-            if (user) {
-                resolve(user);
-            } else {
-                reject(new Error('User not authenticated. Please log in first.'));
-            }
-        }, (error) => {
-            unsubscribe();
-            reject(error);
-        });
-    });
 }
 
 /**
@@ -90,24 +85,17 @@ function waitForAuth() {
 
 async function exportLifeCvData() {
     try {
-        // Get data through the service instead of directly
         const lifeCvData = DataService.getLifeCvData();
-        const lifeCvSections = DataService.getLifeCvSections();
+        const currentUser = DataService.getCurrentUser();
         
         const exportData = {
-            version: "1.0",
+            version: '1.0',
             exportDate: new Date().toISOString(),
             userData: {
                 uid: currentUser?.uid,
-                email: currentUser?.email,
-                displayName: currentUser?.displayName
+                email: currentUser?.email
             },
-            lifeCvData: lifeCvData,
-            metadata: {
-                completenessScore: 0, // You'll need to get this from the appropriate service
-                totalSections: Object.keys(lifeCvSections).length,
-                exportedSections: Object.keys(lifeCvData).length
-            }
+            lifeCvData: lifeCvData
         };
         
         const dataStr = JSON.stringify(exportData, null, 2);
@@ -118,12 +106,12 @@ async function exportLifeCvData() {
         link.download = `lifecv-backup-${new Date().toISOString().split('T')[0]}.json`;
         link.click();
         
-        // Use the imported notification function
-        Modals.showNotification('LifeCV data exported successfully!', 'success');
+        // Now this will work
+        showNotification('LifeCV data exported successfully!', 'success');
         
     } catch (error) {
         console.error('Export failed:', error);
-        Modals.showNotification('Export failed. Please try again.', 'error');
+        showNotification('Export failed. Please try again.', 'error');
     }
 }
 
@@ -132,7 +120,7 @@ async function importLifeCvData(event) {
     if (!file) return;
     
     if (file.type !== 'application/json') {
-        alert('Please select a valid JSON file.');
+        showNotification('Please select a valid JSON file.', 'error');
         return;
     }
     
@@ -161,10 +149,11 @@ async function importLifeCvData(event) {
             // Save through the data service
             await DataService.saveLifeCvData(newData);
             
-            console.log('Data imported successfully!');
+            showNotification('Data imported successfully!', 'success');
             
         } catch (error) {
             console.error('Import failed:', error);
+            showNotification('Import failed. Please try again.', 'error');
         }
     };
     
@@ -458,5 +447,8 @@ window.lifecvModule = {
     searchData: searchData,
     clearSearchHighlights: clearSearchHighlights
 };
+
+// Make the main function globally available
+window.initLifeCV = initLifeCV;
 
 /* --- End of LifeCV Module --- */

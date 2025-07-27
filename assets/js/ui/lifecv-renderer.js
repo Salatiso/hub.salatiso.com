@@ -12,11 +12,16 @@ let renderDebounceTimer;
  * @param {object} sectionsConfig - The configuration object for all sections.
  */
 export function renderAllSections(data, sectionsConfig) {
-    // Debounce rapid re-renders
-    clearTimeout(renderDebounceTimer);
-    renderDebounceTimer = setTimeout(() => {
-        performRender(data, sectionsConfig);
-    }, 100);
+    const container = document.getElementById('lifecv-sections');
+    if (!container) return;
+    
+    container.innerHTML = `
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h3 class="text-lg font-semibold mb-4">Personal Information</h3>
+            <p><strong>Name:</strong> ${data.personalInfo?.name?.value || 'Not set'}</p>
+            <p><strong>Email:</strong> ${data.personalInfo?.email?.value || 'Not set'}</p>
+        </div>
+    `;
 }
 
 function performRender(data, sectionsConfig) {

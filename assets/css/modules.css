@@ -284,6 +284,8 @@ main.content-area {
     color: #64748b;
 }
 
+/* Module-specific styles - can be empty for now */
+
 /* Responsive adjustments for LifeCV */
 @media (max-width: 768px) {
     .lifecv-dashboard {

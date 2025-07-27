@@ -192,10 +192,9 @@
     <!-- Notification Container -->
     <div id="notification-container" class="fixed bottom-5 right-5 z-[100]"></div>
 
-    <script type="module">
-        // Corrected path to go up one directory
-        import { initLifeCV } from '../assets/js/modules/life-cv.js';
-
+    <!-- Fixed JavaScript module path -->
+    <script type="module" src="../assets/js/modules/life-cv.js"></script>
+    <script>
         // Global error handlers to catch issues anywhere in the app
         const showError = (message) => {
             const loadingIndicator = document.getElementById('loading-indicator');

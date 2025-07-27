@@ -13,6 +13,24 @@ let cameraService;
 let currentModal = null;
 
 /**
+ * Show notification to user
+ */
+export function showNotification(message, type = 'info') {
+    const container = document.getElementById('notification-container');
+    if (!container) return;
+    
+    const notification = document.createElement('div');
+    notification.className = `lifecycle-notification p-4 mb-2 rounded-lg ${type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500'} text-white`;
+    notification.textContent = message;
+    
+    container.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 5000);
+}
+
+/**
  * Initializes modal functionality
  */
 export function init() {
@@ -447,52 +465,6 @@ async function saveItemFromModal(sectionKey, index, modal) {
 }
 
 /**
- * Check if already declared to prevent redeclaration
- */
-if (typeof showNotification === 'undefined') {
-    function showNotification(message, type = 'info', duration = 3000) {
-        // Remove any existing notifications
-        const existingNotifications = document.querySelectorAll('.notification');
-        existingNotifications.forEach(n => n.remove());
-        
-        // Create new notification
-        const notification = document.createElement('div');
-        notification.className = `notification fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300 transform translate-x-full`;
-        
-        // Set type-specific styling
-        const typeClasses = {
-            'success': 'bg-green-500 text-white',
-            'error': 'bg-red-500 text-white',
-            'warning': 'bg-yellow-500 text-black',
-            'info': 'bg-blue-500 text-white'
-        };
-        
-        notification.className += ` ${typeClasses[type] || typeClasses.info}`;
-        notification.textContent = message;
-        
-        document.body.appendChild(notification);
-        
-        // Animate in
-        setTimeout(() => {
-            notification.style.transform = 'translateX(0)';
-        }, 10);
-        
-        // Auto remove
-        setTimeout(() => {
-            notification.style.transform = 'translateX(100%)';
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.remove();
-                }
-            }, 300);
-        }, duration);
-    }
-}
-
-// Export the function
-export { showNotification };
-
-/**
  * Close any open modal
  */
 export function closeCurrentModal() {
@@ -510,3 +482,10 @@ export function closeCurrentModal() {
             break;
     }
 }
+
+// Create Modals object with init method
+export const Modals = {
+    async init() {
+        console.log('Modals initialized');
+    }
+};

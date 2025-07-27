@@ -224,13 +224,3 @@ main {
         min-width: 180px;
     }
 }
-
-/* Debugging command for Edge DevTools */
-[
-    {
-        "type": "command",
-        "details": {
-            "key": "extension.js-debug.openEdgeDevTools"
-        }
-    }
-]

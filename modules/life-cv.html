@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LifeCV - Your Complete Life Profile</title>
+    <link rel="icon" type="image/x-icon" href="../assets/images/favicon.ico">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- QR Code Generator Library -->
@@ -273,4 +274,30 @@
                         // Show error boundary
                         const errorBoundary = document.getElementById('error-boundary');
                         const errorMessage = document.getElementById('error-message');
-                        if
+                        if (errorBoundary && errorMessage) {
+                            errorMessage.textContent = `Failed to load LifeCV: ${error.message}`;
+                            errorBoundary.classList.remove('hidden');
+                        }
+                    }
+                } else {
+                    // User not logged in - redirect to login
+                    console.log('User not authenticated, redirecting to login');
+                    if (loadingIndicator) {
+                        loadingIndicator.style.display = 'none';
+                    }
+                    window.location.href = '../login.html';
+                }
+            });
+        });
+
+        // Global export/import functions
+        window.exportLifeCvData = function() {
+            console.log('Export functionality not yet implemented');
+        };
+
+        window.importLifeCvData = function(event) {
+            console.log('Import functionality not yet implemented');
+        };
+    </script>
+</body>
+</html>

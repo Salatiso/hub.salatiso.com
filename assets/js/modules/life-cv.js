@@ -2505,7 +2505,10 @@ async function saveEmailSignature(templateId) {
 
 function copyEmailSignature(templateId) {
     const signature = lifeCvData.emailSignatures?.signatures?.[templateId];
-    if (!signature) return;
+    if (!signature) {
+        showNotification('Signature not found', 'error');
+        return;
+    }
     
     const signatureText = `
         ${signature.signoff}
@@ -2522,7 +2525,9 @@ function copyEmailSignature(templateId) {
 }
 
 async function deleteEmailSignature(templateId) {
-    if (!confirm('Are you sure you want to delete this email signature?')) return;
+    if (!confirm('Are you sure you want to delete this email signature?')) {
+        return;
+    }
     
     try {
         if (lifeCvData.emailSignatures?.signatures) {

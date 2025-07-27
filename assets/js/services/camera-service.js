@@ -8,15 +8,40 @@
 /**
  * A class to manage camera interactions.
  */
-class CameraService {
-    constructor(videoElementId, canvasElementId) {
-        this.videoElement = document.getElementById(videoElementId);
-        this.canvasElement = document.getElementById(canvasElementId);
+export default class CameraService {
+    constructor(videoElementId = 'webcam-video', canvasElementId = 'capture-canvas') {
+        this.videoElementId = videoElementId;
+        this.canvasElementId = canvasElementId;
+        this.videoElement = null;
+        this.canvasElement = null;
         this.stream = null;
-
-        if (!this.videoElement || !this.canvasElement) {
-            console.error("CameraService: Video or Canvas element not found in the DOM.");
+        
+        // Wait for DOM to be ready before accessing elements
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                this.initElements();
+            });
+        } else {
+            this.initElements();
         }
+    }
+
+    initElements() {
+        this.videoElement = document.getElementById(this.videoElementId);
+        this.canvasElement = document.getElementById(this.canvasElementId);
+        
+        if (!this.videoElement || !this.canvasElement) {
+            console.warn('CameraService: Video or Canvas element not found in the DOM. Elements will be initialized when needed.');
+        } else {
+            console.log('CameraService: Elements found and initialized.');
+        }
+    }
+
+    ensureElements() {
+        if (!this.videoElement || !this.canvasElement) {
+            this.initElements();
+        }
+        return this.videoElement && this.canvasElement;
     }
 
     /**
@@ -79,5 +104,3 @@ class CameraService {
         });
     }
 }
-
-export default CameraService;

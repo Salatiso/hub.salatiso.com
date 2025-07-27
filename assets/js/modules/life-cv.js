@@ -1429,7 +1429,7 @@ function openWebcamModal() {
             </div>
             <div class="p-6 border-t border-slate-200 flex justify-end">
                 <button type="button" onclick="closeWebcamModal()" 
-                        class="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300">
+                        class="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300 transition-colors">
                     Cancel
                 </button>
             </div>
@@ -1465,6 +1465,7 @@ async function initializeWebcam() {
         console.error('Camera initialization failed:', error);
         statusDiv.className = 'mt-4 p-3 rounded-lg bg-red-50';
         statusDiv.innerHTML = `
+
             <p class="text-sm text-red-800">
                 <i class="fas fa-exclamation-triangle mr-2"></i>
                 Camera access failed: ${error.message}
@@ -2108,7 +2109,9 @@ function createBusinessCardsSection(key, sectionConfig, data) {
                                     <h4 class="font-semibold text-slate-800">${template.name}</h4>
                                     <span class="px-2 py-1 bg-slate-100 text-slate-700 rounded-full text-xs">${template.orientation}</span>
                                 </div>
-                                        <span class="text-slate-500 text-sm">Preview</span>
+                                <div class="mb-3">
+                                    <div class="w-full h-24 bg-slate-100 rounded-lg flex items-center justify-center">
+                                        <span class="text-slate-500 text-sm">Signature Preview</span>
                                     </div>
                                 </div>
                                 <p class="text-sm text-slate-600 mb-4">${template.description}</p>

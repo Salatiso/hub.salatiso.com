@@ -1,9 +1,8 @@
 /* ================================================================================= */
 /* */
-/* FILE: assets/js/firebase-config.js (REVISED AND FINAL)                            */
+/* FILE: assets/js/firebase-config.js (CORRECTED - FULLY FUNCTIONAL)                 */
 /* */
-/* PURPOSE: This file's ONLY job is to initialize Firebase and export the services.  */
-/* It is the single source of truth for your Firebase connection.                    */
+/* PURPOSE: Initialize Firebase and export all services                              */
 /* */
 /* ================================================================================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -11,7 +10,7 @@ import { getAuth } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth
 import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
-// Your web app's Firebase configuration.
+// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyD_pRVkeVzciCPowxsj44NRVlbyZvFPueI",
   authDomain: "lifecv-d2724.firebaseapp.com",
@@ -25,11 +24,24 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Firebase configuration - placeholder for now
-export const auth = null;
-export const db = null;
-export const uploadFile = null;
+// Initialize and export Firebase services
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+export const storage = getStorage(app);
 
-console.warn('Firebase not configured yet');
+// File upload utility function
+export async function uploadFile(file, path) {
+    try {
+        const storageRef = ref(storage, path);
+        const snapshot = await uploadBytes(storageRef, file);
+        const downloadURL = await getDownloadURL(snapshot.ref);
+        return downloadURL;
+    } catch (error) {
+        console.error('Error uploading file:', error);
+        throw error;
+    }
+}
+
+console.log('Firebase initialized successfully');
 
 

@@ -1,39 +1,28 @@
+/* ================================================================================= */
+/* FILE: assets/js/utils/validators.js                                               */
+/* PURPOSE: Validation functions for form fields and data                           */
+/* ================================================================================= */
+
 /**
- * Validation utilities for LifeCV
+ * Validate email address
  */
-
-export const sanitizeInput = (input) => {
-    if (typeof input !== 'string') {
-        return String(input);
-    }
-    
-    // Basic HTML sanitization - remove script tags and dangerous attributes
-    return input
-        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-        .replace(/on\w+="[^"]*"/gi, '')
-        .replace(/javascript:/gi, '')
-        .trim();
-};
-
-export const validateEmail = (email) => {
+export function isValidEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
-};
+}
 
-export function validatePhone(phone) {
+/**
+ * Validate phone number
+ */
+export function isValidPhone(phone) {
     const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-    return phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''));
+    return phoneRegex.test(phone.replace(/\s/g, ''));
 }
 
-export const validatePhoneNumber = (phone) => {
-    // Remove all non-digit characters
-    const cleanPhone = phone.replace(/\D/g, '');
-    
-    // Check if it's a valid length (10-15 digits)
-    return cleanPhone.length >= 10 && cleanPhone.length <= 15;
-};
-
-export function validateUrl(url) {
+/**
+ * Validate URL
+ */
+export function isValidURL(url) {
     try {
         new URL(url);
         return true;
@@ -42,20 +31,95 @@ export function validateUrl(url) {
     }
 }
 
-export const validateURL = (url) => {
-    try {
-        new URL(url);
-        return true;
-    } catch {
-        return false;
-    }
-};
-
-export function validateRequired(value) {
-    return value !== null && value !== undefined && value.trim() !== '';
+/**
+ * Validate date
+ */
+export function isValidDate(date) {
+    return !isNaN(Date.parse(date));
 }
 
-export const validateDate = (dateString) => {
-    const date = new Date(dateString);
-    return !isNaN(date.getTime());
-};
+/**
+ * Validate required field
+ */
+export function isRequired(value) {
+    return value !== null && value !== undefined && value.toString().trim() !== '';
+}
+
+/**
+ * Validate minimum length
+ */
+export function minLength(value, min) {
+    return value && value.toString().length >= min;
+}
+
+/**
+ * Validate maximum length
+ */
+export function maxLength(value, max) {
+    return !value || value.toString().length <= max;
+}
+
+/**
+ * Validate numeric value
+ */
+export function isNumeric(value) {
+    return !isNaN(value) && !isNaN(parseFloat(value));
+}
+
+/**
+ * Validate field based on configuration
+ */
+export function validateField(field, value) {
+    const errors = [];
+
+    // Required validation
+    if (field.required && !isRequired(value)) {
+        errors.push(`${field.label} is required`);
+        return errors; // Return early if required field is empty
+    }
+
+    // Skip other validations if field is empty and not required
+    if (!isRequired(value)) {
+        return errors;
+    }
+
+    // Type-specific validations
+    switch (field.type) {
+        case 'email':
+            if (!isValidEmail(value)) {
+                errors.push(`${field.label} must be a valid email address`);
+            }
+            break;
+        case 'phone':
+            if (!isValidPhone(value)) {
+                errors.push(`${field.label} must be a valid phone number`);
+            }
+            break;
+        case 'url':
+            if (!isValidURL(value)) {
+                errors.push(`${field.label} must be a valid URL`);
+            }
+            break;
+        case 'date':
+            if (!isValidDate(value)) {
+                errors.push(`${field.label} must be a valid date`);
+            }
+            break;
+        case 'number':
+            if (!isNumeric(value)) {
+                errors.push(`${field.label} must be a number`);
+            }
+            break;
+    }
+
+    // Length validations
+    if (field.minLength && !minLength(value, field.minLength)) {
+        errors.push(`${field.label} must be at least ${field.minLength} characters`);
+    }
+
+    if (field.maxLength && !maxLength(value, field.maxLength)) {
+        errors.push(`${field.label} must be no more than ${field.maxLength} characters`);
+    }
+
+    return errors;
+}

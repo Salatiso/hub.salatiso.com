@@ -3,146 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LifeCV - Your Complete Life Profile</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>">
+    <title>LifeCV - Your Digital Life Portfolio</title>
     
-    <!-- External CDN links -->
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
     
-    <!-- Fixed CSS file paths - go up one directory from /modules/ to root -->
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS with correct paths -->
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/main.css">
     <link rel="stylesheet" href="../assets/css/modules.css">
     <link rel="stylesheet" href="../assets/css/quiz.css">
-    
-    <style>
-        /* LifeCV specific styles */
-        .accordion-content {
-            display: none;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-        .accordion-content.show {
-            display: block;
-            animation: slideDown 0.3s ease;
-        }
-        .rotate-180 {
-            transform: rotate(180deg);
-        }
-        .lifecycle-notification {
-            z-index: 60;
-        }
-        #webcam-video, #webcam-video-modal {
-            border-radius: 0.5rem;
-            max-width: 100%;
-        }
-        #capture-canvas, #capture-canvas-modal {
-            border-radius: 0.5rem;
-            display: none;
-        }
-        
-        /* Import/Export functionality styles */
-        .import-export-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 0.75rem;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            color: white;
-        }
-        
-        .file-drop-zone {
-            border: 2px dashed #e2e8f0;
-            border-radius: 0.5rem;
-            padding: 2rem;
-            text-align: center;
-            background-color: #f8fafc;
-            transition: all 0.3s ease;
-        }
-        
-        .file-drop-zone.dragover {
-            border-color: #4f46e5;
-            background-color: #eef2ff;
-        }
-        
-        .search-section {
-            background-color: #f1f5f9;
-            border-radius: 0.5rem;
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
-        
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-    </style>
 </head>
-<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans">
 
+<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans">
     <!-- Loading Indicator -->
-    <div id="loading-indicator" class="fixed inset-0 bg-white dark:bg-slate-900 bg-opacity-90 dark:bg-opacity-90 flex flex-col items-center justify-center z-[100]">
-        <i class="fas fa-spinner fa-spin text-4xl text-indigo-600"></i>
-        <p class="mt-4 text-lg font-semibold">Loading LifeCV...</p>
+    <div id="loading-indicator" class="fixed inset-0 bg-white bg-opacity-90 flex items-center justify-center z-50">
+        <div class="text-center">
+            <div class="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+            <p class="text-lg text-slate-600">Loading LifeCV...</p>
+        </div>
     </div>
 
     <!-- Error Boundary -->
-    <div id="error-boundary" class="hidden fixed inset-0 bg-red-50 dark:bg-red-900 bg-opacity-90 flex flex-col items-center justify-center z-[99]">
-        <i class="fas fa-exclamation-triangle text-4xl text-red-600"></i>
-        <p class="mt-4 text-lg font-semibold">An Error Occurred</p>
-        <p id="error-message" class="mt-2 text-center max-w-md">Could not load LifeCV data. Please try refreshing the page.</p>
-        <button onclick="window.location.reload()" class="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Refresh</button>
+    <div id="error-boundary" class="fixed inset-0 bg-white bg-opacity-90 flex items-center justify-center z-50 hidden">
+        <div class="text-center">
+            <div class="text-red-600 text-6xl mb-4">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-800 mb-2">Something went wrong</h2>
+            <p class="text-slate-600 mb-4">We're having trouble loading the LifeCV module.</p>
+            <button onclick="location.reload()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                Try Again
+            </button>
+        </div>
     </div>
 
     <div id="app-container" class="flex h-screen">
-        <!-- Sidebar will be loaded from components -->
+        <!-- Sidebar Placeholder -->
         <div id="sidebar-placeholder"></div>
 
         <!-- Main Content Wrapper -->
-        <div class="main-content-wrapper">
-            <!-- Header will be loaded from components -->
+        <div class="main-content-wrapper flex-1 flex flex-col">
+            <!-- Header Placeholder -->
             <div id="header-placeholder"></div>
 
-            <!-- Main Content Area -->
-            <main class="content-area">
+            <main class="content-area flex-1 overflow-y-auto p-6">
                 <div class="max-w-7xl mx-auto">
-                    
-                    <!-- Import/Export Section -->
-                    <div class="import-export-section">
-                        <div class="flex items-center justify-between mb-4">
-                            <div>
-                                <h2 class="text-xl font-bold text-white flex items-center">
-                                    <i class="fas fa-exchange-alt mr-2"></i>
-                                    Import/Export Data
-                                </h2>
-                                <p class="text-indigo-100 text-sm">Backup or restore your LifeCV data</p>
-                            </div>
-                            <div class="flex space-x-2">
-                                <button onclick="exportLifeCvData()" class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg text-sm transition-colors">
-                                    <i class="fas fa-download mr-2"></i>Export
-                                </button>
-                                <label class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg text-sm cursor-pointer transition-colors">
-                                    <i class="fas fa-upload mr-2"></i>Import
-                                    <input type="file" accept=".json" onchange="importLifeCvData(event)" class="hidden">
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <!-- Drag and Drop Zone -->
-                        <div id="drop-zone" class="file-drop-zone">
-                            <i class="fas fa-cloud-upload-alt text-4xl text-slate-400 mb-3"></i>
-                            <p class="text-slate-600 font-medium mb-2">Drag and drop your LifeCV backup file here</p>
-                            <p class="text-slate-500 text-sm">or click Import above to browse files</p>
-                        </div>
-                    </div>
-
                     <!-- Search Section -->
                     <div class="search-section">
                         <div class="flex items-center space-x-4">
@@ -192,127 +101,66 @@
     <!-- Notification Container -->
     <div id="notification-container" class="fixed bottom-5 right-5 z-[100]"></div>
 
-    <!-- Fixed JavaScript module path -->
-    <script type="module" src="../assets/js/modules/life-cv.js"></script>
+    <!-- Load components first -->
     <script>
-        // Global error handlers to catch issues anywhere in the app
+        // Load header and sidebar
+        fetch('../components/header.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('header-placeholder').innerHTML = html;
+            });
+
+        fetch('../components/sidebar.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('sidebar-placeholder').innerHTML = html;
+            });
+    </script>
+
+    <!-- Main JavaScript module -->
+    <script type="module" src="../assets/js/modules/life-cv.js"></script>
+    
+    <script>
+        // Global error handlers
         const showError = (message) => {
             const loadingIndicator = document.getElementById('loading-indicator');
             const errorBoundary = document.getElementById('error-boundary');
-            const errorMessage = document.getElementById('error-message');
+            
             if (loadingIndicator) loadingIndicator.classList.add('hidden');
-            if (errorBoundary && errorMessage) {
-                errorMessage.textContent = message || 'An unexpected error occurred. Please check the console and refresh.';
+            if (errorBoundary) {
                 errorBoundary.classList.remove('hidden');
+                const errorMessage = errorBoundary.querySelector('p');
+                if (errorMessage) errorMessage.textContent = message;
             }
         };
 
         window.addEventListener('error', (event) => {
             console.error('Global error caught:', event.error);
-            showError(event.message);
+            showError('A critical error occurred. Please refresh the page.');
         });
 
         window.addEventListener('unhandledrejection', (event) => {
             console.error('Unhandled promise rejection:', event.reason);
-            showError(event.reason?.message || 'A network or data error occurred.');
+            showError('A network or loading error occurred. Please check your connection and try again.');
         });
 
-        // Initialize drag and drop functionality
-        const dropZone = document.getElementById('drop-zone');
-        
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('dragover');
-        });
-        
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('dragover');
-        });
-        
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('dragover');
-            
-            const files = e.dataTransfer.files;
-            if (files.length > 0 && files[0].type === 'application/json') {
-                importLifeCvData({ target: { files: files } });
-            } else {
-                alert('Please drop a valid JSON file.');
+        // Initialize LifeCV when DOM is ready
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Wait a moment for components to load
+                setTimeout(async () => {
+                    if (typeof initLifeCV !== 'undefined') {
+                        await initLifeCV();
+                    } else {
+                        console.error('initLifeCV function not found');
+                        showError('Failed to initialize LifeCV module.');
+                    }
+                }, 100);
+            } catch (error) {
+                console.error('Error during LifeCV initialization:', error);
+                showError('Failed to start LifeCV. Please refresh the page.');
             }
         });
-
-        // Initialize search functionality
-        const searchInput = document.getElementById('section-search');
-        let searchTimeout;
-        
-        searchInput.addEventListener('input', (e) => {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                performSearch(e.target.value);
-            }, 300);
-        });
-
-        // Initialize the application
-        document.addEventListener('DOMContentLoaded', () => {
-            // Load shared components using corrected paths
-            fetch('../components/header.html')
-                .then(res => res.text())
-                .then(data => {
-                    document.getElementById('header-placeholder').innerHTML = data;
-                })
-                .catch(error => console.warn('Header component not found:', error));
-                
-            fetch('../components/sidebar.html')
-                .then(res => res.text())
-                .then(data => {
-                    document.getElementById('sidebar-placeholder').innerHTML = data;
-                })
-                .catch(error => console.warn('Sidebar component not found:', error));
-
-            // Start the LifeCV module
-            initLifeCV().catch(error => {
-                console.error("Failed to initialize LifeCV module:", error);
-                showError(error.message);
-            });
-        });
-
-        // Export LifeCV data function
-        window.exportLifeCvData = function() {
-            // This will be implemented in the JavaScript module
-            if (window.lifecvModule && window.lifecvModule.exportData) {
-                window.lifecvModule.exportData();
-            } else {
-                console.warn('Export function not available yet');
-            }
-        };
-
-        // Import LifeCV data function
-        window.importLifeCvData = function(event) {
-            // This will be implemented in the JavaScript module
-            if (window.lifecvModule && window.lifecvModule.importData) {
-                window.lifecvModule.importData(event);
-            } else {
-                console.warn('Import function not available yet');
-            }
-        };
-
-        // Search functionality
-        window.performSearch = function(query) {
-            if (window.lifecvModule && window.lifecvModule.searchData) {
-                window.lifecvModule.searchData(query);
-            } else {
-                console.warn('Search function not available yet');
-            }
-        };
-
-        window.clearSearch = function() {
-            document.getElementById('section-search').value = '';
-            document.getElementById('search-results').classList.add('hidden');
-            // Reset any highlighting
-            if (window.lifecvModule && window.lifecvModule.clearSearchHighlights) {
-                window.lifecvModule.clearSearchHighlights();
-            }
-        };
     </script>
 </body>
 </html>

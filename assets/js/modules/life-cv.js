@@ -4,12 +4,8 @@
 /* all services and UI components in a safe, sequential order.                       */
 /* ================================================================================= */
 
-// --- Static Imports for Reliability ---
-// For now, comment out Firebase until it's properly configured
-// import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-// import { auth, db, uploadFile } from '../firebase-config.js';
-
-// Import all specialized LifeCV modules
+// --- Fixed Imports ---
+import { setupAuthStateListener } from '../auth/auth-service.js';
 import * as DataService from '../services/life-cv-data-service.js';
 import * as renderer from '../ui/lifecv-renderer.js';
 import * as Dashboard from '../ui/dashboard.js';
@@ -19,9 +15,19 @@ import { showNotification, Modals } from '../ui/lifecv-modals.js';
 let currentUser = null;
 let isInitialized = false;
 
-// Mock auth for now
+// Replace the mock auth function with real Firebase auth
 function waitForAuth() {
-    return Promise.resolve({ uid: 'mock-user-123', email: 'demo@example.com' });
+    return new Promise((resolve) => {
+        const unsubscribe = setupAuthStateListener((user) => {
+            unsubscribe();
+            if (user) {
+                resolve(user);
+            } else {
+                // For now, create a mock user instead of redirecting
+                resolve({ uid: 'mock-user-123', email: 'demo@example.com' });
+            }
+        });
+    });
 }
 
 // Create Events object

@@ -25,7 +25,7 @@ let isInitialized = false;
  * Initializes the entire LifeCV application.
  * This is the single entry point called from life-cv.html.
  */
-export async function initLifeCV() {
+async function initLifeCV() {
     if (isInitialized) {
         console.warn("LifeCV module already initialized.");
         return;

@@ -97,6 +97,8 @@ function handleSectionClick(e) {
 
     // Delete item buttons
     if (button.classList.contains('delete-item-btn')) {
+        e.preventDefault();
+        e.stopPropagation();
         const sectionKey = button.dataset.section;
         const index = parseInt(button.dataset.index);
         deleteListItem(sectionKey, index);

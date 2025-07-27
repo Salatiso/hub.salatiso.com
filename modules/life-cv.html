@@ -141,13 +141,23 @@
         };
 
         window.addEventListener('error', (event) => {
+            // Ignore Chrome extension errors
+            if (event.message && event.message.includes('Extension context invalidated')) {
+                return;
+            }
+            if (event.message && event.message.includes('message channel closed')) {
+                return;
+            }
             console.error('Global error caught:', event.error);
-            showError('A critical error occurred. Please refresh the page.');
         });
 
         window.addEventListener('unhandledrejection', (event) => {
+            // Ignore Chrome extension promise rejections
+            if (event.reason && event.reason.message && event.reason.message.includes('message channel closed')) {
+                event.preventDefault();
+                return;
+            }
             console.error('Unhandled promise rejection:', event.reason);
-            showError('A network or loading error occurred. Please check your connection and try again.');
         });
 
         // Initialize LifeCV when DOM is ready

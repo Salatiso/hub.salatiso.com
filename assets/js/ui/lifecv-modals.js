@@ -6,7 +6,8 @@
 import CameraService from '../services/camera-service.js';
 import { getLifeCvData, saveLifeCvData, updateField, getLifeCvSections } from '../services/life-cv-data-service.js';
 import { uploadFile } from '../firebase-config.js';
-import { getCurrentUser } from '../modules/life-cv.js';
+import { getCurrentUser } from '../auth/auth-service.js';
+import { lifeCvData, lifeCvSections, updateDocument, showNotification } from '../modules/life-cv.js';
 
 let cameraService;
 let currentModal = null;

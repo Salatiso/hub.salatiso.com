@@ -2142,18 +2142,26 @@ function configureBusinessCard(templateId) {
                                 </select>
                             </div>
                             <div>
-                                <label class="flex items-center">
-                                    <input type="checkbox" id="card-include-photo" 
-                                           ${existingCard.includePhoto !== false ? 'checked' : ''} class="mr-2">
-                                    <span class="text-sm text-slate-700">Include profile photo</span>
-                                </label>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Font Style</label>
+                                <select id="card-font" class="w-full px-3 py-2 border border-slate-300 rounded-md">
+                                    <option value="default" ${existingCard.font === 'default' ? 'selected' : ''}>Default</option>
+                                    <option value="arial" ${existingCard.font === 'arial' ? 'selected' : ''}>Arial</option>
+                                    <option value="times" ${existingCard.font === 'times' ? 'selected' : ''}>Times New Roman</option>
+                                    <option value="courier" ${existingCard.font === 'courier' ? 'selected' : ''}>Courier New</option>
+                                    <option value="georgia" ${existingCard.font === 'georgia' ? 'selected' : ''}>Georgia</option>
+                                </select>
                             </div>
                             <div>
-                                <label class="flex items-center">
-                                    <input type="checkbox" id="card-include-qr" 
-                                           ${existingCard.includeQR !== false ? 'checked' : ''} class="mr-2">
-                                    <span class="text-sm text-slate-700">Include QR code to profile</span>
-                                </label>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Font Size</label>
+                                <input type="number" id="card-fontsize" min="8" max="24" step="1" 
+                                       value="${existingCard.fontSize || 12}"
+                                       class="w-full px-3 py-2 border border-slate-300 rounded-md">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Signature Color</label>
+                                <input type="color" id="card-color" 
+                                       value="${existingCard.color || '#000000'}"
+                                       class="w-full h-10 p-0 border border-slate-300 rounded-md">
                             </div>
                         </div>
                     </div>
@@ -2174,11 +2182,6 @@ function configureBusinessCard(templateId) {
                                 <input type="checkbox" class="contact-field mr-3" data-field="website" 
                                        ${existingCard.contactFields?.includes('website') ? 'checked' : ''}>
                                 <span class="text-sm text-slate-700">Website/Portfolio</span>
-                            </label>
-                            <label class="flex items-center p-3 border border-slate-200 rounded-lg">
-                                <input type="checkbox" class="contact-field mr-3" data-field="linkedin" 
-                                       ${existingCard.contactFields?.includes('linkedin') ? 'checked' : ''}>
-                                <span class="text-sm text-slate-700">LinkedIn Profile</span>
                             </label>
                             <label class="flex items-center p-3 border border-slate-200 rounded-lg">
                                 <input type="checkbox" class="contact-field mr-3" data-field="address" 
@@ -2930,7 +2933,7 @@ async function deleteItem(sectionKey, index) {
     if (!confirm('Are you sure you want to delete this item?')) return;
     
     try {
-        const currentData = lifeCvData[sectionKey] || [];
+        const currentData = lifeCvData[sectionKey] || {};
         currentData.splice(index, 1);
         
         await updateDocument('users', currentUser.uid, { [`lifeCv.${sectionKey}`]: currentData });
@@ -2985,98 +2988,62 @@ async function saveSection(event) {
     }
 }
 
-// === WEBCAM EVENT LISTENERS ===
-
-function attachWebcamListeners() {
-    // Webcam listeners are attached in createProfilePicturesSection
-    console.log('Webcam listeners ready');
+// === IMPORT/EXPORT FUNCTIONALITY ===
+function attachImportListeners() {
+    console.log('Import listeners attached');
+    // This will be implemented in future iterations
 }
 
-// === LIFESYNC EVENT LISTENERS ===
-
-function attachLifeSyncListeners() {
-    // LifeSync functionality is implemented in createLifeSyncSection
-    console.log('LifeSync listeners ready');
+// Export LifeCV data
+function exportLifeCvData() {
+    const dataStr = JSON.stringify(lifeCvData, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = `lifecv-${currentUser.uid}-${new Date().toISOString().split('T')[0]}.json`;
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+    
+    showNotification('LifeCV data exported successfully!', 'success');
 }
 
-// === ENHANCED LIFESYNC FUNCTIONS ===
-
-function startLifeSync(purposeKey) {
-    const purpose = lifeSyncPurposes[purposeKey];
-    if (!purpose) return;
+// Import LifeCV data
+function importLifeCvData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
     
-    const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
-    modal.innerHTML = `
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div class="p-6 border-b border-slate-200">
-                <h2 class="text-xl font-bold text-slate-800">Start ${purpose.name}</h2>
-            </div>
-            <div class="p-6">
-                <p class="text-slate-600 mb-4">${purpose.description}</p>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                        Enter Profile URL or Sync ID
-                    </label>
-                    <input type="text" id="sync-target" 
-                           class="w-full px-3 py-2 border border-slate-300 rounded-md"
-                           placeholder="e.g., https://hub.salatiso.com/profile/john-doe">
-                </div>
-                <div class="bg-blue-50 p-3 rounded-lg">
-                    <p class="text-sm text-blue-800">
-                        <i class="fas fa-info-circle mr-2"></i>
-                        LifeSync compares only the information you both choose to share.
-                    </p>
-                </div>
-            </div>
-            <div class="p-6 border-t border-slate-200 flex justify-end space-x-3">
-                <button type="button" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300" 
-                        onclick="this.closest('.fixed').remove()">Cancel</button>
-                <button type="button" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700" 
-                        onclick="initiateSync('${purposeKey}')">Send Sync Request</button>
-            </div>
-        </div>
-    `;
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+        try {
+            const importedData = JSON.parse(e.target.result);
+            
+            // Validate the data structure
+            if (typeof importedData !== 'object') {
+                throw new Error('Invalid data format');
+            }
+            
+            // Merge with existing data
+            const mergedData = { ...lifeCvData, ...importedData };
+            
+            await updateDocument('users', currentUser.uid, { 'lifeCv': mergedData });
+            
+            showNotification('LifeCV data imported successfully!', 'success');
+            renderAllSections();
+            
+        } catch (error) {
+            console.error('Error importing data:', error);
+            showNotification('Failed to import data. Please check the file format.', 'error');
+        }
+    };
     
-    document.body.appendChild(modal);
+    reader.readAsText(file);
 }
 
-async function initiateSync(purposeKey) {
-    const target = document.getElementById('sync-target').value.trim();
-    if (!target) {
-        alert('Please enter a profile URL or Sync ID');
-        return;
-    }
-    
-    // Extract slug from URL or use as direct ID
-    const slug = target.includes('/profile/') ? 
-                 target.split('/profile/')[1].split('?')[0] : 
-                 target;
-    
-    try {
-        // Create sync request
-        const syncRequest = {
-            fromUser: currentUser.uid,
-            fromSlug: lifeCvData.publicProfiles?.slug,
-            toSlug: slug,
-            purpose: purposeKey,
-            status: 'pending',
-            createdAt: new Date().toISOString(),
-            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
-        };
-        
-        await addDocument('syncRequests', syncRequest);
-        
-        document.querySelector('.fixed').remove();
-        showNotification('Sync request sent! The other user will be notified.', 'success');
-        
-    } catch (error) {
-        console.error('Error initiating sync:', error);
-        alert('Failed to send sync request. Please try again.');
-    }
-}
-
-// === GLOBAL UTILITY FUNCTIONS ===
+// Make export function globally available
+window.exportLifeCvData = exportLifeCvData;
+window.importLifeCvData = importLifeCvData;
 
 // Make functions globally available
 window.confirmSensitiveDataSharing = confirmSensitiveDataSharing;

@@ -16,7 +16,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
     <style>
-        /* Custom styles for accordion, camera, etc. remain unchanged */
+        /* Suppress CSS loading errors temporarily */
+        /* Add any critical styles here instead of external files */
+        
+        /* Your existing styles... */
         .accordion-content {
             display: none;
             overflow: hidden;
@@ -38,8 +41,10 @@
         }
         #capture-canvas, #capture-canvas-modal {
             border-radius: 0.5rem;
-            display: none; /* Hidden by default */
+            display: none;
         }
+        
+        /* Add any missing critical styles here */
     </style>
 </head>
 <body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans">
@@ -86,6 +91,14 @@
         </main>
     </div>
 
+    <!-- Add these hidden camera elements for the camera service -->
+    <div id="camera-elements" style="display: none;">
+        <video id="webcam-video" autoplay muted></video>
+        <canvas id="capture-canvas"></canvas>
+        <video id="webcam-video-modal" autoplay muted></video>
+        <canvas id="capture-canvas-modal"></canvas>
+    </div>
+
     <!-- Modals will be injected here -->
     <div id="modal-placeholder"></div>
     
@@ -128,8 +141,19 @@
         // Initialize the application
         document.addEventListener('DOMContentLoaded', () => {
             // Load shared components using corrected paths
-            fetch('../components/header.html').then(res => res.text()).then(data => document.getElementById('header-placeholder').innerHTML = data);
-            fetch('../components/sidebar.html').then(res => res.text()).then(data => document.getElementById('sidebar-placeholder').innerHTML = data);
+            fetch('../components/header.html')
+                .then(res => res.text())
+                .then(data => {
+                    document.getElementById('header-placeholder').innerHTML = data;
+                })
+                .catch(error => console.warn('Header component not found:', error));
+                
+            fetch('../components/sidebar.html')
+                .then(res => res.text())
+                .then(data => {
+                    document.getElementById('sidebar-placeholder').innerHTML = data;
+                })
+                .catch(error => console.warn('Sidebar component not found:', error));
 
             // Start the LifeCV module
             initLifeCV().catch(error => {
@@ -140,3 +164,13 @@
     </script>
 </body>
 </html>
+
+/* Create these empty files to prevent 404 errors: */
+/* File: assets/css/style.css */
+/* Empty file or add your custom styles here */
+
+/* File: assets/css/modules.css */
+/* Empty file or add module-specific styles here */
+
+/* File: assets/css/quiz.css */
+/* Empty file or add quiz-specific styles here */

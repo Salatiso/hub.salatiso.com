@@ -243,6 +243,9 @@ function createInternetSearchModal() {
 
             <!-- Search Results -->
             <div class="flex-1 overflow-y-auto p-6" style="max-height: 60vh;">
+                <!-- Information Container for Data Removal Guidance -->
+                <div id="search-info-container"></div>
+                
                 <div id="search-results-placeholder" class="text-center py-16">
                     <div class="inline-block p-4 bg-purple-100 rounded-full mb-4">
                         <i class="fas fa-globe text-purple-600 text-2xl"></i>

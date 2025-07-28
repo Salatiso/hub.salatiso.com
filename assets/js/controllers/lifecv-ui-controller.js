@@ -342,7 +342,7 @@ function renderFormField(sectionKey, field, value) {
 }
 
 /**
- * Render contact field with special handling for addresses
+ * Render contact field with special handling for addresses and enhanced features
  */
 function renderContactField(field, value, fieldPath, baseClasses, fieldId) {
     if (field.id === 'value') {
@@ -354,29 +354,71 @@ function renderContactField(field, value, fieldPath, baseClasses, fieldId) {
                            value="${value}"
                            class="${baseClasses}"
                            placeholder="Enter contact information">
-                    <button type="button"
-                            onclick="window.lifeCvUIController.handleAddressSearch('${fieldId}')"
-                            class="absolute right-2 top-2 p-1 text-slate-400 hover:text-indigo-600"
-                            title="Search address">
-                        <i class="fas fa-map-marker-alt"></i>
-                    </button>
+                    <div class="absolute right-2 top-2 flex space-x-1">
+                        <button type="button"
+                                onclick="window.lifeCvUIController.handleAddressSearch('${fieldId}')"
+                                class="p-1 text-slate-400 hover:text-indigo-600"
+                                title="Search address with GPS">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </button>
+                        <button type="button"
+                                onclick="window.lifeCvUIController.getCurrentLocationForContact('${fieldId}')"
+                                class="p-1 text-slate-400 hover:text-green-600"
+                                title="Use current location">
+                            <i class="fas fa-location-arrow"></i>
+                        </button>
+                    </div>
                 </div>`;
     } else if (field.id === 'coordinates') {
-        return `<input type="text"
-                       id="${fieldId}"
-                       value="${value}"
-                       class="${baseClasses} bg-slate-50"
-                       readonly
-                       placeholder="GPS coordinates will be filled automatically">`;
+        return `<div class="relative">
+                    <input type="text"
+                           id="${fieldId}"
+                           value="${value}"
+                           class="${baseClasses} bg-slate-50"
+                           readonly
+                           placeholder="GPS coordinates will be filled automatically">
+                    ${value ? `
+                        <button type="button"
+                                onclick="window.lifeCvUIController.openMapView('${value}')"
+                                class="absolute right-2 top-2 p-1 text-slate-400 hover:text-blue-600"
+                                title="View on map">
+                            <i class="fas fa-external-link-alt"></i>
+                        </button>
+                    ` : ''}
+                </div>`;
+    } else if (field.id === 'isActive') {
+        return `<label class="flex items-center">
+                    <input type="checkbox"
+                           id="${fieldId}"
+                           onchange="window.lifeCvUIController.updateFieldValue('${fieldPath}', this.checked); window.lifeCvUIController.toggleActiveFields('${fieldId}')"
+                           ${value === 'true' || value === true ? 'checked' : ''}
+                           class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                    <span class="ml-2 text-sm text-slate-600">${field.label}</span>
+                </label>`;
+    } else if (field.id === 'activeTo' || field.id === 'terminationReason') {
+        // These fields should be hidden if contact is active
+        const isActiveField = fieldId.replace(field.id, 'isActive');
+        return `<div class="contact-inactive-field" data-active-field="${isActiveField}">
+                    ${renderStandardField(field, value, fieldPath, baseClasses, fieldId)}
+                </div>`;
     } else {
-        // Regular field rendering
-        const options = field.options || [];
-        if (field.type === 'select') {
+        return renderStandardField(field, value, fieldPath, baseClasses, fieldId);
+    }
+}
+
+/**
+ * Render standard form field
+ */
+function renderStandardField(field, value, fieldPath, baseClasses, fieldId) {
+    const options = field.options || [];
+    
+    switch (field.type) {
+        case 'select':
             return `<select id="${fieldId}" onchange="window.lifeCvUIController.updateFieldValue('${fieldPath}', this.value)" class="${baseClasses}">
                         <option value="">Select ${field.label.toLowerCase()}</option>
                         ${options.map(opt => `<option value="${opt}" ${value === opt ? 'selected' : ''}>${opt}</option>`).join('')}
                     </select>`;
-        } else if (field.type === 'checkbox') {
+        case 'checkbox':
             return `<label class="flex items-center">
                         <input type="checkbox"
                                id="${fieldId}"
@@ -385,21 +427,27 @@ function renderContactField(field, value, fieldPath, baseClasses, fieldId) {
                                class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
                         <span class="ml-2 text-sm text-slate-600">${field.label}</span>
                     </label>`;
-        } else if (field.type === 'textarea') {
+        case 'textarea':
             return `<textarea
                         id="${fieldId}"
                         onchange="window.lifeCvUIController.updateFieldValue('${fieldPath}', this.value)"
                         class="${baseClasses} resize-none"
                         rows="3"
                         placeholder="${field.placeholder || ''}">${value}</textarea>`;
-        } else {
+        case 'date':
+            return `<input type="date"
+                           id="${fieldId}"
+                           onchange="window.lifeCvUIController.updateFieldValue('${fieldPath}', this.value)"
+                           value="${value}"
+                           class="${baseClasses}">`;
+        default:
             return `<input type="${field.type || 'text'}"
                            id="${fieldId}"
                            onchange="window.lifeCvUIController.updateFieldValue('${fieldPath}', this.value)"
                            value="${value}"
                            class="${baseClasses}"
+                           ${field.readonly ? 'readonly' : ''}
                            placeholder="${field.placeholder || ''}">`;
-        }
     }
 }
 
@@ -1176,6 +1224,96 @@ function hideAllMessages() {
     messages.forEach(msg => msg.remove());
 }
 
+/**
+ * Toggle active fields visibility for contact information
+ */
+export function toggleActiveFields(activeFieldId) {
+    const activeCheckbox = document.getElementById(activeFieldId);
+    const inactiveFields = document.querySelectorAll(`[data-active-field="${activeFieldId}"]`);
+    
+    if (activeCheckbox && inactiveFields.length > 0) {
+        const isActive = activeCheckbox.checked;
+        inactiveFields.forEach(field => {
+            if (isActive) {
+                field.style.display = 'none';
+            } else {
+                field.style.display = 'block';
+            }
+        });
+    }
+}
+
+/**
+ * Get current location for contact
+ */
+export async function getCurrentLocationForContact(fieldId) {
+    const inputElement = document.getElementById(fieldId);
+    if (!inputElement) return;
+    
+    try {
+        showNotification('Getting your current location...', 'info');
+        
+        const location = await getCurrentLocation();
+        const { reverseGeocode } = await import('../utils/google-maps.js');
+        const addressData = await reverseGeocode(location.lat, location.lng);
+        
+        // Update the address field
+        inputElement.value = addressData.formattedAddress;
+        inputElement.dispatchEvent(new Event('change'));
+        
+        // Update related fields
+        const parentContainer = inputElement.closest('.form-group').parentElement;
+        updateRelatedLocationFields(parentContainer, location, addressData);
+        
+        showNotification('Current location address added', 'success');
+    } catch (error) {
+        console.error('Error getting current location:', error);
+        showNotification('Could not get current location: ' + error.message, 'error');
+    }
+}
+
+/**
+ * Open map view for coordinates
+ */
+export function openMapView(coordinates) {
+    if (!coordinates) return;
+    
+    const [lat, lng] = coordinates.split(',').map(coord => coord.trim());
+    if (lat && lng) {
+        const mapUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+        window.open(mapUrl, '_blank');
+    }
+}
+
+/**
+ * Update related location fields
+ */
+function updateRelatedLocationFields(container, location, addressData) {
+    // Update coordinates field
+    const coordsField = container.querySelector('input[id*="coordinates"]');
+    if (coordsField) {
+        const coordsString = `${location.lat}, ${location.lng}`;
+        coordsField.value = coordsString;
+        coordsField.dispatchEvent(new Event('change'));
+    }
+    
+    // Update country field
+    const countryField = container.querySelector('input[id*="country"]');
+    if (countryField && addressData.country) {
+        countryField.value = addressData.country;
+        countryField.dispatchEvent(new Event('change'));
+    }
+    
+    // Update timezone field (approximate based on coordinates)
+    const timezoneField = container.querySelector('input[id*="timezone"]');
+    if (timezoneField) {
+        // This is a simplified timezone detection - in production you'd use a proper timezone API
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        timezoneField.value = timezone;
+        timezoneField.dispatchEvent(new Event('change'));
+    }
+}
+
 // Make functions globally available
 window.lifeCvUIController = {
     updateUI,
@@ -1192,7 +1330,10 @@ window.lifeCvUIController = {
     handleFileUpload,
     openCamera,
     removeProfilePicture,
-    setPrimaryPicture
+    setPrimaryPicture,
+    toggleActiveFields,
+    getCurrentLocationForContact,
+    openMapView
 };
 
 export {

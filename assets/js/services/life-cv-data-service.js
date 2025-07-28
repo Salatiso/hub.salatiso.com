@@ -597,15 +597,22 @@ const lifeCvSections = {
     },
     contactInfo: {
         title: 'Contact Information',
-        description: 'Ways to reach you - phone, email, addresses',
+        description: 'Ways to reach you - phone, email, addresses with GPS coordinates',
         icon: 'fas fa-address-book',
         isArray: true,
         fields: [
-            { id: 'type', label: 'Contact Type', type: 'select', required: true, options: ['Phone', 'Email', 'Address', 'Website', 'Social Media'] },
+            { id: 'type', label: 'Contact Type', type: 'select', required: true, options: ['Phone', 'Email', 'Address', 'Website', 'Social Media', 'Fax', 'WhatsApp', 'Telegram', 'Signal'] },
             { id: 'value', label: 'Contact Value', type: 'text', required: true, placeholder: 'Enter contact information' },
-            { id: 'label', label: 'Label', type: 'text', placeholder: 'e.g., Home, Work, Personal' },
+            { id: 'label', label: 'Label', type: 'text', placeholder: 'e.g., Home, Work, Personal, Mobile' },
             { id: 'isPrimary', label: 'Primary Contact', type: 'checkbox' },
-            { id: 'coordinates', label: 'GPS Coordinates', type: 'text', readonly: true, placeholder: 'Auto-filled for addresses' }
+            { id: 'isActive', label: 'Currently Active', type: 'checkbox' },
+            { id: 'activeFrom', label: 'Active From', type: 'date', placeholder: 'When this contact became active' },
+            { id: 'activeTo', label: 'Active Until', type: 'date', placeholder: 'Leave blank if still active' },
+            { id: 'terminationReason', label: 'Termination Reason', type: 'textarea', placeholder: 'Why this contact is no longer in use (if applicable)' },
+            { id: 'coordinates', label: 'GPS Coordinates', type: 'text', readonly: true, placeholder: 'Auto-filled for addresses (lat, lng)' },
+            { id: 'country', label: 'Country', type: 'text', placeholder: 'Country (auto-filled for addresses)' },
+            { id: 'timezone', label: 'Timezone', type: 'text', placeholder: 'Timezone (auto-filled for addresses)' },
+            { id: 'notes', label: 'Additional Notes', type: 'textarea', placeholder: 'Any additional information about this contact method' }
         ]
     },
     emergencyContacts: {

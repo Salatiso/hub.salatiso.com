@@ -490,12 +490,100 @@ async function handleInternetSearch(event) {
         return;
     }
     
+    // Show information about the search process
+    showSearchInformation();
+    
     try {
         await performInternetSearch(searchParams);
     } catch (error) {
         console.error('Internet search error:', error);
         showNotification(`Search failed: ${error.message}`, 'error');
     }
+}
+
+/**
+ * Show information about the search process and data removal options
+ */
+function showSearchInformation() {
+    const infoContainer = document.getElementById('search-info-container');
+    if (!infoContainer) return;
+    
+    infoContainer.innerHTML = `
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <div class="flex items-start">
+                <i class="fas fa-info-circle text-blue-600 mt-1 mr-3"></i>
+                <div class="text-sm text-blue-800">
+                    <h4 class="font-semibold mb-2">About Internet Search & Digital Privacy</h4>
+                    <p class="mb-3">This search helps you discover what information about you is publicly available online. Understanding your digital footprint is crucial for:</p>
+                    <ul class="list-disc list-inside space-y-1 mb-3">
+                        <li>Professional reputation management</li>
+                        <li>Privacy and security assessment</li>
+                        <li>Identifying outdated or incorrect information</li>
+                        <li>Discovering forgotten online profiles</li>
+                    </ul>
+                    
+                    <div class="bg-white border border-blue-300 rounded p-3 mt-3">
+                        <h5 class="font-semibold text-blue-900 mb-2">Found Unwanted Information Online?</h5>
+                        <p class="text-xs text-blue-700 mb-2">If the search reveals information you don't want online, here are your options:</p>
+                        
+                        <div class="space-y-2 text-xs">
+                            <div>
+                                <strong>1. Contact the Website Directly:</strong>
+                                <ul class="list-disc list-inside ml-4 mt-1">
+                                    <li>Most websites have contact forms or privacy policies</li>
+                                    <li>Request removal citing privacy concerns</li>
+                                    <li>Be polite but firm about your request</li>
+                                </ul>
+                            </div>
+                            
+                            <div>
+                                <strong>2. Google's Removal Tools:</strong>
+                                <ul class="list-disc list-inside ml-4 mt-1">
+                                    <li><a href="https://www.google.com/webmasters/tools/removals" target="_blank" class="text-blue-600 underline">Google Search Console</a> - for content you control</li>
+                                    <li><a href="https://support.google.com/websearch/troubleshooter/3111061" target="_blank" class="text-blue-600 underline">Legal Removal Requests</a> - for sensitive personal information</li>
+                                    <li><a href="https://www.google.com/webmasters/tools/removals" target="_blank" class="text-blue-600 underline">Outdated Content Removal</a> - for outdated information</li>
+                                </ul>
+                            </div>
+                            
+                            <div>
+                                <strong>3. Social Media Platforms:</strong>
+                                <ul class="list-disc list-inside ml-4 mt-1">
+                                    <li>LinkedIn: Privacy Settings → Public Profile</li>
+                                    <li>Facebook: Settings → Privacy → Public Posts</li>
+                                    <li>Twitter/X: Settings → Privacy and Safety</li>
+                                    <li>Instagram: Settings → Privacy → Account Privacy</li>
+                                </ul>
+                            </div>
+                            
+                            <div>
+                                <strong>4. Professional Services:</strong>
+                                <ul class="list-disc list-inside ml-4 mt-1">
+                                    <li>Reputation management companies</li>
+                                    <li>Legal assistance for persistent issues</li>
+                                    <li>SEO services to promote positive content</li>
+                                </ul>
+                            </div>
+                            
+                            <div>
+                                <strong>5. South African Specific:</strong>
+                                <ul class="list-disc list-inside ml-4 mt-1">
+                                    <li><a href="https://www.justice.gov.za/inforeg/" target="_blank" class="text-blue-600 underline">Information Regulator</a> - POPIA complaints</li>
+                                    <li>Right to be forgotten under POPIA</li>
+                                    <li>Data subject access requests</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded">
+                            <p class="text-xs text-yellow-800">
+                                <strong>Important:</strong> Complete removal from the internet is often impossible, but you can significantly reduce unwanted visibility through persistent effort and the right approach.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
 }
 
 /**

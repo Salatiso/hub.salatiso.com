@@ -48,7 +48,10 @@ export async function loadLifeCvData() {
         // Load from localStorage first
         const localData = localStorage.getItem('lifeCvData');
         if (localData) {
-            lifeCvData = { ...lifeCvData, ...JSON.parse(localData) };
+            const parsedData = JSON.parse(localData);
+            // Migrate old format to new format if needed
+            const migratedData = migrateOldDataFormat(parsedData);
+            lifeCvData = { ...lifeCvData, ...migratedData };
         }
 
         // Sync with Firebase if user is authenticated
@@ -107,9 +110,17 @@ async function syncWithFirebase() {
         const userRef = doc(db, 'users', auth.currentUser.uid);
         const userDoc = await getDoc(userRef);
         
-        if (userDoc.exists() && userDoc.data().lifeCvData) {
+        if (userDoc.exists() && userDoc.data().lifeCv) {
+            // Handle old format from Firebase (lifeCv instead of lifeCvData)
+            const firebaseData = userDoc.data().lifeCv;
+            const migratedData = migrateOldDataFormat({ lifeCv: firebaseData });
+            lifeCvData = { ...lifeCvData, ...migratedData };
+            localStorage.setItem('lifeCvData', JSON.stringify(lifeCvData));
+        } else if (userDoc.exists() && userDoc.data().lifeCvData) {
+            // Handle new format
             const firebaseData = userDoc.data().lifeCvData;
-            lifeCvData = { ...lifeCvData, ...firebaseData };
+            const migratedData = migrateOldDataFormat(firebaseData);
+            lifeCvData = { ...lifeCvData, ...migratedData };
             localStorage.setItem('lifeCvData', JSON.stringify(lifeCvData));
         }
     } catch (error) {
@@ -1228,6 +1239,241 @@ function getDefaultLifeCvData() {
         volunteerWork: [],
         publications: []
     };
+}
+
+/**
+ * Migrate old data format to new structured format
+ */
+function migrateOldDataFormat(data) {
+    if (!data || typeof data !== 'object') {
+        return data;
+    }
+
+    // Check if this is old format data (has lifeCv property or flat structure)
+    const oldData = data.lifeCv || data;
+    
+    // If data is already in new format, return as is
+    if (isNewFormat(oldData)) {
+        return data;
+    }
+
+    console.log('Migrating old data format to new format...');
+    
+    const migratedData = {};
+
+    // Migrate personal information
+    if (oldData.personal) {
+        migratedData.personalInfo = migrateObjectFields(oldData.personal, {
+            fullName: 'fullName',
+            preferredName: 'preferredName',
+            dob: 'dateOfBirth',
+            nationality: 'nationality',
+            idNumber: 'idNumber',
+            ethnicity: 'ethnicity',
+            pronouns: 'pronouns'
+        });
+    }
+
+    // Migrate contact information - handle both old flat structure and array
+    if (oldData.contactNumber || oldData.email || oldData.address) {
+        migratedData.contactInfo = [];
+        
+        if (oldData.contactNumber) {
+            migratedData.contactInfo.push({
+                type: { value: 'Phone', isPublic: false },
+                value: { value: oldData.contactNumber, isPublic: false },
+                label: { value: 'Primary', isPublic: false },
+                isPrimary: { value: true, isPublic: false }
+            });
+        }
+        
+        if (oldData.email) {
+            migratedData.contactInfo.push({
+                type: { value: 'Email', isPublic: true },
+                value: { value: oldData.email, isPublic: true },
+                label: { value: 'Primary', isPublic: true },
+                isPrimary: { value: true, isPublic: true }
+            });
+        }
+        
+        if (oldData.address) {
+            migratedData.contactInfo.push({
+                type: { value: 'Address', isPublic: false },
+                value: { value: oldData.address, isPublic: false },
+                label: { value: 'Home', isPublic: false },
+                isPrimary: { value: true, isPublic: false },
+                coordinates: { value: '', isPublic: false }
+            });
+        }
+    }
+
+    // Migrate array sections
+    const arrayMappings = {
+        certifications: 'certifications',
+        community: 'community',
+        digital: 'digital',
+        education: 'education',
+        experience: 'experience',
+        skills: 'skills',
+        interests: 'interests',
+        languages: 'languages',
+        milestones: 'milestones',
+        projects: 'projects',
+        publications: 'publications',
+        volunteering: 'volunteering',
+        references: 'references',
+        family: 'family',
+        financials: 'financials'
+    };
+
+    Object.entries(arrayMappings).forEach(([oldKey, newKey]) => {
+        if (oldData[oldKey] && Array.isArray(oldData[oldKey])) {
+            migratedData[newKey] = oldData[oldKey].map(item => migrateArrayItem(item));
+        }
+    });
+
+    // Migrate object sections
+    if (oldData.philosophy) {
+        migratedData.lifePhilosophy = migrateObjectFields(oldData.philosophy, {
+            mission: 'personalMission',
+            values: 'coreValues',
+            lifeGoals: 'lifeGoals',
+            beliefs: 'inspiration',
+            spirituality: 'spirituality'
+        });
+    }
+
+    if (oldData.professional) {
+        migratedData.professionalSummary = migrateObjectFields(oldData.professional, {
+            summary: 'summary',
+            careerVision: 'careerObjective',
+            workStyle: 'currentTitle'
+        });
+    }
+
+    if (oldData.health) {
+        migratedData.healthWellness = migrateObjectFields(oldData.health, {
+            physicalHealth: 'fitnessLevel',
+            mentalHealth: 'wellnessPractices',
+            allergies: 'allergies',
+            medications: 'medications',
+            disabilities: 'medicalConditions',
+            healthGoals: 'wellnessPractices'
+        });
+    }
+
+    // Handle special case for financials array to object conversion
+    if (oldData.financials && Array.isArray(oldData.financials)) {
+        migratedData.financials = {
+            summary: { value: 'Financial overview from imported data', isPublic: false },
+            income: { value: '', isPublic: false },
+            assets: { value: '', isPublic: false },
+            liabilities: { value: '', isPublic: false },
+            financialGoals: { value: '', isPublic: false },
+            insurances: { value: '', isPublic: false }
+        };
+        
+        // Try to extract financial info from array items
+        oldData.financials.forEach(item => {
+            if (item.assetType) {
+                const currentAssets = migratedData.financials.assets.value;
+                migratedData.financials.assets.value = currentAssets ?
+                    `${currentAssets}; ${item.assetName}: ${item.details}` :
+                    `${item.assetName}: ${item.details}`;
+            }
+        });
+    }
+
+    console.log('Data migration completed');
+    return migratedData;
+}
+
+/**
+ * Check if data is already in new format
+ */
+function isNewFormat(data) {
+    if (!data || typeof data !== 'object') return false;
+    
+    // Check if any field has the new structure with value and isPublic
+    const sampleFields = ['personalInfo', 'contactInfo', 'experience', 'skills'];
+    
+    for (const field of sampleFields) {
+        if (data[field]) {
+            if (Array.isArray(data[field])) {
+                // Check first item in array
+                if (data[field].length > 0) {
+                    const firstItem = data[field][0];
+                    const firstFieldKey = Object.keys(firstItem)[0];
+                    if (firstItem[firstFieldKey] && typeof firstItem[firstFieldKey] === 'object' &&
+                        'value' in firstItem[firstFieldKey]) {
+                        return true;
+                    }
+                }
+            } else if (typeof data[field] === 'object') {
+                // Check object fields
+                const firstFieldKey = Object.keys(data[field])[0];
+                if (data[field][firstFieldKey] && typeof data[field][firstFieldKey] === 'object' &&
+                    'value' in data[field][firstFieldKey]) {
+                    return true;
+                }
+            }
+        }
+    }
+    
+    return false;
+}
+
+/**
+ * Migrate object fields to new format
+ */
+function migrateObjectFields(oldObj, fieldMapping) {
+    const newObj = {};
+    
+    Object.entries(fieldMapping).forEach(([oldField, newField]) => {
+        if (oldObj[oldField] !== undefined) {
+            newObj[newField] = {
+                value: oldObj[oldField],
+                isPublic: true, // Default to public, user can change later
+                lastModified: new Date().toISOString()
+            };
+        }
+    });
+    
+    // Handle any unmapped fields
+    Object.keys(oldObj).forEach(key => {
+        if (!Object.keys(fieldMapping).includes(key) && !newObj[key]) {
+            newObj[key] = {
+                value: oldObj[key],
+                isPublic: true,
+                lastModified: new Date().toISOString()
+            };
+        }
+    });
+    
+    return newObj;
+}
+
+/**
+ * Migrate array item to new format
+ */
+function migrateArrayItem(oldItem) {
+    if (!oldItem || typeof oldItem !== 'object') {
+        return oldItem;
+    }
+    
+    const newItem = {};
+    
+    Object.entries(oldItem).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+            newItem[key] = {
+                value: value,
+                isPublic: true, // Default to public, user can change later
+                lastModified: new Date().toISOString()
+            };
+        }
+    });
+    
+    return newItem;
 }
 
 // Initialize when DOM is loaded

@@ -81,12 +81,15 @@
                         <p class="text-lg text-slate-600 max-w-2xl mx-auto">Your comprehensive, living curriculum vitae. The master source for your digital homestead.</p>
                     </div>
 
+                    <!-- Dashboard Placeholder -->
+                    <div id="lifecv-dashboard-placeholder"></div>
+
                     <!-- Import Hub -->
                     <div class="gradient-border mb-8">
                         <div class="gradient-border-inner p-8">
                             <div class="text-center mb-6">
                                 <h2 class="text-2xl font-bold text-slate-800 mb-2">Import & Sync</h2>
-                                <p class="text-slate-600">Quickly populate your LifeCV by importing data from existing sources.</p>
+                                <p class="text-slate-600">Enhance your LifeCV by importing data from existing sources or discovering your online presence.</p>
                             </div>
                             
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -98,7 +101,7 @@
                                         </div>
                                         <div>
                                             <h3 class="font-bold text-slate-800 mb-1">Import from JSON</h3>
-                                            <p class="text-sm text-slate-600 leading-relaxed">Paste your LifeCV data in JSON format with AI conversion help.</p>
+                                            <p class="text-sm text-slate-600 leading-relaxed">Paste your LifeCV data in JSON format with intelligent merging options.</p>
                                         </div>
                                     </div>
                                 </button>
@@ -111,7 +114,7 @@
                                         </div>
                                         <div>
                                             <h3 class="font-bold text-slate-800 mb-1">Upload Document</h3>
-                                            <p class="text-sm text-slate-600 leading-relaxed">Drag & drop or click to upload CV/resume (PDF, DOCX, TXT).</p>
+                                            <p class="text-sm text-slate-600 leading-relaxed">Drag & drop or click to upload CV/resume (PDF, DOCX, TXT) with AI extraction.</p>
                                         </div>
                                     </div>
                                     <input type="file" id="file-import-input" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".txt,.pdf,.docx,.doc">
@@ -133,16 +136,29 @@
                                         </div>
                                         <div>
                                             <h3 class="font-bold text-slate-800 mb-1">Search Internet</h3>
-                                            <p class="text-sm text-slate-600 leading-relaxed">Discover your professional information across the web.</p>
+                                            <p class="text-sm text-slate-600 leading-relaxed">Discover your digital footprint and manage your online presence.</p>
                                         </div>
                                     </div>
                                 </button>
                             </div>
+                            
+                            <!-- Additional Information -->
+                            <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <div class="flex items-start">
+                                    <i class="fas fa-info-circle text-blue-600 mt-1 mr-3"></i>
+                                    <div class="text-sm text-blue-800">
+                                        <p class="font-medium mb-2">Import & Privacy Information:</p>
+                                        <ul class="space-y-1 text-xs">
+                                            <li>• <strong>Smart Merging:</strong> New data integrates with existing information - you choose how to handle conflicts</li>
+                                            <li>• <strong>Internet Search:</strong> Helps you discover what information is publicly available about you online</li>
+                                            <li>• <strong>Data Control:</strong> All imported data respects your privacy settings and can be modified or removed</li>
+                                            <li>• <strong>Backup Compatible:</strong> Supports both old and new LifeCV data formats seamlessly</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-
-                    <!-- Dashboard Placeholder -->
-                    <div id="lifecv-dashboard-placeholder"></div>
 
                     <!-- Main LifeCV Container -->
                     <div id="lifecv-container" class="space-y-6">

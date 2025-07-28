@@ -29,6 +29,19 @@ export function initLifeCvDataService() {
     loadLifeCvData();
 }
 
+// Initialize service (alias for compatibility)
+export function init(user, dataChangeCallback) {
+    console.log('LifeCV Data Service initializing for user:', user?.uid || 'anonymous');
+    
+    // Store the data change callback if provided
+    if (dataChangeCallback && typeof dataChangeCallback === 'function') {
+        addDataChangeListener(dataChangeCallback);
+    }
+    
+    // Load the user's data
+    return loadLifeCvData();
+}
+
 // Load data from localStorage and Firebase
 export async function loadLifeCvData() {
     try {
@@ -548,6 +561,673 @@ async function generateCrossModuleActivity() {
         console.error('Error generating cross-module activity:', error);
         return [];
     }
+}
+
+// =================================================================================
+// MISSING FUNCTIONS IMPLEMENTATION
+// =================================================================================
+
+// LifeCV Sections Configuration
+const lifeCvSections = {
+    personalInfo: {
+        title: 'Personal Information',
+        description: 'Basic personal details and identity information',
+        icon: 'fas fa-user',
+        isArray: false,
+        fields: [
+            { id: 'fullName', label: 'Full Name', type: 'text', required: true, placeholder: 'Enter your full name' },
+            { id: 'preferredName', label: 'Preferred Name', type: 'text', placeholder: 'What would you like to be called?' },
+            { id: 'dateOfBirth', label: 'Date of Birth', type: 'date', sensitive: true },
+            { id: 'nationality', label: 'Nationality', type: 'text', placeholder: 'e.g., South African' },
+            { id: 'idNumber', label: 'ID Number', type: 'text', sensitive: true, placeholder: 'Identity number' },
+            { id: 'gender', label: 'Gender', type: 'select', options: ['Male', 'Female', 'Non-binary', 'Prefer not to say'] },
+            { id: 'maritalStatus', label: 'Marital Status', type: 'select', options: ['Single', 'Married', 'Divorced', 'Widowed', 'In a relationship'] }
+        ]
+    },
+    contactInfo: {
+        title: 'Contact Information',
+        description: 'Ways to reach you - phone, email, addresses',
+        icon: 'fas fa-address-book',
+        isArray: true,
+        fields: [
+            { id: 'type', label: 'Contact Type', type: 'select', required: true, options: ['Phone', 'Email', 'Address', 'Website', 'Social Media'] },
+            { id: 'value', label: 'Contact Value', type: 'text', required: true, placeholder: 'Enter contact information' },
+            { id: 'label', label: 'Label', type: 'text', placeholder: 'e.g., Home, Work, Personal' },
+            { id: 'isPrimary', label: 'Primary Contact', type: 'checkbox' },
+            { id: 'coordinates', label: 'GPS Coordinates', type: 'text', readonly: true, placeholder: 'Auto-filled for addresses' }
+        ]
+    },
+    emergencyContacts: {
+        title: 'Emergency Contacts',
+        description: 'People to contact in case of emergency',
+        icon: 'fas fa-phone-alt',
+        isArray: true,
+        fields: [
+            { id: 'name', label: 'Full Name', type: 'text', required: true, placeholder: 'Contact person name' },
+            { id: 'relationship', label: 'Relationship', type: 'text', required: true, placeholder: 'e.g., Spouse, Parent, Friend' },
+            { id: 'phone', label: 'Phone Number', type: 'tel', required: true, placeholder: 'Primary phone number' },
+            { id: 'alternatePhone', label: 'Alternate Phone', type: 'tel', placeholder: 'Secondary phone number' },
+            { id: 'email', label: 'Email', type: 'email', placeholder: 'Email address' },
+            { id: 'address', label: 'Address', type: 'textarea', placeholder: 'Physical address' }
+        ]
+    },
+    profilePictures: {
+        title: 'Profile Pictures',
+        description: 'Professional photos and profile images',
+        icon: 'fas fa-camera',
+        isArray: false,
+        fields: [
+            { id: 'pictures', label: 'Profile Pictures', type: 'file-gallery', accept: 'image/*' }
+        ]
+    },
+    professionalSummary: {
+        title: 'Professional Summary',
+        description: 'Your career overview and professional identity',
+        icon: 'fas fa-briefcase',
+        isArray: false,
+        fields: [
+            { id: 'summary', label: 'Professional Summary', type: 'textarea', required: true, placeholder: 'Describe your professional background and goals' },
+            { id: 'currentTitle', label: 'Current Job Title', type: 'text', placeholder: 'Your current position' },
+            { id: 'industry', label: 'Industry', type: 'text', placeholder: 'Your industry or field' },
+            { id: 'yearsExperience', label: 'Years of Experience', type: 'number', placeholder: 'Total years of professional experience' },
+            { id: 'careerObjective', label: 'Career Objective', type: 'textarea', placeholder: 'Your career goals and aspirations' }
+        ]
+    },
+    lifePhilosophy: {
+        title: 'Life Philosophy',
+        description: 'Your values, beliefs, and life principles',
+        icon: 'fas fa-heart',
+        isArray: false,
+        fields: [
+            { id: 'personalMission', label: 'Personal Mission Statement', type: 'textarea', placeholder: 'Your personal mission in life' },
+            { id: 'coreValues', label: 'Core Values', type: 'textarea', placeholder: 'The values that guide your decisions' },
+            { id: 'lifeGoals', label: 'Life Goals', type: 'textarea', placeholder: 'Your major life aspirations' },
+            { id: 'inspiration', label: 'Sources of Inspiration', type: 'textarea', placeholder: 'What motivates and inspires you' }
+        ]
+    },
+    experience: {
+        title: 'Work Experience',
+        description: 'Your employment history and professional roles',
+        icon: 'fas fa-building',
+        isArray: true,
+        fields: [
+            { id: 'jobTitle', label: 'Job Title', type: 'text', required: true, placeholder: 'Your position title' },
+            { id: 'company', label: 'Company', type: 'text', required: true, placeholder: 'Company name' },
+            { id: 'location', label: 'Location', type: 'text', placeholder: 'City, Country' },
+            { id: 'startDate', label: 'Start Date', type: 'date', required: true },
+            { id: 'endDate', label: 'End Date', type: 'date', placeholder: 'Leave blank if current' },
+            { id: 'isCurrent', label: 'Current Position', type: 'checkbox' },
+            { id: 'description', label: 'Job Description', type: 'textarea', placeholder: 'Describe your responsibilities and achievements' },
+            { id: 'achievements', label: 'Key Achievements', type: 'textarea', placeholder: 'Notable accomplishments in this role' }
+        ]
+    },
+    education: {
+        title: 'Education',
+        description: 'Your academic qualifications and learning history',
+        icon: 'fas fa-graduation-cap',
+        isArray: true,
+        fields: [
+            { id: 'institution', label: 'Institution', type: 'text', required: true, placeholder: 'School, university, or training center' },
+            { id: 'degree', label: 'Degree/Qualification', type: 'text', required: true, placeholder: 'Degree, diploma, or certificate' },
+            { id: 'fieldOfStudy', label: 'Field of Study', type: 'text', placeholder: 'Major, specialization, or subject area' },
+            { id: 'startDate', label: 'Start Date', type: 'date' },
+            { id: 'endDate', label: 'End Date', type: 'date' },
+            { id: 'grade', label: 'Grade/GPA', type: 'text', placeholder: 'Final grade or GPA' },
+            { id: 'description', label: 'Description', type: 'textarea', placeholder: 'Additional details about your studies' }
+        ]
+    },
+    skills: {
+        title: 'Skills',
+        description: 'Your technical and soft skills',
+        icon: 'fas fa-cogs',
+        isArray: true,
+        fields: [
+            { id: 'name', label: 'Skill Name', type: 'text', required: true, placeholder: 'Name of the skill' },
+            { id: 'category', label: 'Category', type: 'select', options: ['Technical', 'Soft Skills', 'Language', 'Creative', 'Management', 'Other'] },
+            { id: 'level', label: 'Proficiency Level', type: 'select', required: true, options: ['Beginner', 'Intermediate', 'Advanced', 'Expert'] },
+            { id: 'yearsExperience', label: 'Years of Experience', type: 'number', placeholder: 'How many years using this skill' },
+            { id: 'description', label: 'Description', type: 'textarea', placeholder: 'Describe your experience with this skill' }
+        ]
+    },
+    certifications: {
+        title: 'Certifications',
+        description: 'Professional certifications and licenses',
+        icon: 'fas fa-certificate',
+        isArray: true,
+        fields: [
+            { id: 'name', label: 'Certification Name', type: 'text', required: true, placeholder: 'Name of certification' },
+            { id: 'issuingOrganization', label: 'Issuing Organization', type: 'text', required: true, placeholder: 'Who issued this certification' },
+            { id: 'issueDate', label: 'Issue Date', type: 'date' },
+            { id: 'expiryDate', label: 'Expiry Date', type: 'date', placeholder: 'Leave blank if no expiry' },
+            { id: 'credentialId', label: 'Credential ID', type: 'text', placeholder: 'Certificate number or ID' },
+            { id: 'credentialUrl', label: 'Credential URL', type: 'url', placeholder: 'Link to verify certification' },
+            { id: 'description', label: 'Description', type: 'textarea', placeholder: 'What this certification covers' }
+        ]
+    },
+    projects: {
+        title: 'Projects',
+        description: 'Notable projects and portfolio items',
+        icon: 'fas fa-project-diagram',
+        isArray: true,
+        fields: [
+            { id: 'name', label: 'Project Name', type: 'text', required: true, placeholder: 'Name of the project' },
+            { id: 'description', label: 'Description', type: 'textarea', required: true, placeholder: 'What the project was about' },
+            { id: 'role', label: 'Your Role', type: 'text', placeholder: 'Your role in the project' },
+            { id: 'startDate', label: 'Start Date', type: 'date' },
+            { id: 'endDate', label: 'End Date', type: 'date' },
+            { id: 'technologies', label: 'Technologies Used', type: 'textarea', placeholder: 'Tools, technologies, or methods used' },
+            { id: 'url', label: 'Project URL', type: 'url', placeholder: 'Link to project or demo' },
+            { id: 'achievements', label: 'Key Achievements', type: 'textarea', placeholder: 'What you accomplished' }
+        ]
+    },
+    languages: {
+        title: 'Languages',
+        description: 'Languages you speak and your proficiency levels',
+        icon: 'fas fa-language',
+        isArray: true,
+        fields: [
+            { id: 'language', label: 'Language', type: 'text', required: true, placeholder: 'Language name' },
+            { id: 'proficiency', label: 'Proficiency Level', type: 'select', required: true, options: ['Basic', 'Conversational', 'Fluent', 'Native'] },
+            { id: 'canRead', label: 'Can Read', type: 'checkbox' },
+            { id: 'canWrite', label: 'Can Write', type: 'checkbox' },
+            { id: 'canSpeak', label: 'Can Speak', type: 'checkbox' },
+            { id: 'certifications', label: 'Language Certifications', type: 'textarea', placeholder: 'Any language certifications or tests' }
+        ]
+    },
+    interests: {
+        title: 'Interests & Hobbies',
+        description: 'Your personal interests and recreational activities',
+        icon: 'fas fa-heart',
+        isArray: true,
+        fields: [
+            { id: 'name', label: 'Interest/Hobby', type: 'text', required: true, placeholder: 'Name of interest or hobby' },
+            { id: 'category', label: 'Category', type: 'select', options: ['Sports', 'Arts', 'Technology', 'Music', 'Reading', 'Travel', 'Volunteering', 'Other'] },
+            { id: 'level', label: 'Involvement Level', type: 'select', options: ['Casual', 'Regular', 'Serious', 'Professional'] },
+            { id: 'description', label: 'Description', type: 'textarea', placeholder: 'Describe your involvement and passion' }
+        ]
+    },
+    milestones: {
+        title: 'Life Milestones',
+        description: 'Significant events and achievements in your life',
+        icon: 'fas fa-flag-checkered',
+        isArray: true,
+        fields: [
+            { id: 'title', label: 'Milestone Title', type: 'text', required: true, placeholder: 'Name of the milestone' },
+            { id: 'date', label: 'Date', type: 'date', required: true },
+            { id: 'category', label: 'Category', type: 'select', options: ['Personal', 'Professional', 'Educational', 'Family', 'Health', 'Financial', 'Other'] },
+            { id: 'description', label: 'Description', type: 'textarea', placeholder: 'Describe this milestone and its significance' },
+            { id: 'impact', label: 'Impact on Life', type: 'textarea', placeholder: 'How this milestone affected your life' }
+        ]
+    },
+    community: {
+        title: 'Community Involvement',
+        description: 'Your involvement in community activities and organizations',
+        icon: 'fas fa-users',
+        isArray: true,
+        fields: [
+            { id: 'organization', label: 'Organization', type: 'text', required: true, placeholder: 'Name of organization or community' },
+            { id: 'role', label: 'Your Role', type: 'text', placeholder: 'Your position or involvement' },
+            { id: 'startDate', label: 'Start Date', type: 'date' },
+            { id: 'endDate', label: 'End Date', type: 'date', placeholder: 'Leave blank if ongoing' },
+            { id: 'description', label: 'Description', type: 'textarea', placeholder: 'Describe your involvement and contributions' },
+            { id: 'achievements', label: 'Achievements', type: 'textarea', placeholder: 'Notable accomplishments or impact' }
+        ]
+    },
+    volunteering: {
+        title: 'Volunteer Work',
+        description: 'Your volunteer experiences and community service',
+        icon: 'fas fa-hands-helping',
+        isArray: true,
+        fields: [
+            { id: 'organization', label: 'Organization', type: 'text', required: true, placeholder: 'Volunteer organization name' },
+            { id: 'role', label: 'Volunteer Role', type: 'text', required: true, placeholder: 'Your volunteer position' },
+            { id: 'cause', label: 'Cause/Focus Area', type: 'text', placeholder: 'What cause or area you supported' },
+            { id: 'startDate', label: 'Start Date', type: 'date' },
+            { id: 'endDate', label: 'End Date', type: 'date', placeholder: 'Leave blank if ongoing' },
+            { id: 'hoursPerWeek', label: 'Hours per Week', type: 'number', placeholder: 'Average hours volunteered per week' },
+            { id: 'description', label: 'Description', type: 'textarea', placeholder: 'Describe your volunteer work and impact' }
+        ]
+    },
+    publications: {
+        title: 'Publications & Media',
+        description: 'Articles, books, media appearances, and other publications',
+        icon: 'fas fa-book-open',
+        isArray: true,
+        fields: [
+            { id: 'title', label: 'Title', type: 'text', required: true, placeholder: 'Title of publication or media' },
+            { id: 'type', label: 'Type', type: 'select', options: ['Article', 'Book', 'Blog Post', 'Research Paper', 'Interview', 'Podcast', 'Video', 'Other'] },
+            { id: 'publisher', label: 'Publisher/Platform', type: 'text', placeholder: 'Where it was published' },
+            { id: 'date', label: 'Publication Date', type: 'date' },
+            { id: 'url', label: 'URL', type: 'url', placeholder: 'Link to publication' },
+            { id: 'description', label: 'Description', type: 'textarea', placeholder: 'Brief description of the content' }
+        ]
+    },
+    digital: {
+        title: 'Digital Presence',
+        description: 'Your online profiles and digital footprint',
+        icon: 'fas fa-globe',
+        isArray: true,
+        fields: [
+            { id: 'platform', label: 'Platform', type: 'text', required: true, placeholder: 'e.g., LinkedIn, GitHub, Twitter' },
+            { id: 'username', label: 'Username/Handle', type: 'text', placeholder: 'Your username on this platform' },
+            { id: 'url', label: 'Profile URL', type: 'url', required: true, placeholder: 'Link to your profile' },
+            { id: 'description', label: 'Description', type: 'textarea', placeholder: 'What you use this platform for' },
+            { id: 'followers', label: 'Followers/Connections', type: 'number', placeholder: 'Number of followers or connections' }
+        ]
+    },
+    travel: {
+        title: 'Travel Experience',
+        description: 'Places you have visited and travel experiences',
+        icon: 'fas fa-plane',
+        isArray: true,
+        fields: [
+            { id: 'destination', label: 'Destination', type: 'text', required: true, placeholder: 'City, Country or Region' },
+            { id: 'purpose', label: 'Purpose', type: 'select', options: ['Tourism', 'Business', 'Education', 'Volunteer', 'Family', 'Other'] },
+            { id: 'startDate', label: 'Start Date', type: 'date' },
+            { id: 'endDate', label: 'End Date', type: 'date' },
+            { id: 'duration', label: 'Duration', type: 'text', placeholder: 'How long you stayed' },
+            { id: 'highlights', label: 'Highlights', type: 'textarea', placeholder: 'Memorable experiences or learnings' },
+            { id: 'culturalImpact', label: 'Cultural Impact', type: 'textarea', placeholder: 'How this travel experience influenced you' }
+        ]
+    },
+    family: {
+        title: 'Family Information',
+        description: 'Information about your family members',
+        icon: 'fas fa-home',
+        isArray: true,
+        fields: [
+            { id: 'name', label: 'Name', type: 'text', required: true, placeholder: 'Family member name' },
+            { id: 'relationship', label: 'Relationship', type: 'select', required: true, options: ['Spouse', 'Child', 'Parent', 'Sibling', 'Grandparent', 'Grandchild', 'Other'] },
+            { id: 'age', label: 'Age', type: 'number', placeholder: 'Current age' },
+            { id: 'occupation', label: 'Occupation', type: 'text', placeholder: 'What they do for work' },
+            { id: 'location', label: 'Location', type: 'text', placeholder: 'Where they live' },
+            { id: 'notes', label: 'Notes', type: 'textarea', placeholder: 'Additional information' }
+        ]
+    },
+    healthWellness: {
+        title: 'Health & Wellness',
+        description: 'Health information and wellness practices',
+        icon: 'fas fa-heartbeat',
+        isArray: false,
+        fields: [
+            { id: 'bloodType', label: 'Blood Type', type: 'select', sensitive: true, options: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Unknown'] },
+            { id: 'allergies', label: 'Allergies', type: 'textarea', sensitive: true, placeholder: 'List any known allergies' },
+            { id: 'medications', label: 'Current Medications', type: 'textarea', sensitive: true, placeholder: 'List current medications' },
+            { id: 'medicalConditions', label: 'Medical Conditions', type: 'textarea', sensitive: true, placeholder: 'Any ongoing medical conditions' },
+            { id: 'fitnessLevel', label: 'Fitness Level', type: 'select', options: ['Sedentary', 'Lightly Active', 'Moderately Active', 'Very Active', 'Extremely Active'] },
+            { id: 'wellnessPractices', label: 'Wellness Practices', type: 'textarea', placeholder: 'Exercise routines, meditation, etc.' }
+        ]
+    },
+    financials: {
+        title: 'Financial Information',
+        description: 'Financial overview and goals (private by default)',
+        icon: 'fas fa-chart-line',
+        isArray: false,
+        fields: [
+            { id: 'summary', label: 'Financial Summary', type: 'textarea', sensitive: true, placeholder: 'Overview of your financial situation' },
+            { id: 'income', label: 'Income Sources', type: 'textarea', sensitive: true, placeholder: 'Primary sources of income' },
+            { id: 'assets', label: 'Major Assets', type: 'textarea', sensitive: true, placeholder: 'Property, investments, etc.' },
+            { id: 'liabilities', label: 'Major Liabilities', type: 'textarea', sensitive: true, placeholder: 'Loans, debts, etc.' },
+            { id: 'financialGoals', label: 'Financial Goals', type: 'textarea', placeholder: 'Your financial aspirations and plans' },
+            { id: 'insurances', label: 'Insurance Coverage', type: 'textarea', sensitive: true, placeholder: 'Types of insurance you have' }
+        ]
+    },
+    references: {
+        title: 'References',
+        description: 'Professional and personal references',
+        icon: 'fas fa-user-friends',
+        isArray: true,
+        fields: [
+            { id: 'name', label: 'Full Name', type: 'text', required: true, placeholder: 'Reference name' },
+            { id: 'title', label: 'Job Title', type: 'text', placeholder: 'Their current position' },
+            { id: 'company', label: 'Company', type: 'text', placeholder: 'Where they work' },
+            { id: 'relationship', label: 'Relationship', type: 'text', required: true, placeholder: 'How you know them' },
+            { id: 'phone', label: 'Phone Number', type: 'tel', placeholder: 'Contact phone number' },
+            { id: 'email', label: 'Email', type: 'email', required: true, placeholder: 'Contact email' },
+            { id: 'yearsKnown', label: 'Years Known', type: 'number', placeholder: 'How long you have known them' },
+            { id: 'notes', label: 'Notes', type: 'textarea', placeholder: 'Additional context about this reference' }
+        ]
+    }
+};
+
+// Export the sections configuration
+export function getLifeCvSections() {
+    return lifeCvSections;
+}
+
+// Update a specific field in the LifeCV data
+export function updateField(path, value) {
+    try {
+        const pathParts = path.split('.');
+        let current = lifeCvData;
+        
+        // Navigate to the parent object
+        for (let i = 0; i < pathParts.length - 1; i++) {
+            const part = pathParts[i];
+            if (!current[part]) {
+                current[part] = {};
+            }
+            current = current[part];
+        }
+        
+        // Set the final value
+        const finalKey = pathParts[pathParts.length - 1];
+        
+        // Handle the structured format with value and isPublic
+        if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+            current[finalKey] = value;
+        } else {
+            // Create structured format if it doesn't exist
+            if (!current[finalKey] || typeof current[finalKey] !== 'object') {
+                current[finalKey] = { value: '', isPublic: true };
+            }
+            current[finalKey].value = value;
+        }
+        
+        // Save the updated data
+        saveLifeCvData();
+        notifyDataChange();
+        
+        return true;
+    } catch (error) {
+        console.error('Error updating field:', error);
+        return false;
+    }
+}
+
+// Add an item to an array section
+export function addArrayItem(sectionKey, itemData) {
+    try {
+        if (!lifeCvData[sectionKey]) {
+            lifeCvData[sectionKey] = [];
+        }
+        
+        if (!Array.isArray(lifeCvData[sectionKey])) {
+            lifeCvData[sectionKey] = [];
+        }
+        
+        // Ensure the item has the proper structure
+        const structuredItem = {};
+        if (typeof itemData === 'object' && itemData !== null) {
+            Object.keys(itemData).forEach(key => {
+                if (typeof itemData[key] === 'object' && itemData[key] !== null && 'value' in itemData[key]) {
+                    // Already in structured format
+                    structuredItem[key] = itemData[key];
+                } else {
+                    // Convert to structured format
+                    structuredItem[key] = {
+                        value: itemData[key],
+                        isPublic: true
+                    };
+                }
+            });
+        }
+        
+        lifeCvData[sectionKey].push(structuredItem);
+        saveLifeCvData();
+        notifyDataChange();
+        
+        return lifeCvData[sectionKey].length - 1; // Return the index of the added item
+    } catch (error) {
+        console.error('Error adding array item:', error);
+        return -1;
+    }
+}
+
+// Remove an item from an array section
+export function removeArrayItem(sectionKey, index) {
+    try {
+        if (!lifeCvData[sectionKey] || !Array.isArray(lifeCvData[sectionKey])) {
+            return false;
+        }
+        
+        if (index >= 0 && index < lifeCvData[sectionKey].length) {
+            lifeCvData[sectionKey].splice(index, 1);
+            saveLifeCvData();
+            notifyDataChange();
+            return true;
+        }
+        
+        return false;
+    } catch (error) {
+        console.error('Error removing array item:', error);
+        return false;
+    }
+}
+
+// Update privacy setting for a specific field
+export function updatePrivacySetting(path, isPublic) {
+    try {
+        const pathParts = path.split('.');
+        let current = lifeCvData;
+        
+        // Navigate to the parent object
+        for (let i = 0; i < pathParts.length - 1; i++) {
+            const part = pathParts[i];
+            if (!current[part]) {
+                current[part] = {};
+            }
+            current = current[part];
+        }
+        
+        // Set the privacy setting
+        const finalKey = pathParts[pathParts.length - 1];
+        if (!current[finalKey] || typeof current[finalKey] !== 'object') {
+            current[finalKey] = { value: '', isPublic: true };
+        }
+        
+        current[finalKey].isPublic = isPublic;
+        
+        // Save the updated data
+        saveLifeCvData();
+        notifyDataChange();
+        
+        return true;
+    } catch (error) {
+        console.error('Error updating privacy setting:', error);
+        return false;
+    }
+}
+
+// Export data for backup or sharing
+export function exportData(options = {}) {
+    try {
+        const exportedData = {
+            ...lifeCvData,
+            exportedAt: new Date().toISOString(),
+            version: '2.0',
+            exportOptions: options
+        };
+        
+        // Remove sensitive data if requested
+        if (options.excludeSensitive) {
+            const sensitiveFields = ['healthWellness', 'financials'];
+            sensitiveFields.forEach(field => {
+                if (exportedData[field]) {
+                    delete exportedData[field];
+                }
+            });
+        }
+        
+        // Include only public data if requested
+        if (options.publicOnly) {
+            const publicData = {};
+            Object.keys(exportedData).forEach(sectionKey => {
+                const section = exportedData[sectionKey];
+                if (Array.isArray(section)) {
+                    publicData[sectionKey] = section.map(item => {
+                        const publicItem = {};
+                        Object.keys(item).forEach(fieldKey => {
+                            const field = item[fieldKey];
+                            if (field && typeof field === 'object' && field.isPublic !== false) {
+                                publicItem[fieldKey] = field;
+                            }
+                        });
+                        return publicItem;
+                    });
+                } else if (typeof section === 'object' && section !== null) {
+                    publicData[sectionKey] = {};
+                    Object.keys(section).forEach(fieldKey => {
+                        const field = section[fieldKey];
+                        if (field && typeof field === 'object' && field.isPublic !== false) {
+                            publicData[sectionKey][fieldKey] = field;
+                        }
+                    });
+                } else {
+                    publicData[sectionKey] = section;
+                }
+            });
+            return publicData;
+        }
+        
+        return exportedData;
+    } catch (error) {
+        console.error('Error exporting data:', error);
+        return null;
+    }
+}
+
+// Import data from backup or external source
+export async function importData(importedData, options = {}) {
+    try {
+        if (!importedData || typeof importedData !== 'object') {
+            throw new Error('Invalid import data format');
+        }
+        
+        const strategy = options.strategy || 'merge'; // 'merge', 'overwrite', 'skip'
+        const conflicts = [];
+        
+        // Clean the imported data (remove export metadata)
+        const cleanData = { ...importedData };
+        delete cleanData.exportedAt;
+        delete cleanData.version;
+        delete cleanData.exportOptions;
+        
+        if (strategy === 'overwrite') {
+            // Replace all data
+            lifeCvData = { ...getDefaultLifeCvData(), ...cleanData };
+        } else if (strategy === 'merge') {
+            // Merge data, handling conflicts
+            Object.keys(cleanData).forEach(sectionKey => {
+                const importedSection = cleanData[sectionKey];
+                const existingSection = lifeCvData[sectionKey];
+                
+                if (Array.isArray(importedSection)) {
+                    // Handle array sections (experience, skills, etc.)
+                    if (!lifeCvData[sectionKey]) {
+                        lifeCvData[sectionKey] = [];
+                    }
+                    
+                    importedSection.forEach(importedItem => {
+                        // Check for duplicates based on key fields
+                        const isDuplicate = lifeCvData[sectionKey].some(existingItem => {
+                            return checkItemDuplicate(existingItem, importedItem, sectionKey);
+                        });
+                        
+                        if (isDuplicate) {
+                            conflicts.push({
+                                section: sectionKey,
+                                type: 'duplicate',
+                                existing: existingSection,
+                                imported: importedItem
+                            });
+                        } else {
+                            lifeCvData[sectionKey].push(importedItem);
+                        }
+                    });
+                } else if (typeof importedSection === 'object' && importedSection !== null) {
+                    // Handle object sections (personalInfo, etc.)
+                    if (!lifeCvData[sectionKey]) {
+                        lifeCvData[sectionKey] = {};
+                    }
+                    
+                    Object.keys(importedSection).forEach(fieldKey => {
+                        const importedField = importedSection[fieldKey];
+                        const existingField = lifeCvData[sectionKey][fieldKey];
+                        
+                        if (existingField && existingField.value && importedField.value &&
+                            existingField.value !== importedField.value) {
+                            conflicts.push({
+                                section: sectionKey,
+                                field: fieldKey,
+                                type: 'field_conflict',
+                                existing: existingField,
+                                imported: importedField
+                            });
+                        } else {
+                            lifeCvData[sectionKey][fieldKey] = importedField;
+                        }
+                    });
+                }
+            });
+        }
+        
+        // Save the updated data
+        await saveLifeCvData();
+        notifyDataChange();
+        
+        return {
+            success: true,
+            conflicts: conflicts,
+            importedSections: Object.keys(cleanData).length,
+            conflictCount: conflicts.length
+        };
+        
+    } catch (error) {
+        console.error('Error importing data:', error);
+        return {
+            success: false,
+            error: error.message,
+            conflicts: [],
+            importedSections: 0,
+            conflictCount: 0
+        };
+    }
+}
+
+// Helper function to check if two items are duplicates
+function checkItemDuplicate(existing, imported, sectionKey) {
+    // Define key fields for different sections to check for duplicates
+    const keyFields = {
+        experience: ['jobTitle', 'company'],
+        education: ['institution', 'degree'],
+        skills: ['name'],
+        certifications: ['name', 'issuingOrganization'],
+        projects: ['name'],
+        languages: ['language'],
+        contactInfo: ['type', 'value'],
+        emergencyContacts: ['name', 'phone'],
+        references: ['name', 'email']
+    };
+    
+    const fields = keyFields[sectionKey] || ['name', 'title'];
+    
+    return fields.some(field => {
+        const existingValue = existing[field]?.value || existing[field];
+        const importedValue = imported[field]?.value || imported[field];
+        return existingValue && importedValue &&
+               existingValue.toLowerCase() === importedValue.toLowerCase();
+    });
+}
+
+// Get default LifeCV data structure
+function getDefaultLifeCvData() {
+    return {
+        personalInfo: {},
+        education: [],
+        workExperience: [],
+        skills: [],
+        certifications: [],
+        achievements: [],
+        goals: [],
+        assessments: [],
+        projects: [],
+        references: [],
+        languages: [],
+        interests: [],
+        volunteerWork: [],
+        publications: []
+    };
 }
 
 // Initialize when DOM is loaded

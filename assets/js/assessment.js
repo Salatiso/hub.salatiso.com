@@ -1,7 +1,82 @@
 /* ================================================================================= */
-/* FILE: assets/js/assessment.js (RE-ENGINEERED)                                     */
-/* PURPOSE: A scalable wizard to guide users through the ecosystem.                  */
+/* FILE: assets/js/assessment.js (UPDATED - Saves to LifeCV)                        */
 /* ================================================================================= */
+import { addLifeCvEntry } from './services/life-cv-data-service.js';
+
+// ...existing code...
+
+function showResult(resultKey) {
+    const result = assessmentData.results[resultKey];
+    if (!result) {
+        console.error("Result not found:", resultKey);
+        return;
+    }
+
+    const resultHTML = `
+        <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-check text-green-600 text-2xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-900 mb-2">Perfect Match Found!</h2>
+                <p class="text-slate-600">Based on your responses, we recommend:</p>
+            </div>
+            
+            <div class="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg p-6 mb-6">
+                <h3 class="text-xl font-bold text-indigo-900 mb-2">${result.name}</h3>
+                <p class="text-slate-700 mb-4">${result.desc}</p>
+                
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <a href="${result.url}" class="flex-1 bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium text-center hover:bg-indigo-700 transition-colors">
+                        Get Started
+                    </a>
+                    <button onclick="restartAssessment()" class="flex-1 bg-white text-indigo-600 px-6 py-3 rounded-lg font-medium border-2 border-indigo-600 hover:bg-indigo-50 transition-colors">
+                        Try Again
+                    </button>
+                </div>
+            </div>
+            
+            <div class="text-center">
+                <p class="text-sm text-slate-500 mb-4">Your assessment path:</p>
+                <div class="flex flex-wrap justify-center gap-2">
+                    ${userPath.map(q => `<span class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-sm">${q}</span>`).join('')}
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Show result
+    assessmentContainer.innerHTML = resultHTML;
+
+    // Save to LifeCV
+    saveAssessmentToLifeCV(result, userPath);
+}
+
+async function saveAssessmentToLifeCV(result, path) {
+    try {
+        await addLifeCvEntry({
+            entryType: 'assessment',
+            title: 'Ecosystem Assessment Completed',
+            description: `Completed guided assessment and was recommended: ${result.name}. ${result.desc}`,
+            sourcePlatform: 'Hub Assessment',
+            sourceUrl: '/assessment.html',
+            tags: ['assessment', 'guidance', 'ecosystem-navigation'],
+            completedAt: new Date().toISOString(),
+            category: 'Personal Development',
+            data: {
+                recommendedModule: result.name,
+                recommendedUrl: result.url,
+                assessmentPath: path,
+                completionScore: 100
+            }
+        });
+        console.log("Assessment results saved to LifeCV");
+    } catch (error) {
+        console.error("Failed to save assessment to LifeCV:", error);
+    }
+}
+
+// ...existing code...
 const assessmentData = {
     questions: {
         start: {

@@ -7,10 +7,14 @@ import { getLifeCvData, getLifeCvSections, updateField, addArrayItem, removeArra
 import { showModal, hideModal } from '../components/lifecv-modals.js';
 import { showNotification } from '../utils/notifications.js';
 import { validateField } from '../utils/validators.js';
+import { createAddressAutocomplete, getCurrentLocation } from '../utils/google-maps.js';
+import { CameraService } from '../utils/camera-service.js';
 
 let currentData = {};
 let sectionsConfig = {};
 let currentEditingItem = null;
+let cameraService = new CameraService();
+let activeCamera = null;
 
 /**
  * Initialize the UI Controller
@@ -42,11 +46,11 @@ function renderAllSections() {
     
     // Render sections in a logical order
     const sectionOrder = [
-        'personalInfo', 'professionalSummary', 'lifePhilosophy', 'profilePictures',
-        'experience', 'education', 'skills', 'certifications', 'projects',
-        'languages', 'interests', 'milestones', 'community', 'volunteering',
-        'publications', 'digital', 'travel', 'family', 'healthWellness',
-        'financials', 'references'
+        'personalInfo', 'contactInfo', 'emergencyContacts', 'profilePictures',
+        'professionalSummary', 'lifePhilosophy', 'experience', 'education',
+        'skills', 'certifications', 'projects', 'languages', 'interests',
+        'milestones', 'community', 'volunteering', 'publications', 'digital',
+        'travel', 'family', 'healthWellness', 'financials', 'references'
     ];
     
     sectionOrder.forEach(sectionKey => {
@@ -232,10 +236,22 @@ function renderObjectSection(sectionKey, data, config) {
 function renderFormField(sectionKey, field, value) {
     const fieldPath = `${sectionKey}.${field.id}.value`;
     const baseClasses = 'w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500';
+    const fieldId = `field-${sectionKey}-${field.id}`;
+    
+    // Special handling for contact info fields
+    if (sectionKey === 'contactInfo') {
+        return renderContactField(field, value, fieldPath, baseClasses, fieldId);
+    }
+    
+    // Special handling for profile pictures
+    if (sectionKey === 'profilePictures') {
+        return renderProfilePicturesField(field, value, sectionKey);
+    }
     
     switch (field.type) {
         case 'textarea':
-            return `<textarea 
+            return `<textarea
+                        id="${fieldId}"
                         onchange="window.lifeCvUIController.updateFieldValue('${fieldPath}', this.value)"
                         class="${baseClasses} resize-none"
                         rows="3"
@@ -243,14 +259,15 @@ function renderFormField(sectionKey, field, value) {
         
         case 'select':
             const options = field.options || [];
-            return `<select onchange="window.lifeCvUIController.updateFieldValue('${fieldPath}', this.value)" class="${baseClasses}">
+            return `<select id="${fieldId}" onchange="window.lifeCvUIController.updateFieldValue('${fieldPath}', this.value)" class="${baseClasses}">
                         <option value="">Select ${field.label.toLowerCase()}</option>
                         ${options.map(opt => `<option value="${opt}" ${value === opt ? 'selected' : ''}>${opt}</option>`).join('')}
                     </select>`;
         
         case 'checkbox':
             return `<label class="flex items-center">
-                        <input type="checkbox" 
+                        <input type="checkbox"
+                               id="${fieldId}"
                                onchange="window.lifeCvUIController.updateFieldValue('${fieldPath}', this.checked)"
                                ${value === 'true' || value === true ? 'checked' : ''}
                                class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
@@ -258,45 +275,114 @@ function renderFormField(sectionKey, field, value) {
                     </label>`;
         
         case 'date':
-            return `<input type="date" 
+            return `<input type="date"
+                           id="${fieldId}"
                            onchange="window.lifeCvUIController.updateFieldValue('${fieldPath}', this.value)"
                            value="${value}"
                            class="${baseClasses}">`;
         
         case 'number':
-            return `<input type="number" 
+            return `<input type="number"
+                           id="${fieldId}"
                            onchange="window.lifeCvUIController.updateFieldValue('${fieldPath}', this.value)"
                            value="${value}"
                            class="${baseClasses}"
                            placeholder="${field.placeholder || ''}">`;
         
         case 'email':
-            return `<input type="email" 
+            return `<input type="email"
+                           id="${fieldId}"
                            onchange="window.lifeCvUIController.updateFieldValue('${fieldPath}', this.value)"
                            value="${value}"
                            class="${baseClasses}"
                            placeholder="${field.placeholder || ''}">`;
         
         case 'tel':
-            return `<input type="tel" 
+            return `<input type="tel"
+                           id="${fieldId}"
                            onchange="window.lifeCvUIController.updateFieldValue('${fieldPath}', this.value)"
                            value="${value}"
                            class="${baseClasses}"
                            placeholder="${field.placeholder || ''}">`;
         
         case 'url':
-            return `<input type="url" 
+            return `<input type="url"
+                           id="${fieldId}"
                            onchange="window.lifeCvUIController.updateFieldValue('${fieldPath}', this.value)"
                            value="${value}"
                            class="${baseClasses}"
                            placeholder="${field.placeholder || 'https://'}">`;
         
         default:
-            return `<input type="text" 
+            return `<input type="text"
+                           id="${fieldId}"
+                           onchange="window.lifeCvUIController.updateFieldValue('${fieldPath}', this.value)"
+                           value="${value}"
+                           class="${baseClasses}"
+                           ${field.readonly ? 'readonly' : ''}
+                           placeholder="${field.placeholder || ''}">`;
+    }
+}
+
+/**
+ * Render contact field with special handling for addresses
+ */
+function renderContactField(field, value, fieldPath, baseClasses, fieldId) {
+    if (field.id === 'value') {
+        // This is the main contact value field - check the type to determine rendering
+        return `<div class="relative">
+                    <input type="text"
+                           id="${fieldId}"
+                           onchange="window.lifeCvUIController.updateFieldValue('${fieldPath}', this.value)"
+                           value="${value}"
+                           class="${baseClasses}"
+                           placeholder="Enter contact information">
+                    <button type="button"
+                            onclick="window.lifeCvUIController.handleAddressSearch('${fieldId}')"
+                            class="absolute right-2 top-2 p-1 text-slate-400 hover:text-indigo-600"
+                            title="Search address">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </button>
+                </div>`;
+    } else if (field.id === 'coordinates') {
+        return `<input type="text"
+                       id="${fieldId}"
+                       value="${value}"
+                       class="${baseClasses} bg-slate-50"
+                       readonly
+                       placeholder="GPS coordinates will be filled automatically">`;
+    } else {
+        // Regular field rendering
+        const options = field.options || [];
+        if (field.type === 'select') {
+            return `<select id="${fieldId}" onchange="window.lifeCvUIController.updateFieldValue('${fieldPath}', this.value)" class="${baseClasses}">
+                        <option value="">Select ${field.label.toLowerCase()}</option>
+                        ${options.map(opt => `<option value="${opt}" ${value === opt ? 'selected' : ''}>${opt}</option>`).join('')}
+                    </select>`;
+        } else if (field.type === 'checkbox') {
+            return `<label class="flex items-center">
+                        <input type="checkbox"
+                               id="${fieldId}"
+                               onchange="window.lifeCvUIController.updateFieldValue('${fieldPath}', this.checked)"
+                               ${value === 'true' || value === true ? 'checked' : ''}
+                               class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                        <span class="ml-2 text-sm text-slate-600">${field.label}</span>
+                    </label>`;
+        } else if (field.type === 'textarea') {
+            return `<textarea
+                        id="${fieldId}"
+                        onchange="window.lifeCvUIController.updateFieldValue('${fieldPath}', this.value)"
+                        class="${baseClasses} resize-none"
+                        rows="3"
+                        placeholder="${field.placeholder || ''}">${value}</textarea>`;
+        } else {
+            return `<input type="${field.type || 'text'}"
+                           id="${fieldId}"
                            onchange="window.lifeCvUIController.updateFieldValue('${fieldPath}', this.value)"
                            value="${value}"
                            class="${baseClasses}"
                            placeholder="${field.placeholder || ''}">`;
+        }
     }
 }
 
@@ -677,6 +763,402 @@ function getTotalItems() {
     return total;
 }
 
+/**
+ * Handle address search with Google Maps
+ */
+export function handleAddressSearch(fieldId) {
+    const inputElement = document.getElementById(fieldId);
+    if (!inputElement) return;
+    
+    // Check if this is an address field
+    const parentRow = inputElement.closest('.form-group');
+    const typeSelect = parentRow?.parentElement?.querySelector('select[id*="type"]');
+    
+    if (typeSelect && typeSelect.value === 'Address') {
+        // Initialize address autocomplete
+        createAddressAutocomplete(inputElement, {
+            country: 'za' // South Africa
+        });
+        
+        // Listen for address selection
+        inputElement.addEventListener('addressSelected', (event) => {
+            const placeData = event.detail;
+            
+            // Update the main address field
+            inputElement.value = placeData.formattedAddress;
+            inputElement.dispatchEvent(new Event('change'));
+            
+            // Update coordinates field if it exists
+            const coordinatesField = parentRow?.parentElement?.querySelector('input[id*="coordinates"]');
+            if (coordinatesField) {
+                const coordsString = `${placeData.coordinates.lat}, ${placeData.coordinates.lng}`;
+                coordinatesField.value = coordsString;
+                coordinatesField.dispatchEvent(new Event('change'));
+            }
+            
+            showNotification('Address selected and coordinates saved', 'success');
+        });
+        
+        // Add current location button
+        if (!parentRow.querySelector('.location-btn')) {
+            const locationBtn = document.createElement('button');
+            locationBtn.type = 'button';
+            locationBtn.className = 'location-btn ml-2 px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600';
+            locationBtn.innerHTML = '<i class="fas fa-location-arrow mr-1"></i>Current Location';
+            locationBtn.onclick = () => getCurrentLocationAddress(fieldId);
+            
+            inputElement.parentElement.appendChild(locationBtn);
+        }
+    }
+}
+
+/**
+ * Get current location and reverse geocode to address
+ */
+async function getCurrentLocationAddress(fieldId) {
+    const inputElement = document.getElementById(fieldId);
+    if (!inputElement) return;
+    
+    try {
+        showNotification('Getting your current location...', 'info');
+        
+        const location = await getCurrentLocation();
+        const { reverseGeocode } = await import('../utils/google-maps.js');
+        const addressData = await reverseGeocode(location.lat, location.lng);
+        
+        // Update the address field
+        inputElement.value = addressData.formattedAddress;
+        inputElement.dispatchEvent(new Event('change'));
+        
+        // Update coordinates field if it exists
+        const parentRow = inputElement.closest('.form-group');
+        const coordinatesField = parentRow?.parentElement?.querySelector('input[id*="coordinates"]');
+        if (coordinatesField) {
+            const coordsString = `${location.lat}, ${location.lng}`;
+            coordinatesField.value = coordsString;
+            coordinatesField.dispatchEvent(new Event('change'));
+        }
+        
+        showNotification('Current location address added', 'success');
+    } catch (error) {
+        console.error('Error getting current location:', error);
+        showNotification('Could not get current location: ' + error.message, 'error');
+    }
+}
+
+/**
+ * Render profile pictures field with camera and upload functionality
+ */
+function renderProfilePicturesField(field, value, sectionKey) {
+    const pictures = Array.isArray(value) ? value : [];
+    
+    return `
+        <div class="space-y-4">
+            <label class="block text-sm font-medium text-slate-700">${field.label}</label>
+            
+            <!-- Current Pictures -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="current-pictures-${field.id}">
+                ${pictures.map((pic, index) => `
+                    <div class="relative group">
+                        <img src="${pic.url}" alt="Profile Picture" class="w-full h-32 object-cover rounded-lg border-2 border-slate-200">
+                        <button type="button"
+                                class="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                onclick="window.lifeCvUIController.removeProfilePicture('${sectionKey}', '${field.id}', ${index})">
+                            <i class="fas fa-times text-xs"></i>
+                        </button>
+                        ${pic.isPrimary ? '<div class="absolute bottom-2 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded">Primary</div>' : ''}
+                        <button type="button"
+                                class="absolute bottom-2 right-2 bg-gray-800 bg-opacity-75 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                                onclick="window.lifeCvUIController.setPrimaryPicture('${sectionKey}', '${field.id}', ${index})">
+                            Set Primary
+                        </button>
+                    </div>
+                `).join('')}
+            </div>
+            
+            <!-- Add Picture Options -->
+            <div class="flex flex-wrap gap-2">
+                <button type="button"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        onclick="window.lifeCvUIController.openFileUpload('${sectionKey}', '${field.id}')">
+                    <i class="fas fa-upload mr-2"></i>Upload Photo
+                </button>
+                ${CameraService.isCameraSupported() ? `
+                    <button type="button"
+                            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                            onclick="window.lifeCvUIController.openCamera('${sectionKey}', '${field.id}')">
+                        <i class="fas fa-camera mr-2"></i>Take Photo
+                    </button>
+                ` : ''}
+            </div>
+            
+            <!-- Hidden file input -->
+            <input type="file"
+                   id="file-input-${field.id}"
+                   accept="image/*"
+                   multiple
+                   class="hidden"
+                   onchange="window.lifeCvUIController.handleFileUpload(event, '${sectionKey}', '${field.id}')">
+        </div>
+    `;
+}
+
+/**
+ * Profile Picture Methods
+ */
+export function openFileUpload(sectionKey, fieldKey) {
+    const fileInput = document.getElementById(`file-input-${fieldKey}`);
+    if (fileInput) {
+        fileInput.click();
+    }
+}
+
+export async function handleFileUpload(event, sectionKey, fieldKey) {
+    const files = Array.from(event.target.files);
+    if (files.length === 0) return;
+
+    try {
+        showLoadingMessage('Processing images...');
+        
+        for (const file of files) {
+            const processedImage = await CameraService.processUploadedFile(file);
+            const circularCrop = await CameraService.createCircularCrop(processedImage.dataUrl);
+            
+            // Upload to Firebase
+            const uploadResult = await CameraService.uploadToFirebase(
+                circularCrop.blob,
+                getCurrentUserId(),
+                `profile-${Date.now()}.jpg`
+            );
+
+            // Add to current data
+            await addProfilePicture(sectionKey, fieldKey, {
+                url: uploadResult.url,
+                path: uploadResult.path,
+                isPrimary: false,
+                uploadedAt: new Date(),
+                size: uploadResult.size
+            });
+        }
+
+        hideLoadingMessage();
+        showNotification('Images uploaded successfully!', 'success');
+        
+        // Clear file input
+        event.target.value = '';
+        
+    } catch (error) {
+        console.error('Error uploading files:', error);
+        hideLoadingMessage();
+        showNotification(error.message || 'Failed to upload images', 'error');
+    }
+}
+
+export function openCamera(sectionKey, fieldKey) {
+    showCameraModal(sectionKey, fieldKey);
+}
+
+function showCameraModal(sectionKey, fieldKey) {
+    // Create camera modal
+    const modal = document.createElement('div');
+    modal.id = 'camera-modal';
+    modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50';
+    modal.innerHTML = `
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Take Photo</h3>
+                <button id="close-camera" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <video id="camera-video" class="w-full rounded-lg bg-black" autoplay playsinline></video>
+                
+                <div class="flex justify-center space-x-4">
+                    <button id="capture-photo" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        <i class="fas fa-camera mr-2"></i>Capture
+                    </button>
+                    <button id="cancel-camera" class="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+    document.body.style.overflow = 'hidden';
+
+    // Setup camera
+    initializeCameraModal(sectionKey, fieldKey);
+}
+
+async function initializeCameraModal(sectionKey, fieldKey) {
+    const video = document.getElementById('camera-video');
+    const captureBtn = document.getElementById('capture-photo');
+    const closeBtn = document.getElementById('close-camera');
+    const cancelBtn = document.getElementById('cancel-camera');
+
+    try {
+        await cameraService.initializeCamera(video);
+        activeCamera = cameraService;
+
+        captureBtn.addEventListener('click', async () => {
+            try {
+                showLoadingMessage('Processing photo...');
+                
+                const photo = await cameraService.capturePhoto();
+                const circularCrop = await CameraService.createCircularCrop(photo.dataUrl);
+                
+                // Upload to Firebase
+                const uploadResult = await CameraService.uploadToFirebase(
+                    circularCrop.blob,
+                    getCurrentUserId(),
+                    `profile-${Date.now()}.jpg`
+                );
+
+                // Add to current data
+                await addProfilePicture(sectionKey, fieldKey, {
+                    url: uploadResult.url,
+                    path: uploadResult.path,
+                    isPrimary: false,
+                    uploadedAt: new Date(),
+                    size: uploadResult.size
+                });
+
+                closeCameraModal();
+                hideLoadingMessage();
+                showNotification('Photo captured successfully!', 'success');
+                
+            } catch (error) {
+                console.error('Error capturing photo:', error);
+                hideLoadingMessage();
+                showNotification(error.message || 'Failed to capture photo', 'error');
+            }
+        });
+
+    } catch (error) {
+        console.error('Error initializing camera:', error);
+        showNotification(error.message || 'Failed to access camera', 'error');
+        closeCameraModal();
+    }
+
+    // Close handlers
+    closeBtn.addEventListener('click', () => closeCameraModal());
+    cancelBtn.addEventListener('click', () => closeCameraModal());
+}
+
+function closeCameraModal() {
+    if (activeCamera) {
+        activeCamera.stopCamera();
+        activeCamera = null;
+    }
+
+    const modal = document.getElementById('camera-modal');
+    if (modal) {
+        modal.remove();
+        document.body.style.overflow = 'auto';
+    }
+}
+
+async function addProfilePicture(sectionKey, fieldKey, pictureData) {
+    if (!currentData[sectionKey]) {
+        currentData[sectionKey] = {};
+    }
+    
+    if (!currentData[sectionKey][fieldKey]) {
+        currentData[sectionKey][fieldKey] = [];
+    }
+
+    // If this is the first picture, make it primary
+    if (currentData[sectionKey][fieldKey].length === 0) {
+        pictureData.isPrimary = true;
+    }
+
+    currentData[sectionKey][fieldKey].push(pictureData);
+    
+    // Save and re-render
+    await updateField(`${sectionKey}.${fieldKey}`, currentData[sectionKey][fieldKey]);
+    renderAllSections();
+}
+
+export async function removeProfilePicture(sectionKey, fieldKey, index) {
+    if (!confirm('Are you sure you want to remove this picture?')) {
+        return;
+    }
+
+    try {
+        const pictures = currentData[sectionKey]?.[fieldKey] || [];
+        const picture = pictures[index];
+        
+        if (picture && picture.path) {
+            // Delete from Firebase Storage
+            await CameraService.deleteFromFirebase(picture.path);
+        }
+
+        // Remove from array
+        pictures.splice(index, 1);
+
+        // If removed picture was primary, make first remaining picture primary
+        if (picture?.isPrimary && pictures.length > 0) {
+            pictures[0].isPrimary = true;
+        }
+
+        // Save and re-render
+        await updateField(`${sectionKey}.${fieldKey}`, pictures);
+        renderAllSections();
+        showNotification('Picture removed successfully!', 'success');
+        
+    } catch (error) {
+        console.error('Error removing picture:', error);
+        showNotification('Failed to remove picture', 'error');
+    }
+}
+
+export async function setPrimaryPicture(sectionKey, fieldKey, index) {
+    const pictures = currentData[sectionKey]?.[fieldKey] || [];
+    
+    // Remove primary flag from all pictures
+    pictures.forEach(pic => pic.isPrimary = false);
+    
+    // Set selected picture as primary
+    if (pictures[index]) {
+        pictures[index].isPrimary = true;
+    }
+
+    // Save and re-render
+    await updateField(`${sectionKey}.${fieldKey}`, pictures);
+    renderAllSections();
+    showNotification('Primary picture updated!', 'success');
+}
+
+// Helper functions
+function getCurrentUserId() {
+    // This should get the current user ID from your auth system
+    // For now, return a placeholder - you'll need to implement this based on your auth setup
+    return 'current-user-id';
+}
+
+function showLoadingMessage(message) {
+    hideAllMessages();
+    const loading = document.createElement('div');
+    loading.id = 'loading-message';
+    loading.className = 'fixed top-4 right-4 bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+    loading.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i>${message}`;
+    document.body.appendChild(loading);
+}
+
+function hideLoadingMessage() {
+    const loading = document.getElementById('loading-message');
+    if (loading) loading.remove();
+}
+
+function hideAllMessages() {
+    const messages = document.querySelectorAll('#loading-message, .fixed.top-4.right-4');
+    messages.forEach(msg => msg.remove());
+}
+
 // Make functions globally available
 window.lifeCvUIController = {
     updateUI,
@@ -687,7 +1169,13 @@ window.lifeCvUIController = {
     deleteArrayItem,
     showPrivacySettings,
     updateFieldPrivacy,
-    updateItemPrivacy
+    updateItemPrivacy,
+    handleAddressSearch,
+    openFileUpload,
+    handleFileUpload,
+    openCamera,
+    removeProfilePicture,
+    setPrimaryPicture
 };
 
 export {

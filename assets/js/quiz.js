@@ -1,8 +1,58 @@
 /* ================================================================================= */
-/* FILE: assets/js/quiz.js (RE-ENGINEERED)                                           */
-/* PURPOSE: A data-driven engine that reads from quiz-database.js to run the quiz.   */
+/* FILE: assets/js/quiz.js (UPDATED - Saves to LifeCV)                              */
 /* ================================================================================= */
-import { quizDatabase } from './quiz-database.js';
+import { auth, db } from './firebase-config.js';
+import { getDocument, updateDocument } from './database.js';
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { addLifeCvEntry } from './services/life-cv-data-service.js';
+
+// ...existing code...
+
+async function renderCompletion() {
+    const quizContainer = document.getElementById('quiz-questions');
+    const resultsScreen = document.getElementById('results-screen');
+    const summaryEl = document.getElementById('quiz-results-summary');
+
+    summaryEl.innerHTML = userState.answers.map(ans => 
+        `<div class="p-3 bg-slate-50 rounded-md"><p class="text-xs text-slate-500">${ans.category}</p><p class="font-semibold">${ans.question}</p><p class="text-indigo-700">${ans.answer}</p></div>`
+    ).join('');
+    
+    quizContainer.style.display = 'none';
+    resultsScreen.style.display = 'block';
+
+    try {
+        // Save to user profile
+        await updateDocument(`users/${currentUserId}`, {
+            quizResults: {
+                answers: userState.answers,
+                completedAt: new Date().toISOString()
+            }
+        });
+
+        // Add to LifeCV
+        await addLifeCvEntry({
+            entryType: 'assessment',
+            title: 'Personal Assessment Completed',
+            description: `Completed comprehensive personal assessment with ${userState.answers.length} responses across multiple life areas.`,
+            sourcePlatform: 'Hub Assessment',
+            sourceUrl: '/quiz.html',
+            tags: ['assessment', 'personal-development', 'self-awareness'],
+            completedAt: new Date().toISOString(),
+            category: 'Personal Development',
+            data: {
+                totalQuestions: userState.answers.length,
+                categories: [...new Set(userState.answers.map(a => a.category))],
+                completionScore: 100
+            }
+        });
+
+        console.log("Quiz results saved to user profile and LifeCV.");
+    } catch (error) {
+        console.error("Failed to save quiz results:", error);
+    }
+}
+
+// ...existing code...import { quizDatabase } from './quiz-database.js';
 import { auth } from './firebase-config.js';
 import { updateDocument } from './database.js';
 

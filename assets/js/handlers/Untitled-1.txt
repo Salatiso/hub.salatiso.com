@@ -1,0 +1,123 @@
+/* ================================================================================= */
+/* FILE: Cross-Module Activity Tracking Service                                    */
+/* ================================================================================= */
+
+import { getDocument, updateDocument } from '../database.js';
+import { auth } from '../firebase-config.js';
+
+/**
+ * Log activity across all modules
+ */
+export async function logActivity(moduleId, action, details = {}) {
+    try {
+        const user = auth.currentUser;
+        if (!user) return;
+
+        const activity = {
+            id: Date.now().toString(),
+            moduleId,
+            action,
+            details,
+            timestamp: new Date().toISOString(),
+            userId: user.uid
+        };
+
+        // Get current activities
+        const userDoc = await getDocument('users', user.uid) || {};
+        const activities = userDoc.recentActivities || [];
+
+        // Add new activity to beginning
+        activities.unshift(activity);
+
+        // Keep only last 50 activities
+        if (activities.length > 50) {
+            activities.splice(50);
+        }
+
+        // Update user document
+        await updateDocument('users', user.uid, {
+            recentActivities: activities,
+            lastActivity: new Date().toISOString()
+        });
+
+        // Dispatch event for real-time updates
+        window.dispatchEvent(new CustomEvent('activity-logged', { 
+            detail: activity 
+        }));
+
+        return activity;
+    } catch (error) {
+        console.error('Error logging activity:', error);
+    }
+}
+
+/**
+ * Get user's recent activities
+ */
+export async function getRecentActivities(limit = 20) {
+    try {
+        const user = auth.currentUser;
+        if (!user) return [];
+
+        const userDoc = await getDocument('users', user.uid) || {};
+        const activities = userDoc.recentActivities || [];
+
+        return activities.slice(0, limit);
+    } catch (error) {
+        console.error('Error getting activities:', error);
+        return [];
+    }
+}
+
+/**
+ * Format activity for display
+ */
+export function formatActivity(activity) {
+    const moduleNames = {
+        lifecv: 'LifeCV',
+        finhelp: 'FinHelp',
+        familyhub: 'Family Hub',
+        ekhaya: 'eKhaya',
+        commshub: 'CommsHub',
+        quiz: 'Quiz',
+        assessment: 'Assessment'
+    };
+
+    const actionDescriptions = {
+        'profile_updated': 'Updated profile information',
+        'section_completed': 'Completed a section',
+        'skill_added': 'Added a new skill',
+        'asset_added': 'Added a financial asset',
+        'expense_logged': 'Logged an expense',
+        'family_created': 'Created a family',
+        'member_added': 'Added family member',
+        'property_listed': 'Listed a property',
+        'message_sent': 'Sent a message',
+        'quiz_completed': 'Completed a quiz',
+        'assessment_taken': 'Took career assessment'
+    };
+
+    const moduleName = moduleNames[activity.moduleId] || activity.moduleId;
+    const actionDesc = actionDescriptions[activity.action] || activity.action;
+
+    return {
+        ...activity,
+        moduleDisplayName: moduleName,
+        actionDescription: actionDesc,
+        timeAgo: getTimeAgo(activity.timestamp)
+    };
+}
+
+function getTimeAgo(timestamp) {
+    const now = new Date();
+    const activityTime = new Date(timestamp);
+    const diffMs = now - activityTime;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} minutes ago`;
+    if (diffHours < 24) return `${diffHours} hours ago`;
+    return `${diffDays} days ago`;
+}

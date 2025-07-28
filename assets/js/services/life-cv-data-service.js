@@ -170,15 +170,13 @@ function getDefaultLifeCvData() {
             fullName: { value: '', isPublic: true, lastModified: new Date().toISOString() },
             preferredName: { value: '', isPublic: true, lastModified: new Date().toISOString() },
             pronouns: { value: '', isPublic: true, lastModified: new Date().toISOString() },
-            phone: { value: '', isPublic: false, lastModified: new Date().toISOString() },
-            email: { value: '', isPublic: true, lastModified: new Date().toISOString() },
-            address: { value: '', isPublic: false, lastModified: new Date().toISOString() },
             dateOfBirth: { value: '', isPublic: false, lastModified: new Date().toISOString() },
             idNumber: { value: '', isPublic: false, lastModified: new Date().toISOString() },
             nationality: { value: '', isPublic: true, lastModified: new Date().toISOString() },
-            ethnicity: { value: '', isPublic: false, lastModified: new Date().toISOString() },
-            emergencyContact: { value: '', isPublic: false, lastModified: new Date().toISOString() }
+            ethnicity: { value: '', isPublic: false, lastModified: new Date().toISOString() }
         },
+        contactInfo: [],
+        emergencyContacts: [],
         professionalSummary: {
             summary: { value: '', isPublic: true, lastModified: new Date().toISOString() },
             careerVision: { value: '', isPublic: true, lastModified: new Date().toISOString() },
@@ -233,14 +231,39 @@ export function getLifeCvSections() {
                 { id: "fullName", label: "Full Name", type: "text", required: true },
                 { id: "preferredName", label: "Preferred Name", type: "text" },
                 { id: "pronouns", label: "Pronouns", type: "select", options: ["he/him", "she/her", "they/them", "other"] },
-                { id: "phone", label: "Phone Number", type: "tel", sensitive: true },
-                { id: "email", label: "Email Address", type: "email", required: true },
-                { id: "address", label: "Address", type: "textarea", sensitive: true },
                 { id: "dateOfBirth", label: "Date of Birth", type: "date", sensitive: true },
                 { id: "idNumber", label: "ID/Passport Number", type: "text", sensitive: true },
                 { id: "nationality", label: "Nationality", type: "text" },
-                { id: "ethnicity", label: "Ethnicity", type: "text", sensitive: true },
-                { id: "emergencyContact", label: "Emergency Contact", type: "text", sensitive: true }
+                { id: "ethnicity", label: "Ethnicity", type: "text", sensitive: true }
+            ]
+        },
+        contactInfo: {
+            title: "Contact Information",
+            icon: "fas fa-address-book",
+            isArray: true,
+            description: "Phone numbers, email addresses, and physical addresses",
+            fields: [
+                { id: "type", label: "Contact Type", type: "select", options: ["Phone", "Email", "Address"], required: true },
+                { id: "subtype", label: "Subtype", type: "select", options: ["Home", "Work", "Mobile", "Personal", "Business", "Other"], required: true },
+                { id: "value", label: "Contact Value", type: "text", required: true },
+                { id: "label", label: "Custom Label", type: "text" },
+                { id: "isPrimary", label: "Primary Contact", type: "checkbox" },
+                { id: "coordinates", label: "GPS Coordinates", type: "text", readonly: true, sensitive: true },
+                { id: "notes", label: "Notes", type: "textarea" }
+            ]
+        },
+        emergencyContacts: {
+            title: "Emergency Contacts",
+            icon: "fas fa-phone-alt",
+            isArray: true,
+            description: "Emergency contact information",
+            fields: [
+                { id: "name", label: "Contact Name", type: "text", required: true },
+                { id: "relationship", label: "Relationship", type: "select", options: ["Spouse", "Parent", "Child", "Sibling", "Friend", "Colleague", "Doctor", "Other"], required: true },
+                { id: "phone", label: "Phone Number", type: "tel", required: true },
+                { id: "email", label: "Email Address", type: "email" },
+                { id: "address", label: "Address", type: "textarea" },
+                { id: "notes", label: "Notes", type: "textarea" }
             ]
         },
         profilePictures: {

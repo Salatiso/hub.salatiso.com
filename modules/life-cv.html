@@ -89,7 +89,7 @@
                                 <p class="text-slate-600">Quickly populate your LifeCV by importing data from existing sources.</p>
                             </div>
                             
-                            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <!-- JSON Import -->
                                 <button id="json-import-btn" class="group bg-white hover:bg-slate-50 p-6 rounded-xl border border-slate-200 hover:border-indigo-300 transition-all duration-300 text-left shadow-sm hover:shadow-md">
                                     <div class="flex items-start flex-col">
@@ -98,24 +98,32 @@
                                         </div>
                                         <div>
                                             <h3 class="font-bold text-slate-800 mb-1">Import from JSON</h3>
-                                            <p class="text-sm text-slate-600 leading-relaxed">Paste your LifeCV data in JSON format for instant import.</p>
+                                            <p class="text-sm text-slate-600 leading-relaxed">Paste your LifeCV data in JSON format with AI conversion help.</p>
                                         </div>
                                     </div>
                                 </button>
 
-                                <!-- File Import -->
-                                <label for="file-import-input" class="group bg-white hover:bg-slate-50 p-6 rounded-xl border border-slate-200 hover:border-green-300 transition-all duration-300 cursor-pointer text-left shadow-sm hover:shadow-md">
+                                <!-- File Import with Drag & Drop -->
+                                <div id="file-drop-zone" class="group bg-white hover:bg-slate-50 p-6 rounded-xl border-2 border-dashed border-slate-200 hover:border-green-300 transition-all duration-300 cursor-pointer text-left shadow-sm hover:shadow-md relative">
                                     <div class="flex items-start flex-col">
                                         <div class="flex-shrink-0 p-3 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors mb-3">
                                             <i class="fas fa-file-alt text-green-600 text-xl"></i>
                                         </div>
                                         <div>
                                             <h3 class="font-bold text-slate-800 mb-1">Upload Document</h3>
-                                            <p class="text-sm text-slate-600 leading-relaxed">Upload CV/resume (PDF, DOCX, TXT) to auto-extract information.</p>
+                                            <p class="text-sm text-slate-600 leading-relaxed">Drag & drop or click to upload CV/resume (PDF, DOCX, TXT).</p>
                                         </div>
                                     </div>
-                                </label>
-                                <input type="file" id="file-import-input" class="hidden" accept=".txt,.pdf,.docx,.doc">
+                                    <input type="file" id="file-import-input" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".txt,.pdf,.docx,.doc">
+                                    
+                                    <!-- Drag overlay -->
+                                    <div id="drag-overlay" class="absolute inset-0 bg-green-500 bg-opacity-10 border-2 border-green-500 rounded-xl flex items-center justify-center hidden">
+                                        <div class="text-center">
+                                            <i class="fas fa-cloud-upload-alt text-green-600 text-3xl mb-2"></i>
+                                            <p class="text-green-700 font-medium">Drop your file here</p>
+                                        </div>
+                                    </div>
+                                </div>
 
                                 <!-- Internet Search -->
                                 <button id="internet-search-btn" class="group bg-white hover:bg-slate-50 p-6 rounded-xl border border-slate-200 hover:border-purple-300 transition-all duration-300 text-left shadow-sm hover:shadow-md">
@@ -126,19 +134,6 @@
                                         <div>
                                             <h3 class="font-bold text-slate-800 mb-1">Search Internet</h3>
                                             <p class="text-sm text-slate-600 leading-relaxed">Discover your professional information across the web.</p>
-                                        </div>
-                                    </div>
-                                </button>
-
-                                <!-- AI Assistant -->
-                                <button id="ai-instructions-btn" class="group bg-white hover:bg-slate-50 p-6 rounded-xl border border-slate-200 hover:border-blue-300 transition-all duration-300 text-left shadow-sm hover:shadow-md">
-                                    <div class="flex items-start flex-col">
-                                        <div class="flex-shrink-0 p-3 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition-colors mb-3">
-                                            <i class="fas fa-robot text-blue-600 text-xl"></i>
-                                        </div>
-                                        <div>
-                                            <h3 class="font-bold text-slate-800 mb-1">AI Instructions</h3>
-                                            <p class="text-sm text-slate-600 leading-relaxed">Get AI prompts to convert any resume to LifeCV format.</p>
                                         </div>
                                     </div>
                                 </button>

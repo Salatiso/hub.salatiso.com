@@ -44,20 +44,37 @@ function renderAllSections() {
     
     container.innerHTML = '';
     
-    // Render sections in a logical order
-    const sectionOrder = [
-        'personalInfo', 'contactInfo', 'emergencyContacts', 'profilePictures',
-        'professionalSummary', 'lifePhilosophy', 'experience', 'education',
-        'skills', 'certifications', 'projects', 'languages', 'interests',
-        'milestones', 'community', 'volunteering', 'publications', 'digital',
-        'travel', 'family', 'healthWellness', 'financials', 'references'
-    ];
+    // Render sections in categorized groups for better organization
+    const sectionCategories = {
+        'Personal Information': ['personalInfo', 'contactInfo', 'emergencyContacts', 'profilePictures'],
+        'Professional Profile': ['professionalSummary', 'experience', 'education', 'skills', 'certifications'],
+        'Projects & Achievements': ['projects', 'publications', 'languages', 'interests'],
+        'Life & Community': ['lifePhilosophy', 'milestones', 'community', 'volunteering'],
+        'Digital Presence': ['digital', 'travel'],
+        'Personal & Financial': ['family', 'healthWellness', 'financials', 'references']
+    };
     
-    sectionOrder.forEach(sectionKey => {
-        if (sectionsConfig[sectionKey]) {
-            const sectionElement = renderSection(sectionKey, sectionsConfig[sectionKey]);
-            container.appendChild(sectionElement);
-        }
+    // Render each category with a header
+    Object.entries(sectionCategories).forEach(([categoryName, sectionKeys]) => {
+        // Create category header
+        const categoryHeader = document.createElement('div');
+        categoryHeader.className = 'mb-6 mt-8 first:mt-0';
+        categoryHeader.innerHTML = `
+            <div class="flex items-center mb-4">
+                <div class="flex-1 h-px bg-gradient-to-r from-indigo-200 to-purple-200"></div>
+                <h2 class="px-4 text-lg font-bold text-slate-700 bg-slate-100">${categoryName}</h2>
+                <div class="flex-1 h-px bg-gradient-to-l from-indigo-200 to-purple-200"></div>
+            </div>
+        `;
+        container.appendChild(categoryHeader);
+        
+        // Render sections in this category
+        sectionKeys.forEach(sectionKey => {
+            if (sectionsConfig[sectionKey]) {
+                const sectionElement = renderSection(sectionKey, sectionsConfig[sectionKey]);
+                container.appendChild(sectionElement);
+            }
+        });
     });
 }
 

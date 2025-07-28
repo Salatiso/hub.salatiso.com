@@ -17,6 +17,7 @@ export function init() {
     console.log('Import handlers initialized');
     setupFileImportHandlers();
     setupJSONImportHandlers();
+    setupDragAndDropHandlers();
 }
 
 /**
@@ -70,6 +71,83 @@ function setupJSONImportHandlers() {
                 window.lifeCvModals.showModal('json-import-modal');
             }
         });
+    }
+}
+
+/**
+ * Setup drag and drop handlers
+ */
+function setupDragAndDropHandlers() {
+    const dropZone = document.getElementById('file-drop-zone');
+    const fileInput = document.getElementById('file-import-input');
+    const dragOverlay = document.getElementById('drag-overlay');
+    
+    if (!dropZone || !fileInput || !dragOverlay) return;
+    
+    // Prevent default drag behaviors
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    // Highlight drop zone when item is dragged over it
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+    });
+    
+    // Handle dropped files
+    dropZone.addEventListener('drop', handleDrop, false);
+    
+    // Handle click to open file dialog
+    dropZone.addEventListener('click', () => {
+        fileInput.click();
+    });
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    function highlight(e) {
+        dropZone.classList.add('border-green-400', 'bg-green-50');
+        dragOverlay.classList.remove('hidden');
+    }
+    
+    function unhighlight(e) {
+        dropZone.classList.remove('border-green-400', 'bg-green-50');
+        dragOverlay.classList.add('hidden');
+    }
+    
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        
+        if (files.length > 0) {
+            const file = files[0];
+            
+            // Validate file type
+            const allowedTypes = ['.txt', '.pdf', '.docx', '.doc'];
+            const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+            
+            if (!allowedTypes.includes(fileExtension)) {
+                showNotification('Please upload a valid file type: PDF, DOCX, or TXT', 'error');
+                return;
+            }
+            
+            // Create a fake event object to pass to handleFileImport
+            const fakeEvent = {
+                target: {
+                    files: [file],
+                    value: ''
+                }
+            };
+            
+            handleFileImport(fakeEvent);
+        }
     }
 }
 

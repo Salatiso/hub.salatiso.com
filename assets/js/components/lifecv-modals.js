@@ -44,7 +44,6 @@ function createModalStructures() {
         ${createJsonImportModal()}
         ${createFileProcessingModal()}
         ${createInternetSearchModal()}
-        ${createAiInstructionsModal()}
         ${createConflictResolutionModal()}
         ${createPrivacySettingsModal()}
         ${createItemEditModal()}
@@ -287,58 +286,6 @@ function createInternetSearchModal() {
     `;
 }
 
-/**
- * AI Instructions Modal
- */
-function createAiInstructionsModal() {
-    return `
-    <!-- AI Instructions Modal -->
-    <div id="ai-instructions-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-4">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-start p-6 border-b border-slate-200">
-                <div>
-                    <h2 class="text-xl font-bold">AI Conversion Instructions</h2>
-                    <p class="text-sm text-slate-500 mt-1">Use any AI assistant to convert your resume to LifeCV format</p>
-                </div>
-                <button onclick="window.lifeCvModals.hideModal('ai-instructions-modal')" class="text-slate-400 hover:text-slate-600">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-            
-            <div class="p-6">
-                <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-                    <h4 class="font-semibold text-amber-800 mb-2">Quick Steps:</h4>
-                    <ol class="text-sm text-amber-700 space-y-1 list-decimal list-inside">
-                        <li>Copy the AI prompt below</li>
-                        <li>Open ChatGPT, Claude, or any AI assistant</li>
-                        <li>Paste the prompt + your resume text</li>
-                        <li>Copy the JSON response</li>
-                        <li>Use "Import JSON" to import the data</li>
-                    </ol>
-                </div>
-                
-                <div class="space-y-4">
-                    <div>
-                        <div class="flex justify-between items-center mb-2">
-                            <h3 class="font-semibold text-slate-800">Complete AI Conversion Prompt</h3>
-                            <button onclick="window.lifeCvModals.copyToClipboard('ai-conversion-prompt')" 
-                                    class="text-sm bg-indigo-100 text-indigo-700 px-3 py-1 rounded hover:bg-indigo-200">
-                                <i class="fas fa-copy mr-1"></i> Copy Prompt
-                            </button>
-                        </div>
-                        <textarea id="ai-conversion-prompt" readonly class="w-full h-96 p-3 border border-slate-300 rounded-md font-mono text-xs bg-slate-50 resize-none">${getAiConversionPrompt()}</textarea>
-                    </div>
-                </div>
-                
-                <div class="mt-6 flex justify-end">
-                    <button onclick="window.lifeCvModals.hideModal('ai-instructions-modal')" type="button" 
-                            class="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    `;
-}
 
 /**
  * Conflict Resolution Modal

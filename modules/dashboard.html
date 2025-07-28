@@ -57,5 +57,22 @@
 
     <!-- Page-specific script (if needed) -->
     <script type="module" src="../assets/js/modules/dashboard.js"></script>
+
+    <!-- Fallback error for script loading -->
+    <script>
+    window.addEventListener('error', function(event) {
+      if (event.target.tagName === 'SCRIPT') {
+        document.body.innerHTML = `
+          <div style="padding:2rem;text-align:center;color:#b91c1c;background:#fef2f2;">
+            <h2 style="font-size:2rem;">Critical Error: Script Failed to Load</h2>
+            <p style="font-size:1.2rem;">A required JavaScript file could not be loaded.<br>
+            This is usually because the file path is incorrect or you are opening this file directly from your computer.<br>
+            <b>Solution:</b> Please use a local web server to view this site.<br>
+            <code>python -m http.server</code> or use VSCode Live Server, then open <b>http://localhost:8000/modules/dashboard.html</b></p>
+          </div>
+        `;
+      }
+    }, true);
+    </script>
 </body>
 </html>

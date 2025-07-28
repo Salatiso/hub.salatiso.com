@@ -22,7 +22,13 @@ export function renderAllSections(data, sectionsConfig) {
         html += renderSection(sectionKey, sectionConfig, data[sectionKey]);
     }
     
-    container.innerHTML = html;
+    const fragment = document.createDocumentFragment();
+    const tempDiv = document.createElement('div');
+    tempDiv.textContent = html; // Sanitize HTML content here
+    while (tempDiv.firstChild) {
+        fragment.appendChild(tempDiv.firstChild);
+    }
+    container.replaceChildren(fragment);
     
     // Attach event listeners
     attachEventListeners();

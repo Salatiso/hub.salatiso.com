@@ -436,7 +436,10 @@ My resume content:
     `;
     
     const modalContainer = document.getElementById('modal-placeholder');
-    modalContainer.innerHTML = modalHTML;
+    modalContainer.replaceChildren(); // Clear existing content
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(modalHTML, 'text/html');
+    modalContainer.append(...doc.body.childNodes);
     
     // Get focusable elements
     const focusable = modalContainer.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');

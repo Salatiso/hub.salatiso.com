@@ -5,17 +5,24 @@
 
 import { getLifeCvData, updateField } from './life-cv-data-service.js';
 import { getDocument, saveDocument } from '../database.js';
-import { getAuth } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js';
+import { auth } from '../firebase-config.js';
 
 export class LifeCVFinHelpIntegration {
     constructor() {
-        this.auth = getAuth();
+        this.auth = null;
         this.user = null;
         this.lifeCvData = {};
         this.finHelpData = {};
+        this.initialized = false;
     }
 
     async initialize() {
+        if (!this.initialized) {
+            // Initialize auth reference from firebase-config
+            this.auth = auth;
+            this.initialized = true;
+        }
+        
         this.user = this.auth.currentUser;
         if (!this.user) {
             throw new Error('User not authenticated');

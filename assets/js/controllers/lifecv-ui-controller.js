@@ -304,6 +304,8 @@ function renderFormField(sectionKey, field, value) {
  * Calculate section completion percentage
  */
 function calculateSectionCompletion(data, config) {
+    if (!data || !config || !config.fields) return 0;
+    
     if (config.isArray) {
         if (!Array.isArray(data) || data.length === 0) return 0;
         
@@ -311,8 +313,19 @@ function calculateSectionCompletion(data, config) {
         let filledFields = 0;
         
         data.forEach(item => {
+            if (!item || typeof item !== 'object') return;
+            
             config.fields.forEach(field => {
-                if (item[field.id]?.value && item[field.id].value.toString().trim() !== '') {
+                if (!field || !field.id) return;
+                
+                const fieldData = item[field.id];
+                if (fieldData && typeof fieldData === 'object' && fieldData.value) {
+                    const value = fieldData.value.toString().trim();
+                    if (value !== '') {
+                        filledFields++;
+                    }
+                } else if (fieldData && typeof fieldData === 'string' && fieldData.trim() !== '') {
+                    // Handle legacy data format
                     filledFields++;
                 }
             });
@@ -324,7 +337,16 @@ function calculateSectionCompletion(data, config) {
         let filledFields = 0;
         
         config.fields.forEach(field => {
-            if (data[field.id]?.value && data[field.id].value.toString().trim() !== '') {
+            if (!field || !field.id) return;
+            
+            const fieldData = data[field.id];
+            if (fieldData && typeof fieldData === 'object' && fieldData.value) {
+                const value = fieldData.value.toString().trim();
+                if (value !== '') {
+                    filledFields++;
+                }
+            } else if (fieldData && typeof fieldData === 'string' && fieldData.trim() !== '') {
+                // Handle legacy data format
                 filledFields++;
             }
         });

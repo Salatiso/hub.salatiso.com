@@ -809,7 +809,7 @@ function renderUserPublicPage(userData, publications, userId) {
                                     <div class="prose prose-sm text-slate-600 mb-4">
                                         ${getExcerpt(pub.content)}
                                     </div>
-                                    <a href="/public/${userId}/${pub.id}" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-medium">
+                                    <a href="public/${userId}/${pub.id}" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-medium">
                                         Read More
                                         <i class="fas fa-arrow-right ml-2 text-sm"></i>
                                     </a>

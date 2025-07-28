@@ -675,10 +675,10 @@ function displayResults(results, quizData) {
 
             <!-- Action Buttons -->
             <div class="flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-4">
-                <a href="/modules/life-cv.html" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg text-center transition-colors">
+                <a href="modules/life-cv.html" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg text-center transition-colors">
                     View LifeCV Profile
                 </a>
-                <a href="/dashboard.html" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg text-center transition-colors">
+                <a href="dashboard.html" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg text-center transition-colors">
                     Go to Dashboard
                 </a>
                 <button onclick="window.location.reload()" class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors">

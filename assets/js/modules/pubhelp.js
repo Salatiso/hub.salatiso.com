@@ -1431,7 +1431,7 @@ function showAuthRequired() {
                     <i class="fas fa-lock fa-3x text-slate-300 mb-4"></i>
                     <h2 class="text-2xl font-bold text-slate-700 mb-2">Authentication Required</h2>
                     <p class="text-slate-500 mb-4">Please log in to access PubHelp</p>
-                    <a href="/login.html" class="btn btn-primary">
+                    <a href="login.html" class="btn btn-primary">
                         <i class="fas fa-sign-in-alt mr-2"></i>Log In
                     </a>
                 </div>

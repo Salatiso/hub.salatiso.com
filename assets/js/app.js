@@ -4,8 +4,8 @@
 /* handles auth, themes, and translations without using conflicting modules.         */
 /* ================================================================================= */
 
-// Import Firebase services
-import { auth } from './firebase-config.js';
+// Import secure Firebase services
+import { auth, handleFirebaseError, validateSession } from './firebase-config-secure.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { initTranslations, applyTranslations } from './translations-engine.js';
 
@@ -13,7 +13,50 @@ import { initTranslations, applyTranslations } from './translations-engine.js';
 import { init as initLifeCV } from './modules/life-cv.js';
 import { showModal, init as initModals } from './ui/lifecv-modals.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+// Load configuration dynamically
+let configLoaded = false;
+async function loadConfiguration() {
+    if (configLoaded) return;
+    
+    try {
+        // Load configuration from server
+        const configScript = document.createElement('script');
+        configScript.src = '/config-loader.php';
+        configScript.onload = () => {
+            configLoaded = true;
+            console.log('Configuration loaded successfully');
+        };
+        configScript.onerror = () => {
+            console.error('Failed to load configuration');
+            // Fallback to basic configuration
+            window.APP_CONFIG = {
+                app: { environment: 'fallback', debug: true }
+            };
+            configLoaded = true;
+        };
+        document.head.appendChild(configScript);
+        
+        // Wait for config to load
+        await new Promise((resolve) => {
+            const checkConfig = () => {
+                if (window.APP_CONFIG) {
+                    resolve();
+                } else {
+                    setTimeout(checkConfig, 100);
+                }
+            };
+            checkConfig();
+        });
+    } catch (error) {
+        console.error('Configuration loading error:', error);
+        configLoaded = true;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    
+    // Load configuration first
+    await loadConfiguration();
 
     // --- 1. DEFINE SHARED UI COMPONENTS ---
 
@@ -409,33 +452,77 @@ document.addEventListener('DOMContentLoaded', () => {
     // The auth state listener is the gatekeeper
     onAuthStateChanged(auth, async user => {
         const appContainer = document.getElementById('app-container');
-        if (user) {
-            // User is signed in.
-            const userEmailEl = document.getElementById('user-email');
-            if (userEmailEl) {
-                userEmailEl.textContent = user.isAnonymous ? 'Guest User' : (user.displayName || user.email);
+        
+        try {
+            if (user) {
+                // Validate user session
+                validateSession(user);
+                
+                // User is signed in.
+                const userEmailEl = document.getElementById('user-email');
+                if (userEmailEl) {
+                    userEmailEl.textContent = user.isAnonymous ? 'Guest User' : (user.displayName || user.email);
+                }
+
+                // Update user avatar if available
+                const userAvatarEl = document.getElementById('user-avatar');
+                if (userAvatarEl && user.photoURL) {
+                    userAvatarEl.src = user.photoURL;
+                }
+
+                // Initialize the current module
+                await initializeModule(user);
+
+                // Signal that Firebase is ready for other scripts
+                document.dispatchEvent(new CustomEvent('firebase-ready'));
+
+            } else {
+                // No user is signed in. Redirect to login.
+                if (appContainer) { // Only redirect if on a protected page
+                     window.location.replace('../login.html');
+                }
             }
-
-            // Update user avatar if available
-            const userAvatarEl = document.getElementById('user-avatar');
-            if (userAvatarEl && user.photoURL) {
-                userAvatarEl.src = user.photoURL;
-            }
-
-            // Initialize the current module
-            await initializeModule(user);
-
-            // Signal that Firebase is ready for other scripts
-            document.dispatchEvent(new CustomEvent('firebase-ready'));
-
-        } else {
-            // No user is signed in. Redirect to login.
-            if (appContainer) { // Only redirect if on a protected page
-                 window.location.replace('../login.html');
+        } catch (error) {
+            console.error('Auth state change error:', error);
+            const userMessage = handleFirebaseError(error);
+            showErrorNotification(userMessage);
+            
+            // If session is invalid, redirect to login
+            if (error.message.includes('Session expired') || error.message.includes('not authenticated')) {
+                setTimeout(() => {
+                    window.location.replace('../login.html');
+                }, 2000);
             }
         }
+        
+        // Error notification function
+        function showErrorNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm';
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-triangle mr-3"></i>
+                    <div>
+                        <p class="font-semibold">Error</p>
+                        <p class="text-sm">${message}</p>
+                    </div>
+                    <button class="ml-4 text-white hover:text-gray-200" onclick="this.parentElement.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+    
     });
-
     // Helper function to get current module from page data attribute
     function getCurrentModule() {
         const bodyElement = document.body;

@@ -24,9 +24,13 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize and export Firebase services
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+// Initialize and export Firebase services (legacy - use firebase-config-secure.js for new implementations)
+export const legacyAuth = getAuth(app);
+export const legacyDb = getFirestore(app);
+
+// For backward compatibility
+export const auth = legacyAuth;
+export const db = legacyDb;
 export const storage = getStorage(app);
 
 // File upload utility function

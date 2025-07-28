@@ -126,7 +126,7 @@ async function getDefaultDashboardHTML() {
                 </div>
                 <p class="text-sm text-slate-600 mb-4">${moduleData.lifeCv.lastUpdated}</p>
                 <div class="flex justify-between items-center">
-                    <a href="/modules/life-cv.html" class="text-indigo-600 hover:text-indigo-700 font-medium text-sm">
+                    <a href="modules/life-cv.html" class="text-indigo-600 hover:text-indigo-700 font-medium text-sm">
                         View Profile →
                     </a>
                     ${moduleData.lifeCv.hasRecommendations ? '<span class="w-2 h-2 bg-red-500 rounded-full"></span>' : ''}
@@ -142,7 +142,7 @@ async function getDefaultDashboardHTML() {
                 </div>
                 <p class="text-sm text-slate-600 mb-4">Monthly savings: R${moduleData.finHelp.monthlySavings.toLocaleString()}</p>
                 <div class="flex justify-between items-center">
-                    <a href="/modules/finhelp.html" class="text-green-600 hover:text-green-700 font-medium text-sm">
+                    <a href="modules/finhelp.html" class="text-green-600 hover:text-green-700 font-medium text-sm">
                         Manage Finances →
                     </a>
                     ${moduleData.finHelp.hasAlerts ? '<span class="w-2 h-2 bg-yellow-500 rounded-full"></span>' : ''}
@@ -158,7 +158,7 @@ async function getDefaultDashboardHTML() {
                 </div>
                 <p class="text-sm text-slate-600 mb-4">${moduleData.familyHub.memberCount} family members</p>
                 <div class="flex justify-between items-center">
-                    <a href="/modules/family-hub.html" class="text-blue-600 hover:text-blue-700 font-medium text-sm">
+                    <a href="modules/family-hub.html" class="text-blue-600 hover:text-blue-700 font-medium text-sm">
                         View Family →
                     </a>
                     ${moduleData.familyHub.hasPendingInvitations ? '<span class="w-2 h-2 bg-yellow-500 rounded-full"></span>' : ''}
@@ -174,7 +174,7 @@ async function getDefaultDashboardHTML() {
                 </div>
                 <p class="text-sm text-slate-600 mb-4">${moduleData.ekhaya.propertyCount} properties</p>
                 <div class="flex justify-between items-center">
-                    <a href="/modules/ekhaya.html" class="text-purple-600 hover:text-purple-700 font-medium text-sm">
+                    <a href="modules/ekhaya.html" class="text-purple-600 hover:text-purple-700 font-medium text-sm">
                         Manage Properties →
                     </a>
                     ${moduleData.ekhaya.hasMaintenanceDue ? '<span class="w-2 h-2 bg-red-500 rounded-full"></span>' : ''}
@@ -190,7 +190,7 @@ async function getDefaultDashboardHTML() {
                 </div>
                 <p class="text-sm text-slate-600 mb-4">${moduleData.commsHub.unreadMessages} unread messages</p>
                 <div class="flex justify-between items-center">
-                    <a href="/modules/commshub.html" class="text-teal-600 hover:text-teal-700 font-medium text-sm">
+                    <a href="modules/commshub.html" class="text-teal-600 hover:text-teal-700 font-medium text-sm">
                         View Messages →
                     </a>
                     ${moduleData.commsHub.hasUnread ? '<span class="w-2 h-2 bg-red-500 rounded-full"></span>' : ''}
@@ -206,7 +206,7 @@ async function getDefaultDashboardHTML() {
                 </div>
                 <p class="text-sm text-slate-600 mb-4">${moduleData.assessments.completedCount} assessments completed</p>
                 <div class="flex justify-between items-center">
-                    <a href="/quiz.html" class="text-amber-600 hover:text-amber-700 font-medium text-sm">
+                    <a href="quiz.html" class="text-amber-600 hover:text-amber-700 font-medium text-sm">
                         Take Quiz →
                     </a>
                     ${moduleData.assessments.hasNewRecommendations ? '<span class="w-2 h-2 bg-green-500 rounded-full"></span>' : ''}
@@ -225,7 +225,7 @@ async function getDefaultDashboardHTML() {
                     ${renderRecentActivity(moduleData.recentActivity)}
                 </div>
                 <div class="mt-4 text-center">
-                    <a href="/modules/activity.html" class="text-indigo-600 hover:text-indigo-700 text-sm font-medium">
+                    <a href="modules/activity.html" class="text-indigo-600 hover:text-indigo-700 text-sm font-medium">
                         View All Activity →
                     </a>
                 </div>

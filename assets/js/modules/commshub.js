@@ -67,7 +67,18 @@ function renderMyDrafts(container) {
         </div>
     `;
     
-    quill = new Quill('#editor-container', { theme: 'snow' });
+    quill = new Quill('#editor-container', {
+        theme: 'snow',
+        modules: {
+            toolbar: [
+                [{ 'header': [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline'],
+                ['link', 'blockquote', 'code-block'],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                ['clean']
+            ]
+        }
+    });
     document.getElementById('save-draft-btn').addEventListener('click', saveDraft);
     document.getElementById('new-draft-btn').addEventListener('click', clearEditor);
 
@@ -108,8 +119,62 @@ function clearEditor() {
     quill.setText('');
 }
 
-async function saveDraft() { /* ... Unchanged from previous version ... */ }
-function loadDraft(docId) { /* ... Unchanged from previous version ... */ }
+async function saveDraft() {
+    const title = document.getElementById('draft-title').value;
+    const content = quill.getContents();
+    
+    if (!title.trim()) {
+        alert('Please enter a title for your draft.');
+        return;
+    }
+
+    const draftData = {
+        title: title,
+        content: JSON.stringify(content),
+        visibility: 'private',
+        updatedAt: serverTimestamp()
+    };
+
+    try {
+        if (currentDocId) {
+            // Update existing draft
+            await updateDocument(`users/${currentUser.uid}/commsContent`, currentDocId, draftData);
+        } else {
+            // Create new draft
+            draftData.createdAt = serverTimestamp();
+            const docRef = await addDocument(`users/${currentUser.uid}/commsContent`, draftData);
+            currentDocId = docRef.id;
+        }
+        console.log('Draft saved successfully');
+    } catch (error) {
+        console.error('Error saving draft:', error);
+        alert('Could not save draft. Please try again.');
+    }
+}
+
+async function loadDraft(docId) {
+    try {
+        const draft = await getDocument(`users/${currentUser.uid}/commsContent`, docId);
+        if (draft) {
+            currentDocId = docId;
+            document.getElementById('draft-title').value = draft.title;
+            
+            // Parse and set content
+            if (draft.content) {
+                try {
+                    const content = JSON.parse(draft.content);
+                    quill.setContents(content);
+                } catch (e) {
+                    // Fallback for plain text content
+                    quill.setText(draft.content);
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error loading draft:', error);
+        alert('Could not load draft.');
+    }
+}
 
 // --- "MY GROUPS" (INTRANET) TAB ---
 
@@ -225,7 +290,80 @@ async function sendChatMessage(e, groupId) {
 
 // --- "MY PUBLICATIONS" TAB & PUBLISHING LOGIC ---
 
-function renderMyPublications(container) { /* ... Unchanged from previous version ... */ }
+function renderMyPublications(container) {
+    container.innerHTML = `
+        <div class="bg-white p-6 rounded-lg shadow-sm">
+            <h2 class="text-xl font-bold text-slate-800 mb-4">My Published Content</h2>
+            <div id="publications-list" class="space-y-4"></div>
+        </div>
+    `;
+
+    const unsub = getDocumentsRealtime(`users/${currentUser.uid}/commsContent`, (docs) => {
+        const listContainer = document.getElementById('publications-list');
+        if (!listContainer) return;
+        
+        const publications = docs.filter(d => d.visibility !== 'private');
+        
+        if (publications.length === 0) {
+            listContainer.innerHTML = `<p class="text-sm text-slate-500">You have no published content.</p>`;
+            return;
+        }
+
+        listContainer.innerHTML = publications.map(pub => `
+            <div class="p-4 border rounded-lg hover:bg-slate-50">
+                <div class="flex justify-between items-start">
+                    <div class="flex-grow">
+                        <h3 class="font-semibold text-slate-800">${pub.title}</h3>
+                        <p class="text-sm text-slate-600 mt-1">
+                            <span class="inline-block px-2 py-1 text-xs rounded-full ${getVisibilityColor(pub.visibility)}">
+                                ${capitalizeFirst(pub.visibility)}
+                            </span>
+                            ${pub.template ? `• ${pub.template}` : ''}
+                        </p>
+                        <p class="text-xs text-slate-500 mt-2">
+                            Published: ${pub.publishedAt ? new Date(pub.publishedAt.seconds * 1000).toLocaleString() : 'N/A'}
+                        </p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button class="text-indigo-600 hover:text-indigo-800 text-sm" onclick="viewPublication('${pub.id}')">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                        <button class="text-slate-600 hover:text-slate-800 text-sm" onclick="editPublication('${pub.id}')">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    });
+    unsubscribeListeners.push(unsub);
+}
+
+function getVisibilityColor(visibility) {
+    const colors = {
+        'private': 'bg-gray-100 text-gray-800',
+        'intranet': 'bg-blue-100 text-blue-800',
+        'public': 'bg-green-100 text-green-800'
+    };
+    return colors[visibility] || 'bg-gray-100 text-gray-800';
+}
+
+function capitalizeFirst(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// Global functions for publication actions
+window.viewPublication = function(pubId) {
+    // Implementation for viewing publication
+    console.log('Viewing publication:', pubId);
+};
+
+window.editPublication = function(pubId) {
+    // Load publication for editing
+    loadDraft(pubId);
+    // Switch to drafts tab
+    document.querySelector('[data-tab="drafts"]').click();
+};
 
 function openPublishModal(docId, title) {
     const modal = document.getElementById('publish-modal');

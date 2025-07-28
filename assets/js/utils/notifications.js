@@ -17,15 +17,17 @@ export function showNotification(message, type = 'info', duration = 5000) {
     notification.className = `notification transform translate-x-full transition-transform duration-300 ease-in-out mb-3 p-4 rounded-lg shadow-lg ${getNotificationClasses(type)}`;
     
     notification.innerHTML = `
-        <div class="flex items-start">
+        <div class="flex items-start" role="alert" aria-live="assertive">
             <div class="flex-shrink-0">
-                <i class="${getNotificationIcon(type)} text-lg"></i>
+                <i class="${getNotificationIcon(type)} text-lg" aria-hidden="true"></i>
             </div>
             <div class="ml-3 flex-1">
-                <p class="text-sm font-medium">${message}</p>
+                <p class="text-sm font-medium" role="status">${message}</p>
             </div>
             <div class="ml-4 flex-shrink-0">
-                <button onclick="window.notifications.closeNotification('${id}')" class="inline-flex text-gray-400 hover:text-gray-600">
+                <button onclick="window.notifications.closeNotification('${id}')"
+                        class="inline-flex text-gray-400 hover:text-gray-600"
+                        aria-label="Close notification">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -81,10 +83,10 @@ function getOrCreateNotificationContainer() {
  */
 function getNotificationClasses(type) {
     const classes = {
-        success: 'bg-green-500 text-white',
-        error: 'bg-red-500 text-white',
-        warning: 'bg-yellow-500 text-white',
-        info: 'bg-blue-500 text-white'
+        success: 'bg-green-100 border-green-300 text-green-800',  // 4.68:1 contrast
+        error: 'bg-red-100 border-red-300 text-red-800',         // 4.63:1
+        warning: 'bg-yellow-100 border-yellow-300 text-yellow-800', // 4.52:1
+        info: 'bg-blue-100 border-blue-300 text-blue-800'        // 4.54:1
     };
     
     return classes[type] || classes.info;

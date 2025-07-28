@@ -435,7 +435,33 @@ My resume content:
         </div>
     `;
     
-    document.getElementById('modal-placeholder').innerHTML = modalHTML;
+    const modalContainer = document.getElementById('modal-placeholder');
+    modalContainer.innerHTML = modalHTML;
+    
+    // Get focusable elements
+    const focusable = modalContainer.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    const firstFocusable = focusable[0];
+    const lastFocusable = focusable[focusable.length - 1];
+    
+    // Set ARIA attributes
+    modalContainer.setAttribute('role', 'dialog');
+    modalContainer.setAttribute('aria-modal', 'true');
+    
+    // Trap focus
+    modalContainer.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab') {
+            if (e.shiftKey && document.activeElement === firstFocusable) {
+                e.preventDefault();
+                lastFocusable.focus();
+            } else if (!e.shiftKey && document.activeElement === lastFocusable) {
+                e.preventDefault();
+                firstFocusable.focus();
+            }
+        }
+    });
+    
+    // Focus first element
+    firstFocusable?.focus();
     
     // Setup copy functionality
     const copyButtons = document.querySelectorAll('.copy-prompt-btn');

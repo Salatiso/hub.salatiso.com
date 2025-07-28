@@ -152,7 +152,51 @@ function showJSONImportModal() {
         </div>
     `;
     
-    document.getElementById('modal-placeholder').innerHTML = modalHTML;
+    // Add keyboard navigation to main nav
+    const navItems = document.querySelectorAll('.main-nav a');
+    navItems.forEach((item, index) => {
+        item.tabIndex = 0;
+        item.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                item.click();
+            }
+            if (e.key === 'ArrowDown' && index < navItems.length - 1) {
+                navItems[index + 1].focus();
+            }
+            if (e.key === 'ArrowUp' && index > 0) {
+                navItems[index - 1].focus();
+            }
+        });
+    });
+
+    const modalContainer = document.getElementById('modal-placeholder');
+    modalContainer.innerHTML = modalHTML;
+    
+    // Get focusable elements
+    const focusable = modalContainer.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    const firstFocusable = focusable[0];
+    const lastFocusable = focusable[focusable.length - 1];
+    
+    // Set ARIA attributes
+    modalContainer.setAttribute('role', 'dialog');
+    modalContainer.setAttribute('aria-modal', 'true');
+    
+    // Trap focus
+    modalContainer.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab') {
+            if (e.shiftKey && document.activeElement === firstFocusable) {
+                e.preventDefault();
+                lastFocusable.focus();
+            } else if (!e.shiftKey && document.activeElement === lastFocusable) {
+                e.preventDefault();
+                firstFocusable.focus();
+            }
+        }
+    });
+    
+    // Focus first element
+    firstFocusable?.focus();
     
     // Setup JSON validation
     const jsonInput = document.getElementById('json-input');

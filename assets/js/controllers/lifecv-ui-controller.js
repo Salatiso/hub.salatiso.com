@@ -657,6 +657,7 @@ function getTotalItems() {
 
 // Make functions globally available
 window.lifeCvUIController = {
+    updateUI,
     updateFieldValue,
     toggleSection,
     addNewItem,

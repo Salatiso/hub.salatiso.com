@@ -407,7 +407,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // The auth state listener is the gatekeeper
-    onAuthStateChanged(auth, user => {
+    onAuthStateChanged(auth, async user => {
         const appContainer = document.getElementById('app-container');
         if (user) {
             // User is signed in.
@@ -422,8 +422,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 userAvatarEl.src = user.photoURL;
             }
 
-            // Make the main content visible
-            if (appContainer) appContainer.style.visibility = 'visible';
+            // Initialize the current module
+            await initializeModule(user);
 
             // Signal that Firebase is ready for other scripts
             document.dispatchEvent(new CustomEvent('firebase-ready'));
@@ -436,21 +436,57 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Add to the module initialization section
+    // Helper function to get current module from page data attribute
+    function getCurrentModule() {
+        const bodyElement = document.body;
+        return bodyElement.getAttribute('data-module') || 'unknown';
+    }
+
+    // Loading state management functions
+    function showLoadingState() {
+        const loadingEl = document.getElementById('loading-indicator');
+        const appEl = document.getElementById('app-container');
+        
+        if (loadingEl) loadingEl.style.display = 'flex';
+        if (appEl) appEl.style.visibility = 'hidden';
+    }
+
+    function hideLoadingState() {
+        const loadingEl = document.getElementById('loading-indicator');
+        const appEl = document.getElementById('app-container');
+        
+        if (loadingEl) loadingEl.style.display = 'none';
+        if (appEl) appEl.style.visibility = 'visible';
+    }
+
+    function showErrorState(error) {
+        const errorEl = document.getElementById('error-boundary');
+        const loadingEl = document.getElementById('loading-indicator');
+        const appEl = document.getElementById('app-container');
+        
+        if (loadingEl) loadingEl.style.display = 'none';
+        if (appEl) appEl.style.visibility = 'hidden';
+        if (errorEl) errorEl.classList.remove('hidden');
+        
+        console.error('Module initialization error:', error);
+    }
+
+    // Module initialization function
     async function initializeModule(user) {
         const currentModule = getCurrentModule();
         
         try {
-            showLoadingState();
+            console.log(`Initializing module: ${currentModule}`);
             
             switch (currentModule) {
                 case 'life-cv':
                     await initLifeCV(user);
                     break;
-                // ...existing cases...
+                default:
+                    console.log(`No specific initialization for module: ${currentModule}`);
+                    hideLoadingState();
+                    break;
             }
-            
-            hideLoadingState();
             
         } catch (error) {
             console.error(`Error initializing ${currentModule}:`, error);

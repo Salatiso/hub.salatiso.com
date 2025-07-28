@@ -382,3 +382,9 @@ export async function generateQRCode(text, size = 200) {
         qrCode.getRawData('png').then(resolve);
     });
 }
+/**
+ * Get object value by path (alias for getNestedProperty)
+ */
+export function getObjectValueByPath(obj, path) {
+    return getNestedProperty(obj, path);
+}

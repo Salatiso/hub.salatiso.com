@@ -1,0 +1,191 @@
+Web Development\GitHub\hub.salatiso.com\favicon-generator.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favicon Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .generator {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        canvas {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+        }
+        .controls {
+            margin: 20px 0;
+        }
+        .controls label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+        .controls input, .controls select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        button {
+            background: #4f46e5;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 10px 10px 0;
+        }
+        button:hover {
+            background: #4338ca;
+        }
+        .preview {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .size-preview {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="generator">
+        <h1>LifeCV Favicon Generator</h1>
+        <p>Create a custom favicon for your LifeCV application</p>
+        
+        <div class="controls">
+            <label for="text">Icon Text (1-2 characters):</label>
+            <input type="text" id="text" value="LifeCV" maxlength="2">
+            
+            <label for="bgColor">Background Color:</label>
+            <input type="color" id="bgColor" value="#4f46e5">
+            
+            <label for="textColor">Text Color:</label>
+            <input type="color" id="textColor" value="#ffffff">
+            
+            <label for="fontSize">Font Size:</label>
+            <input type="range" id="fontSize" min="8" max="20" value="14">
+            <span id="fontSizeValue">14px</span>
+        </div>
+
+        <div class="preview">
+            <div class="size-preview">
+                <p>16x16 (Browser Tab)</p>
+                <canvas id="canvas16" width="16" height="16"></canvas>
+            </div>
+            <div class="size-preview">
+                <p>32x32 (Standard)</p>
+                <canvas id="canvas32" width="32" height="32"></canvas>
+            </div>
+            <div class="size-preview">
+                <p>48x48 (High DPI)</p>
+                <canvas id="canvas48" width="48" height="48"></canvas>
+            </div>
+        </div>
+
+        <button onclick="generateFavicon()">Generate Favicon</button>
+        <button onclick="downloadFavicon()">Download favicon.ico</button>
+        
+        <div id="downloadLink"></div>
+    </div>
+
+    <script>
+        function updatePreview() {
+            const text = document.getElementById('text').value || 'LC';
+            const bgColor = document.getElementById('bgColor').value;
+            const textColor = document.getElementById('textColor').value;
+            const fontSize = parseInt(document.getElementById('fontSize').value);
+            
+            document.getElementById('fontSizeValue').textContent = fontSize + 'px';
+            
+            [16, 32, 48].forEach(size => {
+                const canvas = document.getElementById(`canvas${size}`);
+                const ctx = canvas.getContext('2d');
+                
+                // Clear canvas
+                ctx.clearRect(0, 0, size, size);
+                
+                // Draw background
+                ctx.fillStyle = bgColor;
+                ctx.fillRect(0, 0, size, size);
+                
+                // Draw text
+                ctx.fillStyle = textColor;
+                ctx.font = `bold ${Math.floor(size * fontSize / 32)}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(text, size/2, size/2);
+            });
+        }
+
+        function generateFavicon() {
+            updatePreview();
+            
+            // Create a high-quality 32x32 version for the .ico file
+            const canvas = document.createElement('canvas');
+            canvas.width = 32;
+            canvas.height = 32;
+            const ctx = canvas.getContext('2d');
+            
+            const text = document.getElementById('text').value || 'LC';
+            const bgColor = document.getElementById('bgColor').value;
+            const textColor = document.getElementById('textColor').value;
+            const fontSize = parseInt(document.getElementById('fontSize').value);
+            
+            // Draw background
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, 32, 32);
+            
+            // Draw text
+            ctx.fillStyle = textColor;
+            ctx.font = `bold ${fontSize}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, 16, 16);
+            
+            return canvas;
+        }
+
+        function downloadFavicon() {
+            const canvas = generateFavicon();
+            
+            // Convert to blob and download
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'favicon.ico';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                document.getElementById('downloadLink').innerHTML = 
+                    '<p style="color: green; margin-top: 10px;">✓ Favicon downloaded! Place the favicon.ico file in your project root directory.</p>';
+            }, 'image/png');
+        }
+
+        // Initialize
+        document.getElementById('text').addEventListener('input', updatePreview);
+        document.getElementById('bgColor').addEventListener('input', updatePreview);
+        document.getElementById('textColor').addEventListener('input', updatePreview);
+        document.getElementById('fontSize').addEventListener('input', updatePreview);
+        
+        updatePreview();
+    </script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 /* ================================================================================= */
-/* FILE: assets/js/ui/lifecv-modals-v2.js                                          */
-/* PURPOSE: Unified modal system entry point (Cache-busting version)               */
+/* FILE: assets/js/ui/lifecv-modals.js                                             */
+/* PURPOSE: Unified modal system entry point                                       */
 /* ================================================================================= */
 
 import { showCoreModal, init as initCore, hideModal } from './lifecv-modals-core.js';
@@ -39,6 +39,13 @@ export function showModal(modalId, data = {}) {
         console.error(`Error showing modal ${modalId}:`, error);
         return false;
     }
+}
+
+/**
+ * Show conflict resolution modal
+ */
+export function showConflictResolution(data = {}) {
+    return showModal('conflict-resolution', data);
 }
 
 // Re-export specific functions

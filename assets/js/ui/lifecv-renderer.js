@@ -4,7 +4,7 @@
 /* ================================================================================= */
 
 import { updateField, getLifeCvData } from '../services/life-cv-data-service.js';
-import { showNotification } from './lifecv-modals.js';
+import { showNotification } from '../utils/notifications.js';
 
 /**
  * Render all LifeCV sections

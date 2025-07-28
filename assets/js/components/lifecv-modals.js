@@ -582,19 +582,13 @@ export function switchTab(tab) {
  * Copy text to clipboard
  */
 export function copyToClipboard(elementId) {
-    const element = document.getElementById(elementId);
-    if (element) {
-        navigator.clipboard.writeText(element.value || element.textContent).then(() => {
-            // Show temporary feedback
-            const originalText = element.nextElementSibling?.textContent || 'Copy Prompt';
-            if (element.nextElementSibling) {
-                element.nextElementSibling.innerHTML = '<i class="fas fa-check mr-1"></i> Copied!';
-                setTimeout(() => {
-                    element.nextElementSibling.innerHTML = '<i class="fas fa-copy mr-1"></i> Copy Prompt';
-                }, 2000);
-            }
-        });
-    }
+    const text = document.getElementById(elementId).innerText;
+    navigator.clipboard.writeText(text).then(() => {
+        showNotification('Copied to clipboard!', 'success');
+    }).catch(err => {
+        console.error('Failed to copy text: ', err);
+        showNotification('Failed to copy text', 'error');
+    });
 }
 
 /**
@@ -604,27 +598,30 @@ export function showConflictResolution(conflicts, callback) {
     conflictResolutionCallback = callback;
     
     const container = document.getElementById('conflicts-container');
-    if (!container) return;
+    if (!container) {
+        console.error('Conflict container not found in the modal.');
+        return;
+    }
     
     container.innerHTML = conflicts.map((conflict, index) => `
-        <div class="border border-slate-200 rounded-lg p-4">
+        <div class="border border-slate-200 rounded-lg p-4 mb-4">
             <h3 class="font-medium text-slate-800 mb-2">
-                ${conflict.section} → ${conflict.field}
+                Conflict in: <span class="font-bold">${conflict.section} &rarr; ${conflict.field}</span>
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="bg-blue-50 border border-blue-200 rounded p-3">
                     <h4 class="text-sm font-medium text-blue-800 mb-1">Existing Value</h4>
-                    <p class="text-sm text-blue-700">${conflict.existing}</p>
+                    <p class="text-sm text-blue-700 break-words">${conflict.existing || '<em>(empty)</em>'}</p>
                     <label class="flex items-center mt-2">
-                        <input type="radio" name="conflict-${index}" value="existing" class="text-indigo-600">
+                        <input type="radio" name="conflict-${index}" value="existing" class="text-indigo-600" checked>
                         <span class="ml-2 text-sm">Keep existing</span>
                     </label>
                 </div>
                 <div class="bg-green-50 border border-green-200 rounded p-3">
                     <h4 class="text-sm font-medium text-green-800 mb-1">New Value</h4>
-                    <p class="text-sm text-green-700">${conflict.imported}</p>
+                    <p class="text-sm text-green-700 break-words">${conflict.imported || '<em>(empty)</em>'}</p>
                     <label class="flex items-center mt-2">
-                        <input type="radio" name="conflict-${index}" value="imported" class="text-indigo-600" checked>
+                        <input type="radio" name="conflict-${index}" value="imported" class="text-indigo-600">
                         <span class="ml-2 text-sm">Use new value</span>
                     </label>
                 </div>
@@ -752,15 +749,11 @@ DOCUMENT TEXT TO ANALYZE:
 [PASTE YOUR FULL DOCUMENT TEXT HERE]`;
 }
 
-// Make functions globally available
+// Make functions globally available for use in HTML onclick attributes
 window.lifeCvModals = {
     showModal,
     hideModal,
     switchTab,
     copyToClipboard,
     updateProcessingStatus
-};
-
-export {
-    showConflictResolution
 };

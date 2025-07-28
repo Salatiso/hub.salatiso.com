@@ -251,4 +251,11 @@ export async function acceptTerms(userId) {
         return false;
     }
 }
+// In auth.js, modify the initialization:
+document.addEventListener('DOMContentLoaded', () => {
+    // Only initialize AuthManager if we're on a page with auth elements
+    if (document.getElementById('auth-form')) {
+        new AuthManager();
+    }
+});
 

@@ -11,7 +11,7 @@ import { initTranslations, applyTranslations } from './translations-engine.js';
 
 // Add LifeCV imports at the top
 import { init as initLifeCV } from './modules/life-cv.js';
-import { showModal, init as initModals } from './ui/lifecv-modals-v2.js';
+import { showModal, init as initModals } from './ui/lifecv-modals.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 

@@ -14,8 +14,9 @@ let selectedSearchResults = [];
  * Initialize import handlers
  */
 export function init() {
-    attachImportEventListeners();
-    console.log('Import Handlers initialized');
+    console.log('Import handlers initialized');
+    setupFileImportHandlers();
+    setupJSONImportHandlers();
 }
 
 /**
@@ -46,6 +47,30 @@ function attachImportEventListeners() {
     
     // Import selected results
     document.getElementById('import-selected-btn')?.addEventListener('click', handleImportSelected);
+}
+
+/**
+ * Setup file import handlers
+ */
+function setupFileImportHandlers() {
+    const fileInput = document.getElementById('file-import-input');
+    if (fileInput) {
+        fileInput.addEventListener('change', handleFileImport);
+    }
+}
+
+/**
+ * Setup JSON import handlers
+ */
+function setupJSONImportHandlers() {
+    const jsonImportBtn = document.getElementById('json-import-btn');
+    if (jsonImportBtn) {
+        jsonImportBtn.addEventListener('click', () => {
+            if (window.lifeCvModals && window.lifeCvModals.showModal) {
+                window.lifeCvModals.showModal('json-import-modal');
+            }
+        });
+    }
 }
 
 /**
@@ -828,25 +853,37 @@ function updateSelectedCount() {
  * Handle import of selected results
  */
 async function handleImportSelected() {
-    if (selectedSearchResults.length === 0) return;
+    if (selectedSearchResults.length === 0) {
+        showNotification('Please select some results to import', 'warning');
+        return;
+    }
     
     try {
         showNotification('Processing selected results...', 'info');
         
-        // Convert selected results to LifeCV format
-        const importData = convertResultsToLifeCvFormat(selectedSearchResults);
+        // Convert selected results to structured data
+        const structuredData = await convertSearchResultsToData(selectedSearchResults);
         
         // Import the data
-        await importData(importData, { 
+        const result = await importData(structuredData, { 
             strategy: 'merge', 
             conflicts: 'prompt' 
         });
         
-        hideModal('internet-search-modal');
-        showNotification(`Successfully imported ${selectedSearchResults.length} items`, 'success');
+        if (result.conflicts && result.conflicts.length > 0) {
+            // Show conflict resolution modal
+            showConflictResolution(result.conflicts, async (resolutions) => {
+                await applyConflictResolutions(structuredData, resolutions);
+                hideModal('internet-search-modal');
+                showNotification('Search results imported successfully with conflict resolutions', 'success');
+            });
+        } else {
+            hideModal('internet-search-modal');
+            showNotification('Search results imported successfully', 'success');
+        }
         
-        // Reset selections
-        selectedSearchResults = [];
+        // Clear selections
+        clearAllSelections();
         
     } catch (error) {
         console.error('Import selected results error:', error);
@@ -855,32 +892,169 @@ async function handleImportSelected() {
 }
 
 /**
- * Convert search results to LifeCV format
+ * Convert search results to structured LifeCV data
  */
-function convertResultsToLifeCvFormat(results) {
-    const lifeCvData = {
-        digital: [],
-        publications: [],
-        milestones: []
+async function convertSearchResultsToData(selectedResults) {
+    const structuredData = {
+        personalInfo: {},
+        professionalSummary: {},
+        experience: [],
+        education: [],
+        skills: [],
+        projects: [],
+        onlinePresence: []
     };
     
-    results.forEach(result => {
-        const timestamp = new Date().toISOString();
+    selectedResults.forEach(result => {
+        const { category, data } = result;
         
-        switch (result.category) {
+        switch (category) {
             case 'profiles':
+                // Extract profile information
+                if (data.domain?.includes('linkedin.com')) {
+                    structuredData.onlinePresence.push({
+                        platform: { value: 'LinkedIn', isPublic: true, lastModified: new Date().toISOString() },
+                        profileUrl: { value: data.url, isPublic: true, lastModified: new Date().toISOString() },
+                        description: { value: data.description, isPublic: true, lastModified: new Date().toISOString() }
+                    });
+                }
+                break;
+                
             case 'professional':
+                if (data.domain?.includes('github.com')) {
+                    structuredData.onlinePresence.push({
+                        platform: { value: 'GitHub', isPublic: true, lastModified: new Date().toISOString() },
+                        profileUrl: { value: data.url, isPublic: true, lastModified: new Date().toISOString() },
+                        description: { value: data.description, isPublic: true, lastModified: new Date().toISOString() }
+                    });
+                }
+                break;
+                
             case 'social':
-                lifeCvData.digital.push({
-                    platform: { value: extractPlatformName(result.data.domain), isPublic: true, lastModified: timestamp },
-                    url: { value: result.data.url, isPublic: true, lastModified: timestamp },
-                    purpose: { value: result.category === 'professional' ? 'Professional' : 'Personal', isPublic: true, lastModified: timestamp },
-                    description: { value: result.data.description, isPublic: true, lastModified: timestamp }
-                });
+                const platform = extractPlatformFromDomain(data.domain);
+                if (platform) {
+                    structuredData.onlinePresence.push({
+                        platform: { value: platform, isPublic: false, lastModified: new Date().toISOString() },
+                        profileUrl: { value: data.url, isPublic: false, lastModified: new Date().toISOString() },
+                        description: { value: data.description, isPublic: false, lastModified: new Date().toISOString() }
+                    });
+                }
                 break;
                 
             case 'publications':
-                lifeCvData.publications.push({
-                    title: { value: result.data.title, isPublic: true, lastModified: timestamp },
-                    type: { value: 'Article', isPublic: true, lastModified: timestamp },
-                    publisher: { value: result.data.domain, isPublic: true,// filepath: e:\Google Drive\@Work\Web Development\GitHub\hub.salatiso.com\assets\js\handlers\import-handlers.js
+                structuredData.projects.push({
+                    projectName: { value: data.title, isPublic: true, lastModified: new Date().toISOString() },
+                    description: { value: data.description, isPublic: true, lastModified: new Date().toISOString() },
+                    projectUrl: { value: data.url, isPublic: true, lastModified: new Date().toISOString() },
+                    category: { value: 'Publication', isPublic: true, lastModified: new Date().toISOString() }
+                });
+                break;
+                
+            case 'mentions':
+                // Add as general online presence
+                structuredData.onlinePresence.push({
+                    platform: { value: data.domain || 'Web', isPublic: true, lastModified: new Date().toISOString() },
+                    profileUrl: { value: data.url, isPublic: true, lastModified: new Date().toISOString() },
+                    description: { value: data.description, isPublic: true, lastModified: new Date().toISOString() }
+                });
+                break;
+        }
+    });
+    
+    return structuredData;
+}
+
+/**
+ * Extract platform name from domain
+ */
+function extractPlatformFromDomain(domain) {
+    if (!domain) return null;
+    
+    const platformMap = {
+        'linkedin.com': 'LinkedIn',
+        'github.com': 'GitHub',
+        'twitter.com': 'Twitter',
+        'facebook.com': 'Facebook',
+        'instagram.com': 'Instagram',
+        'youtube.com': 'YouTube',
+        'tiktok.com': 'TikTok'
+    };
+    
+    for (const [key, value] of Object.entries(platformMap)) {
+        if (domain.includes(key)) {
+            return value;
+        }
+    }
+    
+    return domain;
+}
+
+/**
+ * Apply conflict resolutions
+ */
+async function applyConflictResolutions(data, resolutions) {
+    // Apply the user's conflict resolution choices
+    for (const resolution of resolutions) {
+        const { path, choice, newValue } = resolution;
+        
+        if (choice === 'keep_new' && newValue !== undefined) {
+            // Update the data with the new value
+            setNestedProperty(data, path, newValue);
+        }
+        // For 'keep_existing', we don't need to do anything
+    }
+    
+    // Re-import with the resolved data
+    await importData(data, { strategy: 'overwrite', conflicts: 'skip' });
+}
+
+/**
+ * Set nested property value
+ */
+function setNestedProperty(obj, path, value) {
+    const keys = path.split('.');
+    let current = obj;
+    
+    for (let i = 0; i < keys.length - 1; i++) {
+        if (!(keys[i] in current)) {
+            current[keys[i]] = {};
+        }
+        current = current[keys[i]];
+    }
+    
+    current[keys[keys.length - 1]] = value;
+}
+
+/**
+ * Update processing status
+ */
+function updateProcessingStatus(message, progress) {
+    const statusElement = document.getElementById('processing-status');
+    const progressBar = document.getElementById('processing-progress');
+    
+    if (statusElement) {
+        statusElement.textContent = message;
+    }
+    
+    if (progressBar) {
+        progressBar.style.width = `${progress}%`;
+    }
+}
+
+/**
+ * Expose functions to window for global access
+ */
+window.importHandlers = {
+    toggleResultSelection,
+    selectAllResults,
+    clearAllSelections
+};
+
+// Initialize when DOM is loaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(init, 100);
+    });
+} else {
+    setTimeout(init, 100);
+}

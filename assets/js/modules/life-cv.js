@@ -6,7 +6,7 @@
 import { init as initDataService } from '../services/life-cv-data-service.js';
 import { init as initUIController } from '../controllers/lifecv-ui-controller.js';
 import { init as initImportHandlers } from '../handlers/import-handlers.js';
-import { init as initModals } from '../components/lifecv-modals.js';
+import { showModal, init as initModals } from '../ui/lifecv-modals-v2.js';
 import { showNotification } from '../utils/notifications.js';
 
 let isInitialized = false;

@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeSync - Administrator Guide</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #64748b;
+            --accent-color: #f59e0b;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --border-color: #e5e7eb;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 3rem 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(37, 99, 235, 0.2);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .header p {
+            font-size: 1.125rem;
+            opacity: 0.95;
+        }
+
+        .admin-notice {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
+            border: 2px solid var(--danger-color);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .admin-notice h2 {
+            color: var(--danger-color);
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .admin-notice p {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .section {
+            background: var(--bg-primary);
+            margin-bottom: 2rem;
+            padding: 2.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        .section h2 {
+            color: var(--primary-color);
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .section h2::before {
+            content: '';
+            width: 4px;
+            height: 2rem;
+            background: var(--accent-color);
+            margin-right: 1rem;
+            border-radius: 2px;
+        }
+
+        .section h3 {
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 2rem 0 1rem 0;
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .admin-card {
+            background: var(--bg-secondary);
+            padding: 2rem;
+            border-radius: 0.75rem;
+            border-left: 4px solid var(--primary-color);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .admin-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .admin-card h4 {
+            color: var(--primary-color);
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .admin-card .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: var(--danger-color);
+            color: white;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .checklist {
+            background: var(--bg-secondary);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .checklist h4 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+        }
+
+        .checklist-item input[type="checkbox"] {
+            margin-right: 0.75rem;
+            margin-top: 0.25rem;
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        .checklist-item label {
+            cursor: pointer;
+            flex-grow: 1;
+        }
+
+        .checklist-item.completed label {
+            text-decoration: line-through;
+            color: var(--text-secondary);
+        }
+
+        .policy-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+            background: var(--bg-primary);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .policy-table th,
+        .policy-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .policy-table th {
+            background: var(--primary-color);
+            color: white;
+            font-weight: 600;
+        }
+
+        .policy-table tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        .policy-table .status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .status.active {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .status.pending {
+            background: var(--warning-color);
+            color: black;
+        }
+
+        .status.inactive {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .workflow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .workflow-step {
+            background: white;
+            border: 2px solid var(--primary-color);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--primary-color);
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .workflow-step::after {
+            content: '';
+            position: absolute;
+            right: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 30px;
+            height: 2px;
+            background: var(--primary-color);
+        }
+
+        .workflow-step:last-child::after {
+            display: none;
+        }
+
+        .workflow-label {
+            text-align: center;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            max-width: 100px;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+            border-left: 4px solid;
+        }
+
+        .alert.danger {
+            background: rgba(239, 68, 68, 0.1);
+            border-left-color: var(--danger-color);
+            color: var(--danger-color);
+        }
+
+        .alert.warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-left-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .alert.success {
+            background: rgba(16, 185, 129, 0.1);
+            border-left-color: var(--success-color);
+            color: var(--success-color);
+        }
+
+        .alert.info {
+            background: rgba(37, 99, 235, 0.1);
+            border-left-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .expandable-section {
+            margin: 1rem 0;
+        }
+
+        .expandable-header {
+            background: var(--bg-secondary);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s ease;
+        }
+
+        .expandable-header:hover {
+            background: #e5e7eb;
+        }
+
+        .expandable-content {
+            padding: 1rem;
+            border-left: 3px solid var(--primary-color);
+            margin-left: 1rem;
+            display: none;
+        }
+
+        .expandable-content.active {
+            display: block;
+        }
+
+        .toggle-icon {
+            transition: transform 0.2s ease;
+        }
+
+        .toggle-icon.rotated {
+            transform: rotate(180deg);
+        }
+
+        .action-button {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .action-button:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .action-button.secondary {
+            background: var(--secondary-color);
+        }
+
+        .action-button.secondary:hover {
+            background: #475569;
+        }
+
+        .action-button.danger {
+            background: var(--danger-color);
+        }
+
+        .action-button.danger:hover {
+            background: #dc2626;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header {
+                padding: 2rem 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .section {
+                padding: 1.5rem;
+            }
+
+            .admin-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .workflow {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .workflow-step::after {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="admin-notice">
+            <h2>🔐 ADMINISTRATOR ACCESS REQUIRED</h2>
+            <p>This guide contains organizational management and compliance functions. Access is restricted to authorized administrators only.</p>
+        </div>
+
+        <header class="header">
+            <h1>⚙️ LifeSync Administrator Guide</h1>
+            <p>Organizational management, compliance, and administrative oversight</p>
+        </header>
+
+        <section class="section">
+            <h2>🏢 Organization Setup & Management</h2>
+
+            <h3>Initial Organization Configuration</h3>
+            <div class="checklist">
+                <h4>Setup Checklist</h4>
+                <div class="checklist-item">
+                    <input type="checkbox" id="setup-1">
+                    <label for="setup-1">Organization profile created with official details</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="setup-2">
+                    <label for="setup-2">Domain verification completed</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="setup-3">
+                    <label for="setup-3">Administrative roles assigned</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="setup-4">
+                    <label for="setup-4">Compliance policies configured</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="setup-5">
+                    <label for="setup-5">Security settings established</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="setup-6">
+                    <label for="setup-6">Integration APIs enabled</label>
+                </div>
+            </div>
+
+            <h3>Administrative Roles & Permissions</h3>
+            <table class="policy-table">
+                <thead>
+                    <tr>
+                        <th>Role</th>
+                        <th>Permissions</th>
+                        <th>Responsibilities</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Super Admin</strong></td>
+                        <td>Full system access, user management, policy creation</td>
+                        <td>Overall system governance, critical decisions</td>
+                        <td><span class="status active">Active</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>HR Admin</strong></td>
+                        <td>Employee data, recruitment, performance management</td>
+                        <td>Workforce management, compliance monitoring</td>
+                        <td><span class="status active">Active</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Safety Admin</strong></td>
+                        <td>Incident reports, safety protocols, emergency response</td>
+                        <td>Safety compliance, incident management</td>
+                        <td><span class="status active">Active</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Compliance Admin</strong></td>
+                        <td>Audit logs, regulatory reporting, policy enforcement</td>
+                        <td>Legal compliance, risk management</td>
+                        <td><span class="status active">Active</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Community Admin</strong></td>
+                        <td>Community governance, event management, moderation</td>
+                        <td>Community engagement, content moderation</td>
+                        <td><span class="status pending">Pending</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="section">
+            <h2>👥 User Management & Onboarding</h2>
+
+            <h3>Bulk User Operations</h3>
+            <div class="admin-grid">
+                <div class="admin-card">
+                    <div class="badge">HR</div>
+                    <h4>Employee Import</h4>
+                    <p>Import users from HR systems or CSV files</p>
+                    <ul style="margin-top: 1rem;">
+                        <li>CSV/Excel file upload</li>
+                        <li>HR system integration (SAP, Workday, etc.)</li>
+                        <li>Automated account creation</li>
+                        <li>Bulk email invitations</li>
+                    </ul>
+                    <button class="action-button">Import Users</button>
+                </div>
+                <div class="admin-card">
+                    <div class="badge">HR</div>
+                    <h4>Role Assignment</h4>
+                    <p>Assign roles and permissions to users</p>
+                    <ul style="margin-top: 1rem;">
+                        <li>Bulk role updates</li>
+                        <li>Department-based assignments</li>
+                        <li>Temporary permissions</li>
+                        <li>Permission inheritance</li>
+                    </ul>
+                    <button class="action-button secondary">Manage Roles</button>
+                </div>
+                <div class="admin-card">
+                    <div class="badge">ADMIN</div>
+                    <h4>Account Management</h4>
+                    <p>Manage user accounts and access</p>
+                    <ul style="margin-top: 1rem;">
+                        <li>Account activation/deactivation</li>
+                        <li>Password reset</li>
+                        <li>Account recovery</li>
+                        <li>Access audit logs</li>
+                    </ul>
+                    <button class="action-button secondary">User Accounts</button>
+                </div>
+            </div>
+
+            <h3>Onboarding Workflow</h3>
+            <div class="workflow">
+                <div>
+                    <div class="workflow-step">1</div>
+                    <div class="workflow-label">Account Creation</div>
+                </div>
+                <div>
+                    <div class="workflow-step">2</div>
+                    <div class="workflow-label">Profile Setup</div>
+                </div>
+                <div>
+                    <div class="workflow-step">3</div>
+                    <div class="workflow-label">Training</div>
+                </div>
+                <div>
+                    <div class="workflow-step">4</div>
+                    <div class="workflow-label">Verification</div>
+                </div>
+                <div>
+                    <div class="workflow-step">5</div>
+                    <div class="workflow-label">Activation</div>
+                </div>
+            </div>
+
+            <div class="alert info">
+                <strong>Onboarding Best Practices:</strong> Complete onboarding within 24-48 hours of account creation. Provide clear instructions and offer support channels for new users.
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>📋 Compliance & Regulatory Management</h2>
+
+            <h3>Compliance Frameworks</h3>
+            <div class="admin-grid">
+                <div class="admin-card">
+                    <div class="badge">LEGAL</div>
+                    <h4>GDPR Compliance</h4>
+                    <p>European data protection regulation</p>
+                    <ul style="margin-top: 1rem;">
+                        <li>Data processing agreements</li>
+                        <li>Consent management</li>
+                        <li>Data subject rights</li>
+                        <li>Breach notification</li>
+                    </ul>
+                </div>
+                <div class="admin-card">
+                    <div class="badge">LEGAL</div>
+                    <h4>POPIA Compliance</h4>
+                    <p>South African data protection</p>
+                    <ul style="margin-top: 1rem;">
+                        <li>Information officer appointment</li>
+                        <li>Data subject access requests</li>
+                        <li>Privacy impact assessments</li>
+                        <li>Regulatory reporting</li>
+                    </ul>
+                </div>
+                <div class="admin-card">
+                    <div class="badge">LEGAL</div>
+                    <h4>Industry-Specific</h4>
+                    <p>Sector-specific compliance requirements</p>
+                    <ul style="margin-top: 1rem;">
+                        <li>Financial services regulations</li>
+                        <li>Healthcare data protection</li>
+                        <li>Educational institution policies</li>
+                        <li>Government contractor requirements</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>Automated Compliance Monitoring</h3>
+            <div class="expandable-section">
+                <div class="expandable-header" onclick="toggleSection('compliance-monitoring')">
+                    <h4>Compliance Dashboard Features</h4>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="expandable-content" id="compliance-monitoring">
+                    <h5>Real-time Monitoring</h5>
+                    <ul>
+                        <li>Data retention compliance</li>
+                        <li>Access control audits</li>
+                        <li>Consent validity tracking</li>
+                        <li>Regulatory deadline alerts</li>
+                    </ul>
+
+                    <h5>Automated Reporting</h5>
+                    <ul>
+                        <li>Monthly compliance reports</li>
+                        <li>Regulatory filings</li>
+                        <li>Audit trail exports</li>
+                        <li>Risk assessment reports</li>
+                    </ul>
+
+                    <h5>Incident Response</h5>
+                    <ul>
+                        <li>Breach detection and alerting</li>
+                        <li>Automated notification systems</li>
+                        <li>Incident documentation</li>
+                        <li>Regulatory reporting workflows</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>🛡️ Safety & Incident Management</h2>
+
+            <h3>Safety Administration</h3>
+            <div class="admin-grid">
+                <div class="admin-card">
+                    <div class="badge">SAFETY</div>
+                    <h4>Incident Response</h4>
+                    <p>Manage safety incidents and responses</p>
+                    <ul style="margin-top: 1rem;">
+                        <li>Incident classification</li>
+                        <li>Response team coordination</li>
+                        <li>Communication protocols</li>
+                        <li>Follow-up procedures</li>
+                    </ul>
+                    <button class="action-button">Incident Dashboard</button>
+                </div>
+                <div class="admin-card">
+                    <div class="badge">SAFETY</div>
+                    <h4>Safety Protocols</h4>
+                    <p>Configure organizational safety policies</p>
+                    <ul style="margin-top: 1rem;">
+                        <li>Emergency contact lists</li>
+                        <li>Evacuation procedures</li>
+                        <li>Safety training requirements</li>
+                        <li>Equipment maintenance</li>
+                    </ul>
+                    <button class="action-button secondary">Safety Settings</button>
+                </div>
+                <div class="admin-card">
+                    <div class="badge">SAFETY</div>
+                    <h4>Emergency Coordination</h4>
+                    <p>Coordinate multi-agency emergency response</p>
+                    <ul style="margin-top: 1rem;">
+                        <li>Emergency service integration</li>
+                        <li>Resource allocation</li>
+                        <li>Communication channels</li>
+                        <li>After-action reviews</li>
+                    </ul>
+                    <button class="action-button danger">Emergency Mode</button>
+                </div>
+            </div>
+
+            <h3>Safety Compliance Tracking</h3>
+            <div class="alert warning">
+                <strong>Safety First:</strong> All safety incidents must be documented within 24 hours. Critical incidents require immediate reporting to relevant authorities.
+            </div>
+
+            <div class="checklist">
+                <h4>Monthly Safety Compliance Checklist</h4>
+                <div class="checklist-item">
+                    <input type="checkbox" id="safety-1">
+                    <label for="safety-1">Emergency contact lists updated</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="safety-2">
+                    <label for="safety-2">Safety training completion verified</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="safety-3">
+                    <label for="safety-3">Equipment inspections completed</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="safety-4">
+                    <label for="safety-4">Incident reports reviewed and filed</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="safety-5">
+                    <label for="safety-5">Emergency drills conducted</label>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>📊 Analytics & Reporting</h2>
+
+            <h3>Administrative Dashboards</h3>
+            <div class="admin-grid">
+                <div class="admin-card">
+                    <div class="badge">ANALYTICS</div>
+                    <h4>User Engagement</h4>
+                    <p>Track user activity and engagement metrics</p>
+                    <ul style="margin-top: 1rem;">
+                        <li>Login frequency and duration</li>
+                        <li>Feature usage statistics</li>
+                        <li>User retention rates</li>
+                        <li>Adoption progress tracking</li>
+                    </ul>
+                </div>
+                <div class="admin-card">
+                    <div class="badge">ANALYTICS</div>
+                    <h4>Relationship Analytics</h4>
+                    <p>Monitor relationship formation and success</p>
+                    <ul style="margin-top: 1rem;">
+                        <li>Connection success rates</li>
+                        <li>Trust level progression</li>
+                        <li>Relationship duration tracking</li>
+                        <li>Compatibility matching accuracy</li>
+                    </ul>
+                </div>
+                <div class="admin-card">
+                    <div class="badge">ANALYTICS</div>
+                    <h4>Safety Metrics</h4>
+                    <p>Track safety incidents and response effectiveness</p>
+                    <ul style="margin-top: 1rem;">
+                        <li>Incident frequency and types</li>
+                        <li>Response time metrics</li>
+                        <li>Safety training completion</li>
+                        <li>Preventive measure effectiveness</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>Custom Report Generation</h3>
+            <div class="expandable-section">
+                <div class="expandable-header" onclick="toggleSection('report-generation')">
+                    <h4>Report Builder Tools</h4>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="expandable-content" id="report-generation">
+                    <h5>Report Types</h5>
+                    <ul>
+                        <li>Executive summaries with KPI dashboards</li>
+                        <li>Detailed analytical reports with trend analysis</li>
+                        <li>Compliance and audit reports</li>
+                        <li>Custom ad-hoc queries and exports</li>
+                        <li>Automated scheduled reports</li>
+                    </ul>
+
+                    <h5>Data Export Options</h5>
+                    <ul>
+                        <li>CSV and Excel formats</li>
+                        <li>PDF reports with charts</li>
+                        <li>API access for custom integrations</li>
+                        <li>Real-time dashboard sharing</li>
+                        <li>Historical data archives</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>🔧 System Administration</h2>
+
+            <h3>System Configuration</h3>
+            <div class="admin-grid">
+                <div class="admin-card">
+                    <div class="badge">SYSTEM</div>
+                    <h4>Security Settings</h4>
+                    <p>Configure system-wide security policies</p>
+                    <ul style="margin-top: 1rem;">
+                        <li>Password policies</li>
+                        <li>Multi-factor authentication</li>
+                        <li>Session management</li>
+                        <li>Access control rules</li>
+                    </ul>
+                    <button class="action-button">Security Config</button>
+                </div>
+                <div class="admin-card">
+                    <div class="badge">SYSTEM</div>
+                    <h4>Integration Management</h4>
+                    <p>Manage third-party integrations</p>
+                    <ul style="margin-top: 1rem;">
+                        <li>API key management</li>
+                        <li>Webhook configuration</li>
+                        <li>Data synchronization</li>
+                        <li>Integration monitoring</li>
+                    </ul>
+                    <button class="action-button secondary">Integrations</button>
+                </div>
+                <div class="admin-card">
+                    <div class="badge">SYSTEM</div>
+                    <h4>Backup & Recovery</h4>
+                    <p>Manage data backup and disaster recovery</p>
+                    <ul style="margin-top: 1rem;">
+                        <li>Automated backup schedules</li>
+                        <li>Recovery testing</li>
+                        <li>Data retention policies</li>
+                        <li>Disaster recovery plans</li>
+                    </ul>
+                    <button class="action-button secondary">Backup Settings</button>
+                </div>
+            </div>
+
+            <h3>Maintenance Operations</h3>
+            <div class="alert danger">
+                <strong>Maintenance Windows:</strong> System maintenance should be scheduled during low-usage periods. Users must be notified 48 hours in advance of any service disruptions.
+            </div>
+
+            <div class="checklist">
+                <h4>Quarterly Maintenance Checklist</h4>
+                <div class="checklist-item">
+                    <input type="checkbox" id="maintenance-1">
+                    <label for="maintenance-1">Security patches applied</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="maintenance-2">
+                    <label for="maintenance-2">Database optimization completed</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="maintenance-3">
+                    <label for="maintenance-3">Backup integrity verified</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="maintenance-4">
+                    <label for="maintenance-4">Performance monitoring reviewed</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="maintenance-5">
+                    <label for="maintenance-5">User feedback incorporated</label>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>📞 Support & Training</h2>
+
+            <h3>Administrator Resources</h3>
+            <div class="admin-grid">
+                <div class="admin-card">
+                    <h4>Help Desk</h4>
+                    <p>Dedicated support for administrators</p>
+                    <ul style="margin-top: 1rem;">
+                        <li>24/7 technical support</li>
+                        <li>Priority incident response</li>
+                        <li>Configuration assistance</li>
+                        <li>Best practices guidance</li>
+                    </ul>
+                    <p style="margin-top: 1rem;"><strong>Contact:</strong> admin-support@lifesync.com</p>
+                </div>
+                <div class="admin-card">
+                    <h4>Training Portal</h4>
+                    <p>Comprehensive training resources</p>
+                    <ul style="margin-top: 1rem;">
+                        <li>Video tutorials</li>
+                        <li>Interactive workshops</li>
+                        <li>Certification programs</li>
+                        <li>Documentation library</li>
+                    </ul>
+                    <p style="margin-top: 1rem;"><strong>Portal:</strong> training.lifesync.com</p>
+                </div>
+                <div class="admin-card">
+                    <h4>Community Forum</h4>
+                    <p>Peer support and knowledge sharing</p>
+                    <ul style="margin-top: 1rem;">
+                        <li>Administrator discussions</li>
+                        <li>Configuration sharing</li>
+                        <li>Problem-solving collaboration</li>
+                        <li>Feature request voting</li>
+                    </ul>
+                    <p style="margin-top: 1rem;"><strong>Forum:</strong> admin-community.lifesync.com</p>
+                </div>
+            </div>
+
+            <div class="alert success">
+                <strong>Continuous Improvement:</strong> Regular training and certification are required for all administrators. New features and best practices are communicated through the administrator newsletter.
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>🚨 Emergency Procedures</h2>
+
+            <h3>Critical Incident Response</h3>
+            <div class="alert danger">
+                <strong>Emergency Protocol:</strong> In case of critical system issues or security breaches, follow the established incident response plan. Contact emergency support immediately.
+            </div>
+
+            <div class="workflow">
+                <div>
+                    <div class="workflow-step">1</div>
+                    <div class="workflow-label">Detect</div>
+                </div>
+                <div>
+                    <div class="workflow-step">2</div>
+                    <div class="workflow-label">Assess</div>
+                </div>
+                <div>
+                    <div class="workflow-step">3</div>
+                    <div class="workflow-label">Contain</div>
+                </div>
+                <div>
+                    <div class="workflow-step">4</div>
+                    <div class="workflow-label">Recover</div>
+                </div>
+                <div>
+                    <div class="workflow-step">5</div>
+                    <div class="workflow-label">Review</div>
+                </div>
+            </div>
+
+            <h3>Emergency Contact Information</h3>
+            <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 0.5rem; margin: 1.5rem 0;">
+                <p><strong>🚨 Emergency Support:</strong> +27-XX-XXX-XXXX (24/7)</p>
+                <p><strong>🔐 Security Incidents:</strong> security@lifesync.com</p>
+                <p><strong>⚡ System Outages:</strong> outage@lifesync.com</p>
+                <p><strong>📞 General Support:</strong> 0800-LIFESYNC</p>
+            </div>
+
+            <div class="alert info">
+                <strong>Business Continuity:</strong> LifeSync maintains redundant systems and disaster recovery procedures to ensure service continuity during emergencies.
+            </div>
+        </section>
+    </div>
+
+    <script>
+        function toggleSection(sectionId) {
+            const content = document.getElementById(sectionId);
+            const header = content.previousElementSibling;
+            const toggleIcon = header.querySelector('.toggle-icon');
+
+            if (content.classList.contains('active')) {
+                content.classList.remove('active');
+                toggleIcon.classList.remove('rotated');
+            } else {
+                content.classList.add('active');
+                toggleIcon.classList.add('rotated');
+            }
+        }
+
+        // Checklist functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const checklistItems = document.querySelectorAll('.checklist-item input[type="checkbox"]');
+
+            checklistItems.forEach(item => {
+                item.addEventListener('change', function() {
+                    const label = this.parentElement;
+                    if (this.checked) {
+                        label.classList.add('completed');
+                    } else {
+                        label.classList.remove('completed');
+                    }
+                });
+            });
+
+            // Add click handlers for expandable sections
+            const expandableHeaders = document.querySelectorAll('.expandable-header');
+            expandableHeaders.forEach(header => {
+                header.addEventListener('click', function() {
+                    const sectionId = this.getAttribute('onclick').match(/'([^']+)'/)[1];
+                    toggleSection(sectionId);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

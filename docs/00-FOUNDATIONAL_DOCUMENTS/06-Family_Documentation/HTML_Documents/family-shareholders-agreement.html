@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Value - Mlandeli Notemba Investments Shareholders' Agreement</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700;900&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root { --brand-color: #059669; --family-gold: #f59e0b; }
+        body { font-family: 'Manrope', sans-serif; background-color: #f3f4f6; color: #1f2937; line-height: 1.7; }
+        .document-page { width: 210mm; min-height: 297mm; margin: 1.5rem auto; background-color: #ffffff; box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); position: relative; padding: 20mm; display: flex; flex-direction: column; }
+        .document-toolbar { position: sticky; top: 0; z-index: 1000; }
+        .page-header, .page-footer { position: absolute; left: 20mm; right: 20mm; font-size: 0.8rem; color: #6b7280; }
+        .page-header { top: 10mm; }
+        .page-footer { bottom: 10mm; }
+        .page-number { position: absolute; bottom: 10mm; right: 20mm; }
+        .brand-text { color: var(--brand-color); }
+        .family-gold { color: var(--family-gold); }
+        .cover-title, h1, h2, h3 { font-family: 'Roboto Slab', serif; }
+        h2 { border-bottom: 2px solid #e5e7eb; padding-bottom: 6px; margin-top: 1.5rem; margin-bottom: 1rem; font-weight: 700; color: #111827; }
+        .editable { border: 1px dashed #d1d5db; padding: 2px 4px; border-radius: 4px; min-width: 50px; display: inline-block; }
+        .editable:hover { border-style: solid; border-color: var(--brand-color); }
+        .control-btn { display: inline-flex; align-items: center; padding: 0.5rem 1rem; background-color: #f9fafb; border: 1px solid #d1d5db; border-radius: 0.375rem; font-weight: 600; color: #374151; transition: all 0.2s; }
+        .control-btn:hover { background-color: #f3f4f6; border-color: #9ca3af; }
+        .back-cover-page { background-color: #1f2937; color: #f3f4f6; }
+        .shareholding-table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+        .shareholding-table th, .shareholding-table td { border: 1px solid #d1d5db; padding: 0.75rem; text-align: left; }
+        .shareholding-table th { background-color: #f3f4f6; font-weight: bold; }
+        @media print {
+            body { background-color: #fff; }
+            .document-toolbar, .no-print { display: none !important; }
+            .document-page { margin: 0; box-shadow: none; border: none; min-height: 297mm; }
+            .editable { border: none !important; padding: 2px 0; }
+            .back-cover-page { background-color: #1f2937 !important; color: #f3f4f6 !important; }
+        }
+    </style>
+</head>
+<body onload="updatePageNumbers()">
+    <!-- Toolbar -->
+    <div class="document-toolbar bg-white/90 backdrop-blur-lg p-3 flex items-center justify-center gap-3 border-b border-gray-200 no-print">
+        <span class="font-bold text-sm uppercase tracking-wider text-gray-500 hidden md:inline">Mlandeli Notemba Investments - Shareholders' Agreement</span>
+        <div class="flex-grow"></div>
+        <button onclick="printDocument()" class="control-btn" title="Print Document"><i class="fas fa-print"></i></button>
+        <button onclick="downloadPDF()" class="control-btn" title="Download as PDF"><i class="fas fa-file-pdf"></i></button>
+        <button onclick="shareDocument()" class="control-btn" title="Share Document"><i class="fas fa-share-alt"></i></button>
+    </div>
+
+    <!-- Cover Page -->
+    <div id="cover-page" class="document-page">
+        <div class="text-left mb-8 flex items-center gap-3">
+            <div class="w-12 h-12 bg-gradient-to-r from-green-600 to-amber-500 rounded-lg flex items-center justify-center">
+                <i class="fas fa-users text-white text-xl"></i>
+            </div>
+            <span class="font-bold text-3xl brand-text" style="font-family: 'Roboto Slab', serif;">Family Value</span>
+        </div>
+        <div class="flex-grow flex flex-col items-center justify-center text-center">
+            <h1 class="cover-title text-5xl font-black text-gray-800 mb-4">Shareholders' Agreement</h1>
+            <h2 class="text-2xl font-bold brand-text mb-2">Mlandeli Notemba Investments (Pty) Ltd</h2>
+            <p class="text-lg text-gray-600 mb-8">Registration Number: [To be inserted upon registration]</p>
+            <div class="bg-gradient-to-r from-green-50 to-amber-50 p-6 rounded-lg border border-green-200 max-w-md">
+                <p class="text-sm text-gray-700"><strong>Document Date:</strong> August 19, 2025</p>
+                <p class="text-sm text-gray-700"><strong>Parties:</strong> Mdeni Family Members</p>
+                <p class="text-sm text-gray-700"><strong>Purpose:</strong> Family Legacy Governance</p>
+            </div>
+        </div>
+        <div class="absolute bottom-8 left-8 text-xs text-gray-400">
+            <p>Family Value System - Ubuntu-Centered Governance</p>
+        </div>
+        <div class="page-footer"><span>Mlandeli Notemba Investments - Shareholders' Agreement</span><span class="page-number">Page <span class="page-num"></span> of <span class="total-pages"></span></span></div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="document-page">
+        <div class="page-header"><span class="font-bold brand-text">Mlandeli Notemba Investments (Pty) Ltd</span> | Shareholders' Agreement</div>
+        
+        <div class="bg-green-100 border-l-4 border-green-500 p-4 mb-6">
+            <p class="text-sm"><strong>Ubuntu Principle:</strong> "I am because we are" - This agreement embodies the principle that individual success is inseparable from family unity and collective prosperity.</p>
+        </div>
+
+        <h2 class="!mt-4">Parties to this Agreement</h2>
+        <div class="space-y-2">
+            <p><strong>1. Salatiso Lonwabo Mdeni</strong> - ID: 8507051036081 (Founder & Majority Shareholder)</p>
+            <p><strong>2. Nozukile Cynthia Mdeni (Notemba)</strong> - ID: 6012160151089 (Mother & Trust Beneficiary)</p>
+            <p><strong>3. Visa Sande Mdeni</strong> - ID: 850705 1036 081 (Sister & CEO Designate)</p>
+            <p><strong>4. Tina Sisonke Mdeni</strong> - ID: 900521 1188 081 (Sister & Family Member)</p>
+            <p><strong>5. Kwakho Eyona Mdeni</strong> - ID: 920915 1290 085 (Sister & Family Member)</p>
+        </div>
+
+        <h2>Company Details</h2>
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <p><strong>Company Name:</strong> Mlandeli Notemba Investments (Pty) Ltd</p>
+                <p><strong>Registration Number:</strong> [To be inserted]</p>
+                <p><strong>Authorized Share Capital:</strong> 10,000 ordinary shares</p>
+            </div>
+            <div>
+                <p><strong>Registered Office:</strong> [To be determined]</p>
+                <p><strong>Business Purpose:</strong> Investment holding and risk management</p>
+                <p><strong>Governed By:</strong> Family Charter Principles</p>
+            </div>
+        </div>
+
+        <h2>Initial Shareholding Allocation</h2>
+        <table class="shareholding-table">
+            <thead>
+                <tr>
+                    <th>Shareholder</th>
+                    <th>Relationship</th>
+                    <th>Initial Shares</th>
+                    <th>Percentage</th>
+                    <th>Earn-In Target</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Salatiso Lonwabo Mdeni</td>
+                    <td>Founder</td>
+                    <td>6,000</td>
+                    <td>60%</td>
+                    <td>Final (Founder)</td>
+                </tr>
+                <tr>
+                    <td>Nozukile Cynthia Mdeni</td>
+                    <td>Mother (Trust)</td>
+                    <td>2,500</td>
+                    <td>25%</td>
+                    <td>Trust for Sisters</td>
+                </tr>
+                <tr>
+                    <td>Visa Sande Mdeni</td>
+                    <td>Sister/CEO</td>
+                    <td>1,000</td>
+                    <td>10%</td>
+                    <td>20% (2,000 shares)</td>
+                </tr>
+                <tr>
+                    <td>Tina Sisonke Mdeni</td>
+                    <td>Sister</td>
+                    <td>300</td>
+                    <td>3%</td>
+                    <td>10.8% (1,080 shares)</td>
+                </tr>
+                <tr>
+                    <td>Kwakho Eyona Mdeni</td>
+                    <td>Sister</td>
+                    <td>200</td>
+                    <td>2%</td>
+                    <td>9.2% (920 shares)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="page-footer"><span>Mlandeli Notemba Investments - Shareholders' Agreement</span><span class="page-number">Page <span class="page-num"></span> of <span class="total-pages"></span></span></div>
+    </div>
+
+    <!-- Content Page 2 -->
+    <div class="document-page">
+        <div class="page-header"><span class="font-bold brand-text">Mlandeli Notemba Investments (Pty) Ltd</span> | Shareholders' Agreement</div>
+
+        <h2 class="!mt-4">Article 1: Ownership and Transfer Restrictions</h2>
+        
+        <h3 class="text-lg font-bold mt-4 mb-2">1.1 Family-Only Ownership</h3>
+        <p>Mlandeli Notemba Investments (Pty) Ltd shall remain 100% owned by direct descendants of Mlandeli Nelson Mdeni and Nozukile Cynthia Mdeni. No shares may be transferred to non-family members under any circumstances.</p>
+
+        <h3 class="text-lg font-bold mt-4 mb-2">1.2 DNA Verification Requirement</h3>
+        <p>All shareholders and beneficiaries must provide DNA verification of their lineage as descendants of the founding family. This requirement is applied equally and fairly to all family members, following the precedent established with Lukhanyo Sazi Mkosana.</p>
+
+        <h3 class="text-lg font-bold mt-4 mb-2">1.3 Pre-emptive Rights</h3>
+        <p>Before any shares can be transferred, existing shareholders have the right of first refusal to purchase those shares at fair market value as determined by independent valuation.</p>
+
+        <h2>Article 2: Earn-In Structure and Performance Management</h2>
+
+        <h3 class="text-lg font-bold mt-4 mb-2">2.1 Merit-Based Advancement</h3>
+        <p>Sisters (Visa, Tina, and Kwakho) begin with minimum shareholdings and earn their full intended allocation through:</p>
+        <ul class="list-disc list-inside ml-4 space-y-1">
+            <li>Active participation in family business activities</li>
+            <li>Demonstrated contribution to ecosystem development</li>
+            <li>Completion of Sazi Life Academy professional development programs</li>
+            <li>Adherence to Ubuntu principles and family values</li>
+        </ul>
+
+        <h3 class="text-lg font-bold mt-4 mb-2">2.2 Performance Review Process</h3>
+        <p>Annual performance reviews will be conducted by the Family Council, measuring:</p>
+        <ul class="list-disc list-inside ml-4 space-y-1">
+            <li>Business contribution and value creation</li>
+            <li>Family unity and relationship building</li>
+            <li>Community involvement and Ubuntu demonstration</li>
+            <li>Personal development and learning achievements</li>
+        </ul>
+
+        <h2>Article 3: Next Generation Rights and Responsibilities</h2>
+
+        <h3 class="text-lg font-bold mt-4 mb-2">3.1 The Grandchildren's First Share (1% Rule)</h3>
+        <p>Every direct descendant receives 1 share (0.01%) upon their 18th birthday as their birthright, held in trust until maturity. Current beneficiaries include:</p>
+        <ul class="list-disc list-inside ml-4 space-y-1">
+            <li><strong>Lukhanyo Sazi Mkosana</strong> - Born: March 28, 2018 (Son of Salatiso L. Mdeni)</li>
+            <li><strong>Solonwabo Milile Mdeni</strong> - Born: March 18, 2010 (Nephew)</li>
+            <li><strong>Milande Paton Mdeni</strong> - Born: May 5, 2017 (Nephew)</li>
+            <li>Future grandchildren and great-grandchildren</li>
+        </ul>
+
+        <h3 class="text-lg font-bold mt-4 mb-2">3.2 Vesting Schedule for First Generation</h3>
+        <p>Special vesting schedule for Sazi, Solonwabo, Milande, and future children of current shareholders:</p>
+        <ul class="list-disc list-inside ml-4 space-y-1">
+            <li><strong>Age 25:</strong> Up to 25% of parental entitlement (performance-based)</li>
+            <li><strong>Age 30:</strong> Additional 25% (cumulative 50%)</li>
+            <li><strong>Age 35:</strong> Additional 25% (cumulative 75%)</li>
+            <li><strong>Age 43:</strong> Final 25% (full inheritance achieved)</li>
+        </ul>
+
+        <div class="page-footer"><span>Mlandeli Notemba Investments - Shareholders' Agreement</span><span class="page-number">Page <span class="page-num"></span> of <span class="total-pages"></span></span></div>
+    </div>
+
+    <!-- Content Page 3 -->
+    <div class="document-page">
+        <div class="page-header"><span class="font-bold brand-text">Mlandeli Notemba Investments (Pty) Ltd</span> | Shareholders' Agreement</div>
+
+        <h2 class="!mt-4">Article 4: Governance Structure</h2>
+
+        <h3 class="text-lg font-bold mt-4 mb-2">4.1 Board of Directors</h3>
+        <div class="bg-amber-50 border border-amber-200 p-4 rounded mb-4">
+            <p><strong>CEO & Executive Director:</strong> Visa Sande Mdeni</p>
+            <p><strong>Founder & Chairman:</strong> Salatiso Lonwabo Mdeni</p>
+            <p><strong>Family Representative:</strong> Nozukile Cynthia Mdeni (Notemba)</p>
+            <p><strong>Independent Director:</strong> [To be appointed - external professional]</p>
+        </div>
+
+        <h3 class="text-lg font-bold mt-4 mb-2">4.2 Family Council</h3>
+        <p>The Family Council comprises all adult family members and meets quarterly to:</p>
+        <ul class="list-disc list-inside ml-4 space-y-1">
+            <li>Review family member performance and contribution</li>
+            <li>Make decisions on share allocation and vesting</li>
+            <li>Resolve family disputes through Ubuntu principles</li>
+            <li>Plan for next generation development and education</li>
+        </ul>
+
+        <h2>Article 5: Business Operations and Risk Management</h2>
+
+        <h3 class="text-lg font-bold mt-4 mb-2">5.1 Primary Purpose</h3>
+        <p>Mlandeli Notemba Investments serves as the family holding company for risk management purposes, owning:</p>
+        <ul class="list-disc list-inside ml-4 space-y-1">
+            <li>100% of Salatiso Ecosystem intellectual property</li>
+            <li>100% of subsidiary operating companies (starting with SafetyHelp)</li>
+            <li>Family real estate and investment assets</li>
+            <li>Strategic partnerships and joint ventures</li>
+        </ul>
+
+        <h3 class="text-lg font-bold mt-4 mb-2">5.2 Subsidiary Company Strategy</h3>
+        <p>As each ecosystem brand grows, it will be separately incorporated as a wholly-owned subsidiary:</p>
+        <ul class="list-disc list-inside ml-4 space-y-1">
+            <li><strong>SafetyHelp (Pty) Ltd</strong> - First target subsidiary (CEO: Visa Sande Mdeni)</li>
+            <li><strong>BizHelp (Pty) Ltd</strong> - Business consulting and development</li>
+            <li><strong>DocuHelp (Pty) Ltd</strong> - Document management and compliance</li>
+            <li>Additional subsidiaries as ecosystem expands</li>
+        </ul>
+
+        <h2>Article 6: Exit and Re-entry Provisions</h2>
+
+        <h3 class="text-lg font-bold mt-4 mb-2">6.1 Voluntary Exit</h3>
+        <p>Family members choosing to disengage from family business:</p>
+        <ul class="list-disc list-inside ml-4 space-y-1">
+            <li>May sell shares back to company at fair market value</li>
+            <li>Shareholding reduced to minimum legal amount for 10-year cooling-off period</li>
+            <li>After 10 years, remaining shares bought out if no return intention</li>
+        </ul>
+
+        <h3 class="text-lg font-bold mt-4 mb-2">6.2 Re-entry Process</h3>
+        <p>Descendants of exited family members may return through:</p>
+        <ul class="list-disc list-inside ml-4 space-y-1">
+            <li>Starting as employee to prove commitment and value</li>
+            <li>10-year evaluation period after formal return intention</li>
+            <li>Eligibility for minimum shareholding after successful evaluation</li>
+            <li>Opportunity to earn greater share through family performance process</li>
+        </ul>
+
+        <div class="page-footer"><span>Mlandeli Notemba Investments - Shareholders' Agreement</span><span class="page-number">Page <span class="page-num"></span> of <span class="total-pages"></span></span></div>
+    </div>
+
+    <!-- Signature Page -->
+    <div class="document-page">
+        <div class="page-header"><span class="font-bold brand-text">Mlandeli Notemba Investments (Pty) Ltd</span> | Shareholders' Agreement</div>
+
+        <h2 class="!mt-4">Article 7: Family Values and Ubuntu Principles</h2>
+
+        <div class="bg-green-50 border border-green-200 p-6 rounded mb-6">
+            <h3 class="text-lg font-bold brand-text mb-2">Ubuntu Declaration</h3>
+            <p class="italic">"Ubuntu says 'I am because we are.' This agreement ensures that individual success serves collective prosperity, and family unity strengthens individual achievement."</p>
+        </div>
+
+        <h3 class="text-lg font-bold mt-4 mb-2">7.1 Core Family Values</h3>
+        <ul class="list-disc list-inside ml-4 space-y-1">
+            <li><strong>Self-Accountability:</strong> Each member responsible for their contribution and growth</li>
+            <li><strong>Evidence-Based Merit:</strong> Advancement through demonstrated results, not entitlement</li>
+            <li><strong>Family Unity:</strong> Individual success inseparable from collective prosperity</li>
+            <li><strong>Community Contribution:</strong> Using family success to benefit broader community</li>
+            <li><strong>Generational Thinking:</strong> Decisions made considering impact on future generations</li>
+        </ul>
+
+        <h2>Signatures and Witness</h2>
+        <p class="mb-6">By signing below, all parties agree to be bound by the terms of this Shareholders' Agreement and commit to upholding the Ubuntu principles and family values outlined herein.</p>
+
+        <div class="grid grid-cols-1 gap-8 mt-8">
+            <div class="border-b border-gray-300 pb-2">
+                <p class="font-bold">Salatiso Lonwabo Mdeni (Founder)</p>
+                <p class="text-sm text-gray-600">Signature: _________________________ Date: _________</p>
+            </div>
+            <div class="border-b border-gray-300 pb-2">
+                <p class="font-bold">Nozukile Cynthia Mdeni (Notemba)</p>
+                <p class="text-sm text-gray-600">Signature: _________________________ Date: _________</p>
+            </div>
+            <div class="border-b border-gray-300 pb-2">
+                <p class="font-bold">Visa Sande Mdeni (CEO Designate)</p>
+                <p class="text-sm text-gray-600">Signature: _________________________ Date: _________</p>
+            </div>
+            <div class="border-b border-gray-300 pb-2">
+                <p class="font-bold">Tina Sisonke Mdeni</p>
+                <p class="text-sm text-gray-600">Signature: _________________________ Date: _________</p>
+            </div>
+            <div class="border-b border-gray-300 pb-2">
+                <p class="font-bold">Kwakho Eyona Mdeni</p>
+                <p class="text-sm text-gray-600">Signature: _________________________ Date: _________</p>
+            </div>
+        </div>
+
+        <div class="mt-8 pt-4 border-t border-gray-300">
+            <p class="font-bold">Witness:</p>
+            <p class="text-sm text-gray-600">Name: _________________________ Signature: _________________________ Date: _________</p>
+        </div>
+
+        <div class="page-footer"><span>Mlandeli Notemba Investments - Shareholders' Agreement</span><span class="page-number">Page <span class="page-num"></span> of <span class="total-pages"></span></span></div>
+    </div>
+
+    <!-- Back Cover Page -->
+    <div class="document-page back-cover-page">
+        <div class="text-left mb-8 flex items-center gap-3">
+            <div class="w-12 h-12 bg-gradient-to-r from-green-400 to-amber-400 rounded-lg flex items-center justify-center">
+                <i class="fas fa-users text-white text-xl"></i>
+            </div>
+            <span class="font-bold text-3xl text-white" style="font-family: 'Roboto Slab', serif;">Family Value</span>
+        </div>
+        <div class="flex-grow flex flex-col items-center justify-center text-center">
+            <h2 class="text-2xl font-bold text-white mb-4">Ubuntu-Centered Family Governance</h2>
+            <p class="text-lg text-gray-300 mb-6">Where individual success strengthens family unity, and family prosperity serves community development.</p>
+            <div class="bg-gray-800 rounded-lg p-6 max-w-lg">
+                <h3 class="text-lg font-bold text-white mb-2">Family Legacy Protected</h3>
+                <p class="text-sm text-gray-300">This agreement ensures that the Mdeni family legacy continues through generations, guided by Ubuntu principles and merit-based advancement.</p>
+            </div>
+        </div>
+        <div class="absolute bottom-8 left-8 text-xs text-gray-400">
+            <p>Document Version: MNI-SHAREHOLDERS-V1.0 | Date: August 19, 2025</p>
+        </div>
+    </div>
+
+    <script>
+        function updatePageNumbers() {
+            const pages = document.querySelectorAll('.document-page');
+            const totalPages = pages.length;
+            
+            pages.forEach((page, index) => {
+                const pageNumSpan = page.querySelector('.page-num');
+                const totalPagesSpan = page.querySelector('.total-pages');
+                if (pageNumSpan) pageNumSpan.textContent = index + 1;
+                if (totalPagesSpan) totalPagesSpan.textContent = totalPages;
+            });
+        }
+
+        function printDocument() {
+            window.print();
+        }
+
+        function downloadPDF() {
+            window.print();
+        }
+
+        function shareDocument() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Mlandeli Notemba Investments - Shareholders Agreement',
+                    text: 'Family governance document for Mlandeli Notemba Investments (Pty) Ltd'
+                });
+            }
+        }
+    </script>
+</body>
+</html>

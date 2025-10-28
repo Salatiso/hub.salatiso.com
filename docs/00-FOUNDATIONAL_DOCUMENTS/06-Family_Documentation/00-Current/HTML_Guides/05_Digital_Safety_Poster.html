@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Digital Safety Rules - Quick Reference</title>
+    <style>
+        @page {
+            size: A2 portrait;
+            margin: 0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #4CAF50 100%);
+            padding: 30px;
+            margin: 0;
+        }
+
+        .poster {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 3em;
+            color: #1B5E20;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.4em;
+            color: #2E7D32;
+        }
+
+        .rules-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            flex: 1;
+        }
+
+        .rule-section {
+            background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
+            border-radius: 15px;
+            padding: 25px;
+            border-left: 6px solid #2E7D32;
+        }
+
+        .rule-section h2 {
+            color: #1B5E20;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .rule-list {
+            list-style: none;
+        }
+
+        .rule-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(46,125,50,0.2);
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .rule-list li:last-child {
+            border-bottom: none;
+        }
+
+        .rule-icon {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #2E7D32, #4CAF50);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2em;
+            flex-shrink: 0;
+        }
+
+        .emergency-section {
+            background: linear-gradient(135deg, #FFF3E0, #FFE0B2);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
+            border-left: 6px solid #FF6F00;
+            grid-column: span 2;
+        }
+
+        .emergency-section h2 {
+            color: #E65100;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .contact-item {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .contact-item h3 {
+            color: #1976D2;
+            margin-bottom: 10px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #E0E0E0;
+        }
+
+        footer p {
+            color: #666;
+            font-size: 1.1em;
+            margin: 5px 0;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 20px;
+            }
+
+            .poster {
+                box-shadow: none;
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="poster">
+        <header>
+            <h1>🛡️ Family Digital Safety Rules</h1>
+            <p>Stay Safe, Stay Smart, Stay Connected</p>
+        </header>
+
+        <div class="rules-grid">
+            <!-- INTERNET SAFETY -->
+            <div class="rule-section">
+                <h2>🌐 Internet Safety</h2>
+                <ul class="rule-list">
+                    <li>
+                        <div class="rule-icon">1</div>
+                        <div>Never share personal information online (full name, address, school)</div>
+                    </li>
+                    <li>
+                        <div class="rule-icon">2</div>
+                        <div>Only talk to people your family knows and trusts</div>
+                    </li>
+                    <li>
+                        <div class="rule-icon">3</div>
+                        <div>Think before you click - some links can be dangerous</div>
+                    </li>
+                    <li>
+                        <div class="rule-icon">4</div>
+                        <div>Use strong passwords and change them regularly</div>
+                    </li>
+                    <li>
+                        <div class="rule-icon">5</div>
+                        <div>Tell a trusted adult if something feels wrong</div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- INTRANET RULES -->
+            <div class="rule-section">
+                <h2>🏠 Family Intranet Rules</h2>
+                <ul class="rule-list">
+                    <li>
+                        <div class="rule-icon">1</div>
+                        <div>Only use our family WiFi network at home</div>
+                    </li>
+                    <li>
+                        <div class="rule-icon">2</div>
+                        <div>Log out when you're done with shared devices</div>
+                    </li>
+                    <li>
+                        <div class="rule-icon">3</div>
+                        <div>Don't download files from unknown sources</div>
+                    </li>
+                    <li>
+                        <div class="rule-icon">4</div>
+                        <div>Keep your LifeCV trust score high</div>
+                    </li>
+                    <li>
+                        <div class="rule-icon">5</div>
+                        <div>Report suspicious activity to family IT</div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- DEVICE SAFETY -->
+            <div class="rule-section">
+                <h2>📱 Device Safety</h2>
+                <ul class="rule-list">
+                    <li>
+                        <div class="rule-icon">1</div>
+                        <div>Lock your devices when not in use</div>
+                    </li>
+                    <li>
+                        <div class="rule-icon">2</div>
+                        <div>Keep apps and software updated</div>
+                    </li>
+                    <li>
+                        <div class="rule-icon">3</div>
+                        <div>Don't leave devices unattended in public</div>
+                    </li>
+                    <li>
+                        <div class="rule-icon">4</div>
+                        <div>Use antivirus protection</div>
+                    </li>
+                    <li>
+                        <div class="rule-icon">5</div>
+                        <div>Report lost devices immediately</div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- FAMILY COMMUNICATION -->
+            <div class="rule-section">
+                <h2>👨‍👩‍👧‍👦 Family Communication</h2>
+                <ul class="rule-list">
+                    <li>
+                        <div class="rule-icon">1</div>
+                        <div>Use Sonny to verify identities</div>
+                    </li>
+                    <li>
+                        <div class="rule-icon">2</div>
+                        <div>Discuss important matters in person</div>
+                    </li>
+                    <li>
+                        <div class="rule-icon">3</div>
+                        <div>Respect privacy - don't read others' messages</div>
+                    </li>
+                    <li>
+                        <div class="rule-icon">4</div>
+                        <div>Be kind and supportive online</div>
+                    </li>
+                    <li>
+                        <div class="rule-icon">5</div>
+                        <div>Keep family business on secure channels</div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- EMERGENCY SECTION -->
+        <div class="emergency-section">
+            <h2>🚨 Emergency Contacts & What to Do</h2>
+            <p style="font-size: 1.1em; margin-bottom: 20px; line-height: 1.6;">
+                If you suspect a security problem, device theft, or feel unsafe online:
+            </p>
+
+            <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                <h3 style="color: #D32F2F; margin-bottom: 15px;">🚨 IMMEDIATE ACTIONS:</h3>
+                <ol style="font-size: 1.1em; line-height: 2; margin-left: 20px;">
+                    <li>Stop what you're doing immediately</li>
+                    <li>Don't click anything else or enter more information</li>
+                    <li>Tell a trusted family member right away</li>
+                    <li>Save screenshots if possible (without clicking more)</li>
+                    <li>Contact family IT support</li>
+                </ol>
+            </div>
+
+            <div class="contact-grid">
+                <div class="contact-item">
+                    <h3>👨‍💼 Solo</h3>
+                    <p>IT Security & Technical Support</p>
+                    <p style="font-size: 0.9em; color: #666;">solo@mlandeni-notemba.co.za</p>
+                </div>
+                <div class="contact-item">
+                    <h3>👩‍💼 Visa</h3>
+                    <p>Family Coordinator & Safety</p>
+                    <p style="font-size: 0.9em; color: #666;">visa@mlandeni-notemba.co.za</p>
+                </div>
+                <div class="contact-item">
+                    <h3>🎯 Salatiso</h3>
+                    <p>Tech Vision & Oversight</p>
+                    <p style="font-size: 0.9em; color: #666;">salatiso@mlandeni-notemba.co.za</p>
+                </div>
+                <div class="contact-item">
+                    <h3>🚔 Emergency</h3>
+                    <p>Outside Help (if needed)</p>
+                    <p style="font-size: 0.9em; color: #666;">Cybercrime Report: 021 689 9539</p>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p><strong>Mlandeli Notemba Investments</strong></p>
+            <p>Print this poster and display it where everyone can see it</p>
+            <p>Review these rules together as a family every month</p>
+            <p style="margin-top: 15px; font-size: 0.9em; color: #999;">
+                "Umuntu ngumuntu ngabantu" - Safety starts with trust
+            </p>
+        </footer>
+    </div>
+</body>
+</html>

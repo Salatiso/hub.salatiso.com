@@ -1,0 +1,1 @@
+import{j as i}from"./index-6c723d70.js";import"./vendor-d6555781.js";import"./firebase-fb364782.js";import"./i18n-8b62e3c8.js";import"./ui-eef567c7.js";const Community=()=>i.jsx("div",{children:"Community Page"});export{Community as default};

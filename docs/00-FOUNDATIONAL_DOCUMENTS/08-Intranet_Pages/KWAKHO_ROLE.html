@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kwakho's Role - Sazi Life Academy Coordinator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3 {
+            color: #6B46C1;
+        }
+        .role-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background: #fafafa;
+        }
+        .deliverable {
+            background: #e8f4fd;
+            padding: 10px;
+            margin: 5px 0;
+            border-left: 4px solid #6B46C1;
+        }
+        .progress-bar {
+            width: 100%;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 20px;
+            background-color: #D69E2E;
+            border-radius: 5px;
+            width: 80%; /* Adjustable */
+        }
+        button {
+            background: #6B46C1;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #5a3a9e;
+        }
+        .editable {
+            border: 1px dashed #ccc;
+            padding: 5px;
+            min-height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Kwakho Mdeni - Resume Coordinator & Sazi Life Academy Coordinator</h1>
+        <p><em>Ubuntu Wisdom: "I am because we are" - Nurturing the next generation through education and professional development</em></p>
+
+        <h2>Career Overview</h2>
+        <div class="role-card">
+            <p><strong>Career Path:</strong> Education Enthusiast → Curriculum Developer → Academy Coordinator & Professional Development Specialist</p>
+            <p><strong>Current Focus:</strong> Educational Program Leadership & Career Documentation</p>
+            <p><strong>Brand Ambassador Role:</strong> Championing Ubuntu-inspired learning and professional growth</p>
+        </div>
+
+        <h2>Key Responsibilities</h2>
+        <div class="role-card">
+            <ul>
+                <li>Oversee curriculum development for Sazi Life Academy</li>
+                <li>Manage testing and assessment processes</li>
+                <li>Ensure educational quality and Ubuntu integration</li>
+                <li>Coordinate with family members for content contributions</li>
+                <li>Track student progress and program effectiveness</li>
+                <li>Manage professional profile updates and career documentation</li>
+                <li>Coordinate with Solo for content enhancement</li>
+            </ul>
+        </div>
+
+        <h2>Deliverables</h2>
+        <div class="deliverable">
+            <h3>Curriculum Documentation</h3>
+            <p>Status: <span class="editable" contenteditable="true">80% Complete</span></p>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 80%;"></div>
+            </div>
+            <button onclick="updateProgress('curriculum')">Update Progress</button>
+        </div>
+        <div class="deliverable">
+            <h3>Assessment Frameworks</h3>
+            <p>Status: <span class="editable" contenteditable="true">65% Complete</span></p>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 65%;"></div>
+            </div>
+            <button onclick="updateProgress('assessment')">Update Progress</button>
+        </div>
+        <div class="deliverable">
+            <h3>Student Progress Reports</h3>
+            <p>Status: <span class="editable" contenteditable="true">90% Complete</span></p>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 90%;"></div>
+            </div>
+            <button onclick="updateProgress('reports')">Update Progress</button>
+        </div>
+
+        <h2>Training Prerequisites</h2>
+        <div class="role-card">
+            <ul>
+                <li>Educational leadership programs</li>
+                <li>Curriculum design workshops</li>
+                <li>Assessment methodology training</li>
+                <li>Ubuntu educational applications</li>
+            </ul>
+            <p><strong>Completed Training:</strong> <span class="editable" contenteditable="true">Curriculum Development Certificate, Ubuntu Education Workshop</span></p>
+        </div>
+
+        <h2>HR Requirements</h2>
+        <div class="role-card">
+            <ul>
+                <li>Educational resource access (books, online courses)</li>
+                <li>Professional development in pedagogy</li>
+                <li>Collaboration tools for curriculum work</li>
+                <li>Student management systems</li>
+            </ul>
+            <button onclick="requestResource()">Request Additional Resources</button>
+        </div>
+
+        <h2>Recent Achievements</h2>
+        <div class="role-card">
+            <ul class="editable" contenteditable="true">
+                <li>Developed core Ubuntu curriculum framework</li>
+                <li>Implemented assessment system for Sazi Life Academy</li>
+                <li>Coordinated family contribution integration</li>
+            </ul>
+        </div>
+
+        <h2>Goals & Development</h2>
+        <div class="role-card">
+            <p><strong>Short-term Goals:</strong> <span class="editable" contenteditable="true">Complete assessment framework, launch pilot program</span></p>
+            <p><strong>Long-term Vision:</strong> <span class="editable" contenteditable="true">Establish Sazi Life Academy as model for Ubuntu education worldwide</span></p>
+        </div>
+
+        <h2>Ubuntu Integration</h2>
+        <div class="role-card">
+            <p>How my work contributes to family unity: <span class="editable" contenteditable="true">By educating the next generation in our values, ensuring our Ubuntu wisdom lives on</span></p>
+        </div>
+    </div>
+
+    <script>
+        function updateProgress(type) {
+            alert('Progress updated for ' + type + '. In production, this would sync with MNI intranet database.');
+        }
+
+        function requestResource() {
+            alert('Resource request submitted. HR will review and follow up.');
+        }
+    </script>
+</body>
+</html>

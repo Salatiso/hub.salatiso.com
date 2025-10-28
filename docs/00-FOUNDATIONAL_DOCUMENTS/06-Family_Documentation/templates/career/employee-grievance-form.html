@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HRHelp - Employee Grievance Form</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700;900&family=Manrope:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root { --brand-color: #3b82f6; --brand-color-dark: #60a5fa; }
+        body { font-family: 'Manrope', sans-serif; background-color: #f1f5f9; color: #0f172a; line-height: 1.6; }
+        .dark body { background-color: #020617; color: #e2e8f0; }
+        .document-page { width: 210mm; min-height: 297mm; margin: 1.5rem auto; background-color: #ffffff; box-shadow: 0 0 15px rgba(0,0,0,0.1); position: relative; padding: 20mm; display: flex; flex-direction: column; }
+        .dark .document-page { background-color: #1e293b; border: 1px solid #334155; }
+        .document-toolbar { position: sticky; top: 0; z-index: 1000; }
+        .page-footer { position: absolute; bottom: 10mm; left: 20mm; right: 20mm; font-size: 0.75rem; color: #64748b; }
+        .dark .page-footer { color: #94a3b8; }
+        .page-number { position: absolute; bottom: 10mm; right: 20mm; }
+        .brand-text { color: var(--brand-color); }
+        .dark .brand-text { color: var(--brand-color-dark); }
+        .cover-title { font-family: 'Roboto Slab', serif; }
+        h2 { font-family: 'Roboto Slab', serif; border-bottom: 2px solid var(--brand-color); padding-bottom: 4px; margin-top: 1.5rem; margin-bottom: 1rem; }
+        .dark h2 { border-bottom-color: var(--brand-color-dark); }
+        .editable { border: 1px solid #d1d5db; padding: 0.5rem; border-radius: 4px; min-width: 50px; display: block; width: 100%; }
+        .dark .editable { border-color: #475569; background-color: #374151; }
+        .form-field { margin-bottom: 1rem; }
+        .form-field label { font-weight: bold; font-size: 0.9rem; margin-bottom: 0.25rem; display: block; }
+        @media print {
+            body { background-color: #fff; }
+            .document-toolbar, .no-print { display: none !important; }
+            .document-page { margin: 0; box-shadow: none; border: none; min-height: 297mm; }
+            .dark .document-page { background-color: #ffffff; color: #000000; border: none; }
+            .dark body { color: #000 !important; }
+            .editable { border: 1px solid #ccc !important; }
+        }
+    </style>
+</head>
+<body onload="updatePageNumbers()">
+    <!-- Toolbar -->
+    <div class="document-toolbar bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg p-4 flex items-center justify-center gap-4 border-b dark:border-slate-700 no-print">
+        <span class="font-bold text-sm uppercase tracking-wider hidden md:inline">Employee Grievance Form</span>
+        <div class="flex-grow"></div>
+        <button onclick="printDocument()" class="control-btn" title="Print Document"><i class="fas fa-print"></i></button>
+        <button onclick="downloadPDF()" class="control-btn" title="Download as PDF"><i class="fas fa-file-pdf"></i></button>
+        <button onclick="shareDocument()" class="control-btn" title="Share Document"><i class="fas fa-share-alt"></i></button>
+        <button id="theme-toggle" class="control-btn" title="Toggle Theme"><i class="fas fa-moon"></i></button>
+    </div>
+
+    <!-- Grievance Form Page -->
+    <div class="document-page">
+        <h1 class="text-3xl font-black brand-text text-center" contenteditable="true">Employee Grievance Form</h1>
+        <p class="text-center text-sm text-slate-500 mb-8">This form is confidential and should be submitted to your Line Manager or the HR Department.</p>
+
+        <h2 class="!mt-0">Section 1: Employee Details</h2>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="form-field"><label>Full Name</label><div class="editable" contenteditable="true"></div></div>
+            <div class="form-field"><label>Job Title</label><div class="editable" contenteditable="true"></div></div>
+            <div class="form-field"><label>Department</label><div class="editable" contenteditable="true"></div></div>
+            <div class="form-field"><label>Date of Submission</label><div class="editable" contenteditable="true"></div></div>
+        </div>
+
+        <h2 class="text-2xl font-bold brand-text">Section 2: Nature of the Grievance</h2>
+        <div class="form-field">
+            <label>Please describe the nature of your grievance in detail. Include specific dates, times, locations, and the names of any individuals involved.</label>
+            <div class="editable" contenteditable="true" style="min-height: 150px;"></div>
+        </div>
+        <div class="form-field">
+            <label>Have you attempted to resolve this issue informally? If yes, please provide details (who you spoke to, when, and the outcome).</label>
+            <div class="editable" contenteditable="true" style="min-height: 100px;"></div>
+        </div>
+
+        <h2 class="text-2xl font-bold brand-text">Section 3: Desired Outcome</h2>
+        <div class="form-field">
+            <label>What resolution or outcome are you seeking to resolve this grievance?</label>
+            <div class="editable" contenteditable="true" style="min-height: 100px;"></div>
+        </div>
+
+        <div class="mt-auto pt-8">
+            <div class="grid grid-cols-2 gap-8">
+                <div>
+                    <div class="border-t-2 border-gray-400 pt-2"></div>
+                    <p class="text-sm text-center">Employee Signature</p>
+                </div>
+                <div>
+                    <div class="border-t-2 border-gray-400 pt-2"></div>
+                    <p class="text-sm text-center">Date</p>
+                </div>
+            </div>
+        </div>
+        <div class="page-footer"><span>Employee Grievance Form - Confidential</span><span class="page-number">Page <span class="page-num"></span> of <span class="total-pages"></span></span></div>
+    </div>
+    <script src="https://salatiso.com/hrhelp/assets/js/core/main.js"></script>
+</body>
+</html>

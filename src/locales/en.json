@@ -1,0 +1,1111 @@
+{
+  "nav": {
+    "home": "Home",
+    "soloExperience": "Solo Experience",
+    "loginSignup": "Login/Signup",
+    "communityHub": "Community Hub",
+  "getStarted": "Get Started",
+  "followMeHome": "Follow Me Home",
+    "incidentReporting": "Incident Reporting",
+    "emergencyAssistance": "Emergency Assistance",
+  "kidsZone": "Kids Zone",
+  "lifeSyncAcademy": "LifeSync Academy",
+    "instantTrust": "Instant Trust Verification",
+    "dashboard": "Dashboard"
+  },
+  "about": "About",
+  "hero": {
+    "title": "Discover Your Perfect Sync",
+    "subtitle": "Experience the future of relationships through the Salatiso Ecosystem. Connect meaningfully in romance, business, friendship, and kinship using LifeCV, Family Value, and The Hub.",
+    "startSolo": "Start Solo Experience",
+    "learnMore": "Learn More",
+    "ecosystem": {
+      "poweredBy": "Part of the Salatiso Ecosystem | Powered by The Hub",
+      "pigeeback": {
+        "title": "PigeeBack",
+        "description": "Community logistics and peer delivery"
+      },
+      "ekhaya": {
+        "title": "Ekhaya",
+        "description": "Household coordination and community home life"
+      },
+      "familyValue": {
+        "title": "Family Value",
+        "description": "Recognize and quantify your family contributions"
+      },
+      "lifecv": {
+        "title": "LifeCV",
+        "description": "Your complete digital identity and skills ledger"
+      }
+    }
+  },
+  "features": {
+    "title": "Powered by the Salatiso Ecosystem",
+    "subtitle": "Four pillars working together to create meaningful connections",
+    "lifecv": {
+      "title": "LifeCV",
+      "description": "Your complete digital identity and skills ledger"
+    },
+    "familyValue": {
+      "title": "Family Value",
+      "description": "Recognize and quantify your family contributions"
+    },
+    "theHub": {
+      "title": "The Hub",
+      "description": "Privacy-preserving marketplace for connections"
+    },
+    "lifekey": {
+      "title": "LifeKey",
+      "description": "Your sovereign digital agent and wallet"
+    }
+  },
+  "contexts": {
+    "title": "Four Ways to Connect",
+    "subtitle": "Choose your context and discover compatibility",
+    "romance": {
+      "title": "Romance",
+      "description": "Discover romantic compatibility through comprehensive assessments covering values, lifestyle, relationship dynamics, and practical considerations. Set up safe meetings with location sharing, emergency contacts, and offline connectivity options.",
+      "action": "Start Romance Sync"
+    },
+    "business": {
+      "title": "Business",
+      "description": "Connect with collaborators who share your work style, risk tolerance, and strategic vision for successful business partnerships.",
+      "action": "Start Business Sync"
+    },
+    "friendship": {
+      "title": "Friendship",
+      "description": "Build lasting friendships by discovering shared interests, communication styles, and social preferences with our friendship compatibility engine.",
+      "action": "Start Friendship Sync"
+    },
+    "kinship": {
+      "title": "Kinship",
+      "description": "Explore potential family connections through shared heritage, ancestral data, and cultural traditions with our kinship discovery engine.",
+      "action": "Start Kinship Sync"
+    }
+  },
+  "trust": {
+    "title": "Build Trust, Unlock Features",
+    "subtitle": "Enhance your profile with our tiered verification system for better matches and premium features",
+    "trustScore": "Trust Score: 35/100",
+    "basic": "Basic Profile",
+    "confirmed": "Identity Confirmed",
+    "enhanced": "Enhanced Screening",
+    "benefits": "Benefits",
+    "requirements": "Requirements",
+    "tiers": {
+      "basic": {
+        "benefits": ["View listings", "Basic sync access", "Community forums"],
+        "requirements": ["Valid email address"]
+      },
+      "confirmed": {
+        "benefits": ["Full sync features", "Compatibility reports", "Verified badge"],
+        "requirements": ["Government ID verification", "Address confirmation"]
+      },
+      "enhanced": {
+        "benefits": ["Priority matching", "Advanced insights", "Cross-platform trust"],
+        "requirements": ["Background check", "Biometric verification"]
+      }
+    },
+    "upgrade": "Upgrade to",
+    "emailVerification": "Verify Email & Upgrade",
+    "completeVerification": "Complete Enhanced Verification",
+    "privacyNote": "Privacy & Security",
+    "privacyText": "All verification data is encrypted and securely stored. We never share your personal information without consent."
+  },
+  "cta": {
+    "title": "Ready to Experience LifeSync?",
+    "subtitle": "Join thousands discovering meaningful connections through the Salatiso Ecosystem",
+    "getStarted": "Get Started Free",
+    "buildTrust": "Build Trust, Connect Safely",
+    "startInstantTrust": "Start Instant Trust Verification",
+    "exploreSolo": "Explore Solo Experience"
+  },
+  "solo": {
+    "chooseContext": {
+      "title": "Choose Your Sync Context",
+      "subtitle": "Select the type of connection you're looking for"
+    },
+    "contexts": {
+      "romance": {
+        "title": "Romance Sync",
+        "description": "Discover romantic compatibility through shared values and life goals"
+      },
+      "business": {
+        "title": "Business Sync",
+        "description": "Find business partners aligned with your work style and vision"
+      },
+      "friendship": {
+        "title": "Friendship Sync",
+        "description": "Connect with like-minded friends for meaningful relationships"
+      },
+      "kinship": {
+        "title": "Kinship Sync",
+        "description": "Explore potential family connections through shared heritage"
+      }
+    },
+    "questions": {
+      "romance": {
+        "1": "What's your ideal way to spend a weekend?",
+        "2": "How important is family in your life?",
+        "3": "What's your communication style in relationships?",
+        "4": "How do you handle conflict?",
+        "5": "What are your long-term relationship goals?",
+        "6": "How do you express love and affection?",
+        "7": "What's your approach to finances in a relationship?",
+        "8": "How important is personal space?",
+        "9": "What's your stance on having children?",
+        "10": "How do you maintain work-life balance?"
+      },
+      "business": {
+        "1": "What's your stance on Black Economic Empowerment (BEE) initiatives?",
+        "2": "How important are formal qualifications in hiring decisions?",
+        "3": "What's your approach to women empowerment in business?",
+        "4": "Should hiring be based primarily on merit or diversity considerations?",
+        "5": "How much weight do you give to work experience vs academic credentials?",
+        "6": "What's your view on affirmative action in South African business?",
+        "7": "How do you balance transformation goals with business performance?",
+        "8": "What's your approach to skills development for previously disadvantaged groups?",
+        "9": "How important is cultural diversity in your business partnerships?",
+        "10": "Would you prioritize someone with proven experience over formal qualifications?"
+      },
+      "friendship": {
+        "1": "What's your favorite hobby?",
+        "2": "How do you prefer to spend your free time?",
+        "3": "What's your sense of humor like?",
+        "4": "How important are deep conversations to you?",
+        "5": "What's your ideal social activity?",
+        "6": "How do you maintain friendships?",
+        "7": "What's your approach to helping friends?",
+        "8": "How do you handle disagreements?",
+        "9": "What's your favorite type of music?",
+        "10": "How do you celebrate achievements?"
+      },
+      "kinship": {
+        "1": "What's your cultural background?",
+        "2": "How important is family history to you?",
+        "3": "What's your approach to family traditions?",
+        "4": "How do you define family?",
+        "5": "What's your ancestral heritage?",
+        "6": "How do you honor your roots?",
+        "7": "What's your family structure like?",
+        "8": "How do you maintain family connections?",
+        "9": "What's your approach to family gatherings?",
+        "10": "How do you pass down traditions?"
+      }
+    },
+    "questionnaire": {
+      "progress": "Question {{current}} of {{total}}",
+      "previous": "Previous"
+    },
+    "answers": {
+      "stronglyAgree": "Strongly Agree",
+      "agree": "Agree",
+      "neutral": "Neutral",
+      "disagree": "Disagree",
+      "stronglyDisagree": "Strongly Disagree"
+    },
+    "results": {
+      "title": "Profile Complete!",
+      "description": "You've answered {{count}} questions for your {{context}}",
+      "syncLink": {
+        "title": "Your Sync Link",
+        "description": "Share this link with someone you'd like to sync with:",
+        "copy": "Copy"
+      },
+      "sessionInfo": "Your guest session will last 7 days. Save your progress by creating a Hub account.",
+      "viewSyncDetails": "View Sync Details",
+      "createAccount": "Create Hub Account"
+    }
+  },
+  "sync": {
+    "notFound": {
+      "title": "Sync Not Found",
+      "description": "This sync link may have expired or is invalid.",
+      "startNew": "Start New Sync"
+    },
+    "header": {
+      "syncId": "Sync ID: {{id}}"
+    },
+    "waiting": {
+      "title": "Waiting for Partner",
+      "description": "Share this link with someone you'd like to sync with. They'll need to complete their profile too.",
+      "copy": "Copy",
+      "simulate": "Simulate Partner Connection"
+    },
+    "connected": {
+      "message": "Partner Connected! Complete their profile to generate compatibility report."
+    },
+    "trust": {
+      "title": "Trust Verification",
+      "description": "Scan your partner's trust QR code to verify their profile",
+      "startScan": "Start Trust Scan"
+    },
+    "answers": {
+      "stronglyAgree": "Strongly Agree",
+      "agree": "Agree",
+      "neutral": "Neutral",
+      "disagree": "Disagree",
+      "stronglyDisagree": "Strongly Disagree"
+    },
+    "report": {
+      "generate": "Generate Compatibility Report"
+    },
+    "contexts": {
+      "romance": "Romance Sync",
+      "business": "Business Sync",
+      "friendship": "Friendship Sync",
+      "kinship": "Kinship Sync"
+    },
+    "questions": {
+      "romance": {
+        "1": "What's your ideal way to spend a weekend?",
+        "2": "How important is family in your life?",
+        "3": "What's your communication style in relationships?",
+        "4": "How do you handle conflict?",
+        "5": "What are your long-term relationship goals?",
+        "6": "How do you express love and affection?",
+        "7": "What's your approach to finances in a relationship?",
+        "8": "How important is personal space?",
+        "9": "What's your stance on having children?",
+        "10": "How do you maintain work-life balance?"
+      },
+      "business": {
+        "1": "What's your stance on Black Economic Empowerment (BEE) initiatives?",
+        "2": "How important are formal qualifications in hiring decisions?",
+        "3": "What's your approach to women empowerment in business?",
+        "4": "Should hiring be based primarily on merit or diversity considerations?",
+        "5": "How much weight do you give to work experience vs academic credentials?",
+        "6": "What's your view on affirmative action in South African business?",
+        "7": "How do you balance transformation goals with business performance?",
+        "8": "What's your approach to skills development for previously disadvantaged groups?",
+        "9": "How important is cultural diversity in your business partnerships?",
+        "10": "Would you prioritize someone with proven experience over formal qualifications?"
+      },
+      "friendship": {
+        "1": "What's your favorite hobby?",
+        "2": "How do you prefer to spend your free time?",
+        "3": "What's your sense of humor like?",
+        "4": "How important are deep conversations to you?",
+        "5": "What's your ideal social activity?",
+        "6": "How do you maintain friendships?",
+        "7": "What's your approach to helping friends?",
+        "8": "How do you handle disagreements?",
+        "9": "What's your favorite type of music?",
+        "10": "How do you celebrate achievements?"
+      },
+      "kinship": {
+        "1": "What's your cultural background?",
+        "2": "How important is family history to you?",
+        "3": "What's your approach to family traditions?",
+        "4": "How do you define family?",
+        "5": "What's your ancestral heritage?",
+        "6": "How do you honor your roots?",
+        "7": "What's your family structure like?",
+        "8": "How do you maintain family connections?",
+        "9": "What's your approach to family gatherings?",
+        "10": "How do you pass down traditions?"
+      }
+    }
+  },
+  "report": {
+    "title": "Compatibility Report",
+    "generated": "Generated",
+    "compatibility": {
+      "excellent": "Excellent Match",
+      "great": "Great Match",
+      "good": "Good Match",
+      "fair": "Fair Match",
+      "needsWork": "Needs Work"
+    },
+    "strengths": {
+      "title": "Your Strengths",
+      "sharedValues": "Shared values alignment",
+      "communication": "Compatible communication styles",
+      "lifeGoals": "Similar life goals"
+    },
+    "growth": {
+      "title": "Areas for Growth",
+      "conflict": "Different conflict resolution approaches",
+      "social": "Varying social preferences"
+    },
+    "recommendations": {
+      "title": "Recommendations",
+      "checkins": "Schedule regular check-ins to discuss your compatibility insights",
+      "focus": "Focus on shared interests and values to strengthen your connection",
+      "open": "Be open about your differences and find compromise solutions",
+      "professional": "Consider professional guidance if navigating challenges"
+    },
+    "ecosystem": {
+      "title": "Powered by Salatiso Ecosystem",
+      "lifecv": "LifeCV",
+      "lifecvDesc": "Your complete profile",
+      "familyValue": "Family Value",
+      "familyValueDesc": "Recognize contributions",
+      "theHub": "The Hub",
+      "theHubDesc": "Connect securely"
+    },
+    "actions": {
+      "export": "Export Data",
+      "share": "Share Report",
+      "newSync": "New Sync"
+    },
+    "notFound": {
+      "title": "Report Not Found",
+      "description": "This compatibility report may have expired or is invalid.",
+      "startNew": "Start New Sync"
+    },
+    "guest": {
+      "title": "Guest Session Active",
+      "description": "Your data expires in 7 days. Create a Hub account to save permanently."
+    },
+    "contexts": {
+      "romance": "Romance Sync",
+      "business": "Business Sync",
+      "friendship": "Friendship Sync",
+      "kinship": "Kinship Sync"
+    }
+  },
+  "trustProfile": {
+    "trustProfile": "Trust Profile",
+    "universalScore": "Universal Trust Score",
+    "tier": "Tier",
+    "lastVerified": "Last Verified",
+    "trustID": "Trust ID:",
+    "showQR": "Show Trust QR Code",
+    "scanToVerify": "Scan to verify trust profile",
+    "tierBenefits": "Trust Level Benefits",
+    "priorityMatching": "Priority matching in all contexts",
+    "advancedInsights": "Advanced compatibility insights",
+    "crossPlatform": "Cross-platform reputation boost",
+    "standardReports": "Standard compatibility reports",
+    "verifiedBadge": "Verified profile badge",
+    "upgradeFeatures": "Upgrade to unlock full features"
+  },
+  "qrScanner": {
+    "title": "Trust Profile Scanner",
+    "subtitle": "Scan a partner's trust QR code to verify their profile",
+    "startScanning": "Start Scanning",
+    "scanning": "Scanning...",
+    "positionQR": "Position QR code within the frame",
+    "stopScanning": "Stop Scanning",
+    "verified": "Trust Profile Verified",
+    "confirmContinue": "Confirm & Continue",
+    "scanAnother": "Scan Another",
+    "error": "Scanning Error",
+    "tryAgain": "Try Again",
+    "securityNote": "Security Note",
+    "securityText": "QR codes contain encrypted trust data. Only scan codes from verified partners during sync setup."
+  },
+  "safety": {
+    "title": "Safety and Trust",
+    "household": "Household Management",
+    "community": "Community Governance",
+    "incident": "Incident Reporting",
+    "emergency": "Emergency Matching",
+    "trust": "Comprehensive Trust",
+    "rideSharing": "Ride Sharing",
+    "hitchhiking": "Hitchhiking Safety",
+    "delivery": "Delivery Services",
+    "homeServices": "Home Services",
+    "propertyMgmt": "Property Management",
+    "localNetwork": "Local Network",
+    "eventSafety": "Event Safety",
+    "emergencyAssist": "Emergency Assistance",
+    "communitySupport": "Community Support",
+    "safeTransport": "Safe Transport",
+    "safetyHelp": "SafetyHelp",
+    "safetyDashboard": "Safety Dashboard",
+    "createSafetySeal": "Create Safety Seal",
+    "qrSafetySeals": "QR Safety Seals",
+    "safetyInduction": "Safety Induction",
+    "emergencyResponse": "Emergency Response",
+    "offlineSupport": "Offline Support",
+    "meshNetworking": "Mesh Networking",
+    "bluetoothMesh": "Bluetooth Mesh",
+    "safetyProtocols": "Safety Protocols",
+    "customInstructions": "Custom Instructions",
+    "safetyScore": "Safety Score",
+    "totalSeals": "Total Seals",
+    "activeSeals": "Active Seals",
+    "totalScans": "Total Scans",
+    "avgSafetyScore": "Avg Safety Score"
+  },
+  "footer": {
+    "description": "Discover meaningful connections through the power of the Salatiso Ecosystem. Experience compatibility like never before with LifeCV, Family Value, and The Hub.",
+    "syncContexts": "Sync Contexts",
+    "ecosystem": "Core Ecosystem Modules",
+    "saziAcademy": "Sazi Life Academy by Salatiso",
+    "emulatorUi": "Emulator UI",
+    "copyright": "© 2025 Salatiso Ecosystem. Part of the Salatiso Partnership Foundation."
+  },
+  "terms": {
+    "offlineAvailable": "Available offline ✓",
+    "offlineUsingCache": "Offline — using cached content",
+    "lastUpdated": "Last updated: {{date}}",
+    "stickyCommit": "By continuing, you affirm reciprocity and community standards.",
+    "accepted": "Accepted",
+    "accept": "Accept & Continue",
+    "decline": "Decline"
+  },
+  "floatingToolbar": {
+    "title": "Quick Tools"
+  },
+  "familyTree": {
+    "title": "Family Tree",
+    "subtitle": "Interactive graph and timeline. Double-click a person to edit basic info.",
+    "tabs": {
+      "tree": "Tree",
+      "timeline": "Timeline",
+      "list": "List"
+    },
+    "clan": {
+      "title": "Clan names and lineage",
+      "paternal": "Paternal clan line (comma-separated)",
+      "maternal": "Maternal clan line (comma-separated)",
+      "additional": "Additional lineages/notes (comma-separated)",
+      "hint": "Examples: Tshezi, Jalamba, Mgqala'ongangenduku ... and maternal lines such as Xaba, Hlubi, Nomjoli, Shwabada."
+    },
+    "list": {
+      "deceased": "Deceased",
+      "alive": "Alive",
+      "markDeceased": "Mark deceased"
+    },
+    "timeline": {
+      "empty": "No dated events yet. Edit a person to add birth/death dates or add events in a future update."
+    },
+    "edit": {
+      "name": "Edit name",
+      "birth": "Birth date (YYYY-MM-DD)",
+      "death": "Death date (YYYY-MM-DD)"
+    }
+  },
+  "hubSettings": {
+    "title": "The Hub settings",
+    "subtitle": "Configure The Hub connection for invitations and contact sync.",
+    "baseUrl": "Base URL",
+    "token": "Bearer token",
+    "tokenPlaceholder": "Paste your Hub API token",
+    "tokenHint": "Stored locally in your browser. Never shared without your action.",
+    "enableSync": "Enable Hub sync (process outbox)",
+    "saved": "Saved",
+    "statusAuthed": "Authenticated: token present",
+    "statusNoAuth": "Not authenticated: token missing",
+    "notesTitle": "Notes",
+    "noteOutbox": "When configured, the outbox will sync invitations and contact merges to The Hub.",
+    "noteSecurity": "Your token never leaves your device except when you initiate sync calls to The Hub."
+  },
+  "common": {
+    "save": "Save"
+  },
+  "dashboard": {
+    "title": "Safety Dashboard",
+    "welcome": "Welcome to your safety center",
+    "quickActions": "Quick Actions",
+    "emergencyButton": "Emergency Button",
+    "statusGreen": "All Safe",
+    "statusYellow": "Caution",
+    "statusRed": "Emergency"
+  },
+  "followMeHome": {
+    "title": "Follow Me Home",
+    "description": "A personal safety feature for when you're walking alone or in an unfamiliar area. Set up emergency contacts, choose a security level, and let your loved ones know you're safe.",
+    "contacts": {
+      "title": "Emergency Contacts",
+      "tabs": {
+        "addManually": "Add Manually",
+        "uploadContacts": "Upload Contacts",
+        "manageContacts": "Manage Contacts"
+      },
+      "add": {
+        "title": "Add New Contact",
+        "nameLabel": "Name",
+        "namePlaceholder": "Enter contact name",
+        "relationshipLabel": "Relationship",
+        "relationshipPlaceholder": "Enter relationship (friend, family, etc.)",
+        "phonesLabel": "Phone Numbers",
+        "phoneTypes": {
+          "mobile": "Mobile",
+          "home": "Home",
+          "work": "Work",
+          "other": "Other"
+        },
+        "addPhone": "Add phone",
+        "primaryPhoneLabel": "Primary Phone",
+        "primaryPhonePlaceholder": "Enter phone number",
+        "secondaryPhoneLabel": "Secondary Phone",
+        "secondaryPhonePlaceholder": "Enter secondary number (optional)",
+        "emailsLabel": "Email Addresses",
+        "addEmail": "Add email",
+        "remove": "Remove",
+        "emailLabel": "Email",
+        "emailPlaceholder": "Enter email address",
+        "priorityLabel": "Priority",
+        "addressesLabel": "Addresses",
+        "addressLabelPlaceholder": "Label (Home, Work, etc.)",
+        "addressLinePlaceholder": "Enter full address (auto-geocodes)",
+        "geocoding": "Geocoding...",
+        "geocoded": "Location set",
+        "geocodeFailed": "Could not geocode",
+        "homeAddressLabel": "Home Address",
+        "homeAddressPlaceholder": "Enter home address",
+        "workAddressLabel": "Work Address",
+        "workAddressPlaceholder": "Enter work address (optional)",
+        "button": "Save"
+      },
+      "listTitle": "Emergency Contacts",
+      "noContacts": "No emergency contacts added yet",
+      "status": {
+        "pending": "Pending",
+        "accepted": "Accepted"
+      },
+      "proximity": "~{{distance}}km away",
+      "sendNotification": "Send Notification",
+      "upload": {
+        "title": "Upload from Contacts",
+        "button": "Upload Contacts",
+        "privacy": "Only contact information will be stored. We respect your privacy."
+      },
+      "uploadSubtitle": "Import Contacts from Your Device",
+      "uploadDescription": "Quickly add emergency contacts by importing from your phone's contact list.",
+      "priority": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High"
+      },
+      "relationship": {
+        "family": "Family",
+        "friend": "Friend",
+        "colleague": "Colleague",
+        "neighbor": "Neighbor",
+        "other": "Other"
+      }
+    },
+    "startTrip": "Start a New Trip",
+    "endTrip": "End Trip",
+    "setup": {
+      "title": "Trip Setup",
+      "contacts": {
+        "title": "Emergency Contacts",
+        "description": "These contacts will be notified about your trip status. They must accept a handshake to participate.",
+        "manage": "Manage Contacts"
+      },
+      "riskLevel": {
+        "title": "Security Level",
+        "low": {
+          "label": "Low",
+          "description": "Quick errands, daily commute. Periodic updates."
+        },
+        "medium": {
+          "label": "Medium",
+          "description": "Night walk, unfamiliar area. More frequent updates."
+        },
+        "high": {
+          "label": "High",
+          "description": "Feeling unsafe, risky area. Live tracking and alerts."
+        }
+      },
+      "eta": {
+        "title": "Estimated Arrival Time (ETA)",
+        "minutes": "minutes",
+        "description": "Your contacts will be alerted if you don't check in by this time."
+      }
+    },
+    "active": {
+      "title": "Trip in Progress",
+      "mapPlaceholder": "Live map view will be shown here",
+      "callContact": "Call Contact",
+      "sendMessage": "Send Message",
+      "checkIn": "I'm OK",
+      "checkInPrompt": "A check-in is required periodically.",
+      "nextCheckIn": "Next Check-in"
+    },
+    "ended": {
+      "title": "Trip Ended",
+      "description": "You have safely completed your trip. Your contacts have been notified."
+    },
+    "notifications": {
+      "checkInRequired": "Time to check in! Let your contacts know you're safe.",
+      "checkInSuccess": "Check-in successful! Your contacts have been notified."
+    },
+    "parental": {
+      "button": "Parental Controls"
+    },
+    "offline": {
+      "button": "Offline Networking",
+      "title": "Offline Networking Settings",
+      "bluetooth": {
+        "title": "Bluetooth LE",
+        "description": "Configure Bluetooth Low Energy settings for peer-to-peer communication in offline scenarios.",
+        "peerSync": {
+          "title": "Peer Synchronization",
+          "description": "Enable direct device-to-device communication for location sharing and emergency alerts.",
+          "enable": "Enable Bluetooth Peer Sync"
+        },
+        "range": {
+          "title": "Communication Range",
+          "description": "Adjust Bluetooth transmission power for optimal range and battery life.",
+          "short": "Short Range (10m)",
+          "medium": "Medium Range (30m)",
+          "long": "Long Range (50m)"
+        }
+      },
+      "wifi": {
+        "title": "Wi-Fi Direct",
+        "description": "Set up Wi-Fi Direct for high-speed peer-to-peer networking when available.",
+        "direct": {
+          "title": "Wi-Fi Direct",
+          "description": "Enable Wi-Fi Direct for faster data transfer and extended range communication.",
+          "enable": "Enable Wi-Fi Direct"
+        },
+        "opportunistic": {
+          "title": "Opportunistic Forwarding",
+          "description": "Allow your device to relay messages through nearby devices when direct connection isn't available.",
+          "enable": "Enable Opportunistic Forwarding"
+        }
+      },
+      "mesh": {
+        "title": "Mesh Network",
+        "description": "Configure mesh networking for extended coverage in rural areas and device-dense environments.",
+        "routing": {
+          "title": "Routing Mode",
+          "description": "Choose how messages are routed through the mesh network.",
+          "single": "Single-hop (Direct only)",
+          "multi": "Multi-hop (Extended range)"
+        },
+        "community": {
+          "title": "Community Mesh",
+          "description": "Join or create a community mesh network for enhanced coverage in your area.",
+          "setup": "Setup Community Mesh"
+        }
+      },
+      "battery": {
+        "title": "Battery Optimization",
+        "description": "Configure power-saving features to extend battery life during offline operation.",
+        "adaptive": {
+          "title": "Adaptive Sampling",
+          "description": "Automatically adjust location update frequency based on movement and battery level.",
+          "enable": "Enable Adaptive Sampling"
+        },
+        "dutyCycling": {
+          "title": "Duty Cycling",
+          "description": "Control how often the device wakes up to check for network activity.",
+          "aggressive": "Aggressive (Max battery)",
+          "balanced": "Balanced",
+          "conservative": "Conservative (Max coverage)"
+        }
+      },
+      "privacy": {
+        "title": "Privacy & Security",
+        "description": "Configure privacy settings and data handling for offline networking.",
+        "encryption": {
+          "title": "End-to-End Encryption",
+          "description": "All offline communications are encrypted using military-grade encryption.",
+          "status": "Always Enabled"
+        },
+        "consent": {
+          "title": "Relay Consent",
+          "description": "Control whether your device can be used to relay messages for other users.",
+          "enable": "Allow Message Relaying"
+        },
+        "dataRetention": {
+          "title": "Data Retention",
+          "description": "Set how long offline network data is stored on your device.",
+          "7days": "7 Days",
+          "30days": "30 Days",
+          "90days": "90 Days"
+        }
+      }
+    },
+    "share": {
+      "title": "Share Trip Information",
+      "description": "Share your trip details with trusted contacts through multiple channels.",
+      "button": "Share Trip",
+      "email": "Share via Email",
+      "whatsapp": "Share via WhatsApp",
+      "sms": "Share via SMS/Text",
+      "link": "Copy Shareable Link",
+      "emailSubject": "Follow Me Home - Trip Update",
+      "message": "I'm using LifeSync's Follow Me Home feature. Risk Level: {{riskLevel}}, ETA: {{eta}} minutes. Status: {{status}}",
+      "statusActive": "Trip in Progress",
+      "statusEnded": "Trip Completed Safely",
+      "preview": "Message Preview"
+    }
+  },
+  "events": {
+    "create": {
+      "title": "Create New Event",
+      "updateTitle": "Update Event",
+      "importEvent": "Import Event",
+      "importFromCalendar": "Import from Calendar",
+      "uploadCSV": "Upload CSV",
+      "uploadFromPhone": "Upload from Phone",
+      "importing": "Importing...",
+      "eventImported": "Event imported successfully!",
+      "steps": {
+        "details": "Event Details",
+        "safety": "Safety Setup",
+        "invitations": "Invitations",
+        "activities": "Activities",
+        "review": "Review"
+      },
+      "basicDetails": {
+        "title": "Event Title",
+        "titlePlaceholder": "e.g., John's 16th Birthday Party",
+        "type": "Event Type",
+        "types": {
+          "private": "Private Event",
+          "community": "Community Event",
+          "public": "Public Event",
+          "institutional": "Institutional",
+          "multi_faceted": "Multi-Faceted Event"
+        },
+        "typeDescriptions": {
+          "private": "Family gatherings, birthdays",
+          "community": "Street parties, clean-ups",
+          "public": "Festivals, sports events",
+          "institutional": "School trips, corporate",
+          "multi_faceted": "Complex events with multiple activities"
+        }
+      },
+      "datesLocations": {
+        "dates": "Event Dates",
+        "addDate": "Add Date",
+        "startTime": "Start Time",
+        "endTime": "End Time",
+        "label": "Label (optional)",
+        "locations": "Event Locations",
+        "addLocation": "Add Location",
+        "address": "Address",
+        "selectFromMaps": "Select from Google Maps",
+        "mapsComingSoon": "Google Maps integration coming soon",
+        "useCurrentLocation": "Use Current Location"
+      },
+      "description": "Event Description",
+      "safetyMeasures": "Safety Measures",
+      "safetyOptions": {
+        "emergency_contacts": "Emergency Contact Sync",
+        "location_sharing": "Location Sharing",
+        "onsite_monitors": "On-site Monitors",
+        "mesh_network": "Offline Mesh Network",
+        "checkin_system": "Check-in System",
+        "emergency_kit": "Emergency Kit"
+      },
+      "safetyDescriptions": {
+        "emergency_contacts": "All participants sync emergency contacts",
+        "location_sharing": "GPS tracking during event",
+        "onsite_monitors": "Designated safety personnel",
+        "mesh_network": "Device-to-device communication",
+        "checkin_system": "Periodic safety confirmations",
+        "emergency_kit": "First aid and emergency supplies"
+      },
+      "monitoringLevel": "Monitoring Level",
+      "monitoringLevels": {
+        "standard": "Standard",
+        "enhanced": "Enhanced",
+        "maximum": "Maximum"
+      },
+      "hostRole": "Host Role",
+      "hostRoles": {
+        "child": "Child/Teen",
+        "parent": "Parent/Guardian",
+        "organization": "Organization"
+      },
+      "activities": {
+        "title": "Event Activities & Integrations",
+        "activities": "Activities",
+        "addActivity": "Add Activity",
+        "activityName": "Activity name",
+        "activityDescription": "Description",
+        "serviceIntegrations": "Service Integrations",
+        "addIntegration": "Add Integration",
+        "serviceName": "Service name (e.g., Ride Sharing)",
+        "serviceUrl": "Service URL"
+      },
+      "review": {
+        "title": "Event Summary",
+        "createButton": "Create Event & Request Approval",
+        "updateButton": "Update Event",
+        "eligibilityTitle": "LifeSync Seal Eligibility",
+        "eligibilityText": "This event qualifies for the LifeSync Trust Seal upon approval completion."
+      }
+    },
+    "maps": {
+      "title": "Select Location",
+      "searchPlaceholder": "Search for a location...",
+      "search": "Search",
+      "selectedLocation": "Selected Location",
+      "coordinates": "Coordinates",
+      "confirmLocation": "Confirm Location",
+      "cancel": "Cancel",
+      "apiNotLoaded": "Google Maps API not loaded. Please add your Google Maps API key to enable map functionality."
+    },
+    "approval": {
+      "title": "Event Approval Workflow",
+      "reviewApproval": "Review Approval",
+      "approve": "Approve",
+      "approveWithConditions": "Approve with Conditions",
+      "requestInfo": "Request More Info",
+      "reject": "Reject",
+      "conditions": "Conditions",
+      "rejectionReason": "Rejection Reason",
+      "infoRequest": "Information Request",
+      "submit": "Submit",
+      "cancel": "Cancel"
+    },
+    "links": {
+      "title": "QR Codes & Links",
+      "publicLink": "Public Link",
+      "privateLink": "Private Link",
+      "copy": "Copy",
+      "download": "Download QR",
+      "close": "Close"
+    },
+    "feedback": {
+      "title": "Event Feedback",
+      "rating": "Rating",
+      "comment": "Comment",
+      "suggestions": "Suggestions",
+      "submit": "Submit Feedback",
+      "averageRating": "Average Rating",
+      "totalFeedback": "Total Feedback",
+      "noFeedback": "No feedback yet"
+    },
+    "hub": {
+      "yourEvents": "Your Events",
+      "viewDetails": "View Details",
+      "editEvent": "Edit Event",
+      "reviewApproval": "Review Approval",
+      "manageSync": "Manage Sync",
+      "qrCodesLinks": "QR Codes & Links",
+      "archive": "Archive",
+      "viewFeedback": "View Feedback",
+      "status": {
+        "pending_approval": "Pending Approval",
+        "approved": "Approved",
+        "approved_with_conditions": "Approved with Conditions",
+        "rejected": "Rejected",
+        "archived": "Archived"
+      },
+      "type": "Type",
+      "attendees": "Attendees",
+      "createEvent": "Create Event",
+      "noEvents": "No events yet. Create your first event to get started."
+    }
+  },
+  "contact": {
+    "marketplace": {
+      "title": "Explore the Salatiso Ecosystem Marketplace",
+      "description": "Discover a wide range of products and services from trusted providers within the Salatiso community.",
+      "features": {
+        "verified": "Verified Providers",
+        "trusted": "Trusted Community",
+        "secure": "Secure Transactions"
+      },
+      "visitButton": "Visit the Marketplace"
+    },
+    "title": "Get in Touch",
+    "form": {
+      "category": "Category",
+      "selectCategory": "Select a category",
+      "categories": {
+        "general": "General Inquiry",
+        "support": "Technical Support",
+        "feedback": "Feedback & Suggestions",
+        "partnership": "Partnership Opportunities",
+        "bug": "Report a Bug",
+        "feature": "Feature Request"
+      },
+      "subject": "Subject",
+      "subjectPlaceholder": "Brief subject line",
+      "name": "Your full name",
+      "email": "your@email.com",
+      "phone": "Phone (Optional)",
+      "message": "Tell us how we can help you...",
+      "anonymous": "Send anonymously",
+      "submit": "Submit Message"
+    },
+    "poll": {
+      "title": "Help Us Improve!",
+      "takePoll": "Take a Quick Poll",
+      "hidePoll": "Hide Poll",
+      "rankingTitle": "Rank Your Top 5 Most Valued Functions",
+      "rankingDescription": "Drag and drop or click to rank the app functions you find most important. This helps us prioritize future development.",
+      "yourTop5": "Your Top 5",
+      "evaluationTitle": "Evaluate Your Top 3",
+      "categories": {
+        "functionality": "Functionality",
+        "usability": "Usability",
+        "relevance": "Relevance",
+        "reliability": "Reliability",
+        "innovation": "Innovation"
+      },
+      "additionalFeedback": "Additional Feedback",
+      "includeDetails": "Include my contact details with this feedback",
+      "submitFeedback": "Submit Feedback"
+    }
+  },
+  "onboarding": {
+    "title": "Create Your Profile",
+    "emergencyServices": {
+      "title": "Safe Delivery & Emergency Services",
+      "requestDelivery": "Request Delivery",
+      "trackDelivery": "Track Delivery",
+      "myDeliveries": "My Deliveries",
+      "verifiedProviders": "Verified Providers",
+      "emergency": "Emergency"
+    },
+    "deliveryProvider": {
+      "title": "Become a Delivery Service Provider",
+      "description": "Join our trusted network of delivery providers. Complete your registration and trust verification to start serving customers.",
+      "providerType": "Provider Type",
+      "individual": "Individual",
+      "business": "Business",
+      "businessName": "Business Name (if applicable)",
+      "fullName": "Full Name",
+      "contactNumber": "Contact Number",
+      "emailAddress": "Email Address",
+      "servicesOffered": "Services Offered",
+      "foodDelivery": "Food Delivery",
+      "packageDelivery": "Package Delivery",
+      "documentDelivery": "Document Delivery",
+      "medicalSupplies": "Medical Supplies",
+      "groceries": "Groceries",
+      "electronics": "Electronics",
+      "clothing": "Clothing",
+      "sameDayDelivery": "Same-day Delivery",
+      "expressDelivery": "Express Delivery",
+      "coverageAreas": "Coverage Areas",
+      "johannesburg": "Johannesburg",
+      "pretoria": "Pretoria",
+      "capeTown": "Cape Town",
+      "durban": "Durban",
+      "sandton": "Sandton",
+      "rosebank": "Rosebank",
+      "randburg": "Randburg",
+      "midrand": "Midrand",
+      "centurion": "Centurion",
+      "roodepoort": "Roodepoort",
+      "alberton": "Alberton",
+      "germiston": "Germiston",
+      "baseDeliveryFee": "Base Delivery Fee (R)",
+      "perKmRate": "Per Km Rate (R)",
+      "expressSurcharge": "Express Surcharge (R)",
+      "trustVerificationSetup": "Trust Verification Setup",
+      "initialTrustLevel": "Initial Trust Level: <b>Individual (0% - Start with personal verification)</b>",
+      "trustLevels": {
+        "individual": "Individual (0%): Basic ID and contact verification",
+        "household": "Household (25%): Family member endorsements + 10 completed deliveries",
+        "street": "Street (50%): 5+ neighbor verifications + 50 deliveries + 4.5+ rating",
+        "community": "Community (75%): Local business endorsements + 200 deliveries + 4.7+ rating",
+        "fullyVerified": "Fully Verified (100%): Ecosystem integration + 500 deliveries + 4.8+ rating"
+      }
+    },
+    "homeServices": {
+      "title": "Home Services",
+      "description": "Verified home service providers with safety protocols",
+      "findServices": "Find Services",
+      "becomeProvider": "Become a Provider",
+      "myServices": "My Services",
+      "providerRegistration": "Provider Registration",
+      "fullName": "Full Name *",
+      "businessName": "Business Name *",
+      "serviceCategory": "Service Category *",
+      "selectCategory": "Select category",
+      "plumbing": "Plumbing",
+      "electrical": "Electrical",
+      "cleaning": "Cleaning",
+      "security": "Security",
+      "other": "Other",
+      "yearsOfExperience": "Years of Experience",
+      "hourlyRate": "Hourly Rate (ZAR)",
+      "nationality": "Nationality",
+      "selectNationality": "Select nationality",
+      "southAfrican": "South African",
+      "serviceDescription": "Service Description"
+    },
+    "locationConsent": {
+      "title": "Location consent",
+      "description": "We need your GPS to enable Follow Me Home, Incident Reporting, and Emergency Assistance.",
+      "agreeText": "I agree to share my location while using safety features"
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "saveAndContinue": "Save and Continue"
+    }
+  },
+  "instantTrust": {
+    "backToDashboard": "Back to Dashboard",
+    "createProfile": {
+      "title": "Create Your Instant Profile",
+      "subtitle": "Share only what you're comfortable with. For a full profile, go to Onboarding."
+    },
+    "quickProfile": {
+      "title": "Quick Profile Creation",
+      "signedInAs": "Signed in as",
+      "signInWithGoogle": "Sign in with Google",
+      "signedInWithGoogle": "Signed in with Google",
+      "uploadContact": "Upload Contact",
+      "manualFill": "Or fill out the form below manually"
+    },
+    "personalInfo": {
+      "title": "Personal Information",
+      "name": "Name",
+      "surname": "Surname",
+      "phoneNumber": "Phone Number"
+    },
+    "vehicleInfo": {
+      "title": "Vehicle Information",
+      "registrationNumber": "Registration Number"
+    },
+    "roleSelection": {
+      "title": "Role Selection",
+      "selectRole": "Select Your Role",
+      "passenger": "Passenger",
+      "driver": "Driver",
+      "serviceProvider": "Service Provider",
+      "communityMember": "Community Member"
+    },
+    "services": {
+      "title": "Services",
+      "selectServices": "Select Services",
+      "rideSharing": "Ride Sharing",
+      "hitchhikingSafety": "Hitchhiking Safety",
+      "deliveryServices": "Delivery Services",
+      "homeServices": "Home Services",
+      "propertyManagement": "Property Management"
+    },
+    "disclosureLevel": {
+      "title": "Disclosure Level",
+      "basic": {
+        "title": "Basic",
+        "description": "Name and live location only",
+        "risk": "Low Risk"
+      },
+      "standard": {
+        "title": "Standard",
+        "description": "Name, location, and basic verification",
+        "risk": "Medium Risk"
+      },
+      "full": {
+        "title": "Full",
+        "description": "Complete profile with all information",
+        "risk": "High Risk"
+      }
+    },
+    "shareLocation": "Share live location",
+    "buttons": {
+      "back": "Back",
+      "continue": "Continue"
+    },
+    "alerts": {
+      "googleSignInSuccess": "Welcome {{name}}! Your profile has been populated with your Google account information. Please complete any missing details.",
+      "googleSignInError": {
+        "generic": "Failed to sign in with Google. Please try again or fill out the form manually.",
+        "popupClosed": "Sign-in was cancelled.",
+        "popupBlocked": "Pop-up was blocked by your browser. Please allow pop-ups and try again.",
+        "cancelled": "Another sign-in is already in progress."
+      },
+      "contactUpload": "Contact upload feature will parse {{fileName}}. For now, please fill out the form manually."
+    }
+  }
+}

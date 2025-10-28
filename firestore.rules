@@ -1,0 +1,66 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if user is authenticated
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    // Helper function to check if user is the document owner
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    // Profiles: readable by authenticated users during Phase 3.4 testing
+    // (allows hydration of LifeCV profile on login)
+    match /profiles/{uid} {
+      allow read: if isAuth();
+      allow write: if isOwner(uid);
+    }
+
+    // Prevent listing all profiles
+    match /profiles/{document=**} {
+      allow list: if false;
+    }
+
+    // Activities collection for Phase 3.4 testing
+    match /users/{userId}/activities/{document=**} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // Notifications collection for Phase 3.4 testing
+    match /users/{userId}/notifications/{document=**} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // Contacts collection for Phase 3.4 testing
+    match /users/{userId}/contacts/{document=**} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // Calendar collection for Phase 3.4 testing
+    match /users/{userId}/calendar/{document=**} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // Assets collection for Phase 3.4 testing
+    match /users/{userId}/assets/{document=**} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // Goals collection for Phase 3.4 testing
+    match /users/{userId}/goals/{document=**} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // Verifications collection for Phase 3.4 testing
+    match /users/{userId}/verifications/{document=**} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // Default deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

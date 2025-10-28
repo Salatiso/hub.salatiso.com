@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeSync - First Time User Guide</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #64748b;
+            --accent-color: #f59e0b;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --border-color: #e5e7eb;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--success-color));
+            color: white;
+            padding: 3rem 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(37, 99, 235, 0.2);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .header p {
+            font-size: 1.125rem;
+            opacity: 0.95;
+        }
+
+        .step-container {
+            background: var(--bg-primary);
+            margin-bottom: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .step-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .step-header:hover {
+            background: #1d4ed8;
+        }
+
+        .step-number {
+            width: 3rem;
+            height: 3rem;
+            background: white;
+            color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-right: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .step-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            flex-grow: 1;
+        }
+
+        .step-toggle {
+            font-size: 1.5rem;
+            transition: transform 0.2s ease;
+        }
+
+        .step-content {
+            padding: 2rem;
+            display: none;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+
+        .step-toggle.rotated {
+            transform: rotate(180deg);
+        }
+
+        .screenshot {
+            background: var(--bg-secondary);
+            border: 2px dashed var(--border-color);
+            border-radius: 0.5rem;
+            padding: 3rem;
+            text-align: center;
+            margin: 1.5rem 0;
+            color: var(--text-secondary);
+        }
+
+        .screenshot img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .tip {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05));
+            border-left: 4px solid var(--accent-color);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0.5rem;
+        }
+
+        .tip h4 {
+            color: var(--accent-color);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .warning {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
+            border-left: 4px solid var(--danger-color);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0.5rem;
+        }
+
+        .warning h4 {
+            color: var(--danger-color);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .action-button {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .action-button:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .action-button.secondary {
+            background: var(--secondary-color);
+        }
+
+        .action-button.secondary:hover {
+            background: #475569;
+        }
+
+        .action-button.success {
+            background: var(--success-color);
+        }
+
+        .action-button.success:hover {
+            background: #059669;
+        }
+
+        .code-block {
+            background: #1f2937;
+            color: #e5e7eb;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: 'Monaco', 'Menlo', monospace;
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            margin: 2rem 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin: 2rem 0;
+        }
+
+        .nav-button {
+            padding: 0.75rem 1.5rem;
+            border: 2px solid var(--primary-color);
+            background: transparent;
+            color: var(--primary-color);
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .nav-button:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .completion-checklist {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .completion-checklist h4 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .checklist-item input[type="checkbox"] {
+            margin-right: 0.75rem;
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        .checklist-item label {
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header {
+                padding: 2rem 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .step-header {
+                padding: 1rem 1.5rem;
+            }
+
+            .step-content {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🚀 Welcome to LifeSync!</h1>
+            <p>Your complete guide to getting started with trust-based relationship management</p>
+        </header>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+
+        <div class="navigation">
+            <button class="nav-button" id="prevButton" disabled>← Previous Step</button>
+            <span id="stepCounter">Step 1 of 8</span>
+            <button class="nav-button" id="nextButton">Next Step →</button>
+        </div>
+
+        <!-- Step 1: Account Creation -->
+        <div class="step-container" data-step="1">
+            <div class="step-header" onclick="toggleStep(1)">
+                <div class="step-number">1</div>
+                <div class="step-title">Create Your LifeSync Account</div>
+                <div class="step-toggle">▼</div>
+            </div>
+            <div class="step-content">
+                <p>Welcome to LifeSync! Let's start by creating your secure account. This process takes just a few minutes and sets up your personalized trust profile.</p>
+
+                <h3>📝 What You'll Need:</h3>
+                <ul style="margin: 1rem 0; padding-left: 2rem;">
+                    <li>A valid email address</li>
+                    <li>A strong password (minimum 8 characters)</li>
+                    <li>Basic personal information for verification</li>
+                    <li>A profile photo (optional but recommended)</li>
+                </ul>
+
+                <h3>🔐 Step-by-Step Account Creation:</h3>
+                <ol style="margin: 1rem 0; padding-left: 2rem;">
+                    <li>Visit <strong>https://lifesync-lifecv.web.app</strong></li>
+                    <li>Click "Get Started" or "Sign Up"</li>
+                    <li>Enter your email address and create a password</li>
+                    <li>Verify your email by clicking the link sent to your inbox</li>
+                    <li>Complete your basic profile information</li>
+                    <li>Upload a profile photo and add a bio</li>
+                </ol>
+
+                <div class="tip">
+                    <h4>💡 Pro Tip:</h4>
+                    <p>Use a password manager to create and store a strong, unique password. Your LifeSync account contains sensitive personal information.</p>
+                </div>
+
+                <div class="screenshot">
+                    <p>📱 Screenshot: Account creation form with email and password fields</p>
+                </div>
+
+                <div class="completion-checklist">
+                    <h4>✅ Completion Checklist:</h4>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step1-1">
+                        <label for="step1-1">Email address entered and verified</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step1-2">
+                        <label for="step1-2">Strong password created</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step1-3">
+                        <label for="step1-3">Basic profile information completed</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step1-4">
+                        <label for="step1-4">Profile photo uploaded</label>
+                    </div>
+                </div>
+
+                <button class="action-button success" onclick="markStepComplete(1)">Mark Step Complete ✓</button>
+            </div>
+        </div>
+
+        <!-- Step 2: Profile Setup -->
+        <div class="step-container" data-step="2">
+            <div class="step-header" onclick="toggleStep(2)">
+                <div class="step-number">2</div>
+                <div class="step-title">Complete Your Trust Profile</div>
+                <div class="step-toggle">▼</div>
+            </div>
+            <div class="step-content">
+                <p>Your trust profile is the foundation of all relationships in LifeSync. This comprehensive assessment helps match you with compatible people and ensures safe interactions.</p>
+
+                <h3>🎯 Profile Sections to Complete:</h3>
+
+                <h4>Personal Information</h4>
+                <ul style="margin: 0.5rem 0; padding-left: 2rem;">
+                    <li>Full name and contact details</li>
+                    <li>Date of birth and location</li>
+                    <li>Language preferences</li>
+                    <li>Emergency contact information</li>
+                </ul>
+
+                <h4>Trust & Safety Preferences</h4>
+                <ul style="margin: 0.5rem 0; padding-left: 2rem;">
+                    <li>Risk tolerance levels</li>
+                    <li>Privacy settings for different contexts</li>
+                    <li>Safety verification preferences</li>
+                    <li>Emergency response protocols</li>
+                </ul>
+
+                <h4>Relationship Context</h4>
+                <ul style="margin: 0.5rem 0; padding-left: 2rem;">
+                    <li>Primary relationship goals (romance, business, community, family)</li>
+                    <li>Compatibility preferences</li>
+                    <li>Communication style preferences</li>
+                    <li>Values and lifestyle indicators</li>
+                </ul>
+
+                <div class="tip">
+                    <h4>💡 Privacy First:</h4>
+                    <p>LifeSync uses a progressive disclosure system. Information is only shared when both parties agree to increase trust levels.</p>
+                </div>
+
+                <div class="warning">
+                    <h4>⚠️ Important:</h4>
+                    <p>Provide accurate information. False information can result in account suspension and affects your trust score.</p>
+                </div>
+
+                <div class="screenshot">
+                    <p>📱 Screenshot: Trust profile setup with different sections and progress indicators</p>
+                </div>
+
+                <div class="completion-checklist">
+                    <h4>✅ Completion Checklist:</h4>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step2-1">
+                        <label for="step2-1">Personal information completed</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step2-2">
+                        <label for="step2-2">Trust preferences configured</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step2-3">
+                        <label for="step2-3">Relationship context defined</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step2-4">
+                        <label for="step2-4">Emergency contacts added</label>
+                    </div>
+                </div>
+
+                <button class="action-button success" onclick="markStepComplete(2)">Mark Step Complete ✓</button>
+            </div>
+        </div>
+
+        <!-- Step 3: Safety Setup -->
+        <div class="step-container" data-step="3">
+            <div class="step-header" onclick="toggleStep(3)">
+                <div class="step-number">3</div>
+                <div class="step-title">Set Up Your Safety Features</div>
+                <div class="step-toggle">▼</div>
+            </div>
+            <div class="step-content">
+                <p>Safety is our top priority. LifeSync provides multiple layers of protection to ensure your well-being in all interactions.</p>
+
+                <h3>🛡️ Essential Safety Features:</h3>
+
+                <h4>SafetyHelp QR Code</h4>
+                <p>Create your personal safety seal that provides instant access to your emergency information and safety protocols.</p>
+                <button class="action-button">Generate Safety QR Code</button>
+
+                <h4>Emergency Contacts</h4>
+                <p>Add trusted contacts who can be notified in emergency situations.</p>
+                <button class="action-button secondary">Manage Emergency Contacts</button>
+
+                <h4>Follow Me Home</h4>
+                <p>Enable GPS tracking for safe travel with automatic check-ins.</p>
+                <button class="action-button secondary">Configure Follow Me Home</button>
+
+                <h4>Incident Reporting</h4>
+                <p>Set up quick access to report safety concerns or emergencies.</p>
+                <button class="action-button secondary">Set Up Incident Reporting</button>
+
+                <div class="tip">
+                    <h4>💡 Offline Safety:</h4>
+                    <p>All safety features work offline using Bluetooth mesh networking. No internet required for emergency situations.</p>
+                </div>
+
+                <div class="screenshot">
+                    <p>📱 Screenshot: Safety dashboard with QR code generation and emergency contact setup</p>
+                </div>
+
+                <div class="completion-checklist">
+                    <h4>✅ Completion Checklist:</h4>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step3-1">
+                        <label for="step3-1">SafetyHelp QR code generated</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step3-2">
+                        <label for="step3-2">Emergency contacts configured</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step3-3">
+                        <label for="step3-3">Follow Me Home enabled</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step3-4">
+                        <label for="step3-4">Incident reporting set up</label>
+                    </div>
+                </div>
+
+                <button class="action-button success" onclick="markStepComplete(3)">Mark Step Complete ✓</button>
+            </div>
+        </div>
+
+        <!-- Step 4: Household Setup -->
+        <div class="step-container" data-step="4">
+            <div class="step-header" onclick="toggleStep(4)">
+                <div class="step-number">4</div>
+                <div class="step-title">Set Up Your Household</div>
+                <div class="step-toggle">▼</div>
+            </div>
+            <div class="step-content">
+                <p>LifeSync supports various household types including freestanding homes, apartment complexes, farms, and compounds. Set up your household for family coordination and safety.</p>
+
+                <h3>🏠 Household Types Supported:</h3>
+                <ul style="margin: 1rem 0; padding-left: 2rem;">
+                    <li><strong>Freestanding:</strong> Single-family homes, townhouses</li>
+                    <li><strong>Complex:</strong> Apartment buildings, gated communities</li>
+                    <li><strong>Farm:</strong> Agricultural properties with multiple structures</li>
+                    <li><strong>Compound:</strong> Multi-building family compounds</li>
+                </ul>
+
+                <h3>📍 GPS-Paired Addressing</h3>
+                <p>LifeSync uses GPS coordinates paired with traditional addresses for accurate location services, especially important in rural areas.</p>
+
+                <div class="tip">
+                    <h4>💡 Family Safety:</h4>
+                    <p>Household setup enables family-wide safety coordination and emergency response protocols.</p>
+                </div>
+
+                <div class="screenshot">
+                    <p>📱 Screenshot: Household setup interface with dwelling type selection and GPS mapping</p>
+                </div>
+
+                <div class="completion-checklist">
+                    <h4>✅ Completion Checklist:</h4>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step4-1">
+                        <label for="step4-1">Household type selected</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step4-2">
+                        <label for="step4-2">Address and GPS coordinates set</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step4-3">
+                        <label for="step4-3">Family members invited</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step4-4">
+                        <label for="step4-4">Household safety protocols configured</label>
+                    </div>
+                </div>
+
+                <button class="action-button success" onclick="markStepComplete(4)">Mark Step Complete ✓</button>
+            </div>
+        </div>
+
+        <!-- Step 5: Relationship Preferences -->
+        <div class="step-container" data-step="5">
+            <div class="step-header" onclick="toggleStep(5)">
+                <div class="step-number">5</div>
+                <div class="step-title">Configure Relationship Preferences</div>
+                <div class="step-toggle">▼</div>
+            </div>
+            <div class="step-content">
+                <p>LifeSync supports relationships across four contexts: Romance, Business, Community, and Family. Configure your preferences for each context.</p>
+
+                <h3>💕 Relationship Contexts:</h3>
+
+                <h4>Romance</h4>
+                <ul style="margin: 0.5rem 0; padding-left: 2rem;">
+                    <li>Compatibility matching criteria</li>
+                    <li>Dating preferences and boundaries</li>
+                    <li>Relationship goals and timelines</li>
+                </ul>
+
+                <h4>Business</h4>
+                <ul style="margin: 0.5rem 0; padding-left: 2rem;">
+                    <li>Professional networking preferences</li>
+                    <li>Collaboration style compatibility</li>
+                    <li>Business relationship boundaries</li>
+                </ul>
+
+                <h4>Community</h4>
+                <ul style="margin: 0.5rem 0; padding-left: 2rem;">
+                    <li>Community involvement interests</li>
+                    <li>Neighborhood safety participation</li>
+                    <li>Local event preferences</li>
+                </ul>
+
+                <h4>Family</h4>
+                <ul style="margin: 0.5rem 0; padding-left: 2rem;">
+                    <li>Family relationship dynamics</li>
+                    <li>Household coordination preferences</li>
+                    <li>Extended family connections</li>
+                </ul>
+
+                <div class="tip">
+                    <h4>💡 Context Awareness:</h4>
+                    <p>Different trust levels and privacy settings apply to each relationship context for appropriate interactions.</p>
+                </div>
+
+                <div class="screenshot">
+                    <p>📱 Screenshot: Relationship preferences interface with context-specific settings</p>
+                </div>
+
+                <div class="completion-checklist">
+                    <h4>✅ Completion Checklist:</h4>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step5-1">
+                        <label for="step5-1">Romance preferences configured</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step5-2">
+                        <label for="step5-2">Business networking preferences set</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step5-3">
+                        <label for="step5-3">Community involvement preferences defined</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step5-4">
+                        <label for="step5-4">Family relationship settings configured</label>
+                    </div>
+                </div>
+
+                <button class="action-button success" onclick="markStepComplete(5)">Mark Step Complete ✓</button>
+            </div>
+        </div>
+
+        <!-- Step 6: Privacy & Security -->
+        <div class="step-container" data-step="6">
+            <div class="step-header" onclick="toggleStep(6)">
+                <div class="step-number">6</div>
+                <div class="step-title">Review Privacy & Security Settings</div>
+                <div class="step-toggle">▼</div>
+            </div>
+            <div class="step-content">
+                <p>Your privacy and security are protected through multiple layers of encryption and access controls. Review and customize these settings.</p>
+
+                <h3>🔒 Security Features:</h3>
+
+                <h4>Data Encryption</h4>
+                <p>All personal data is encrypted end-to-end using military-grade encryption standards.</p>
+
+                <h4>Progressive Disclosure</h4>
+                <p>Information is only shared when both parties mutually agree to increase trust levels.</p>
+
+                <h4>Zero-Knowledge Architecture</h4>
+                <p>Sensitive matching algorithms run without exposing personal data to servers.</p>
+
+                <h4>Access Controls</h4>
+                <p>Granular permissions for different types of information and relationship contexts.</p>
+
+                <div class="warning">
+                    <h4>⚠️ Security Best Practices:</h4>
+                    <p>Regularly review your privacy settings and update your password. Enable two-factor authentication when available.</p>
+                </div>
+
+                <div class="screenshot">
+                    <p>📱 Screenshot: Privacy settings dashboard with encryption status and access controls</p>
+                </div>
+
+                <div class="completion-checklist">
+                    <h4>✅ Completion Checklist:</h4>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step6-1">
+                        <label for="step6-1">Privacy settings reviewed</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step6-2">
+                        <label for="step6-2">Data sharing preferences configured</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step6-3">
+                        <label for="step6-3">Access controls set up</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step6-4">
+                        <label for="step6-4">Security best practices enabled</label>
+                    </div>
+                </div>
+
+                <button class="action-button success" onclick="markStepComplete(6)">Mark Step Complete ✓</button>
+            </div>
+        </div>
+
+        <!-- Step 7: First Interactions -->
+        <div class="step-container" data-step="7">
+            <div class="step-header" onclick="toggleStep(7)">
+                <div class="step-number">7</div>
+                <div class="step-title">Explore Your Dashboard & Make First Connections</div>
+                <div class="step-toggle">▼</div>
+            </div>
+            <div class="step-content">
+                <p>Now that your profile is complete, explore the LifeSync dashboard and start building meaningful connections safely.</p>
+
+                <h3>📊 Dashboard Overview:</h3>
+
+                <h4>Trust Levels</h4>
+                <p>Monitor your trust score and relationship progress across different contexts.</p>
+
+                <h4>Safety Status</h4>
+                <p>Real-time safety indicators and emergency contact status.</p>
+
+                <h4>Connection Requests</h4>
+                <p>Review and respond to relationship requests from compatible matches.</p>
+
+                <h4>Activity Feed</h4>
+                <p>Stay updated on relationship developments and safety alerts.</p>
+
+                <h3>🤝 Making Safe Connections:</h3>
+                <ol style="margin: 1rem 0; padding-left: 2rem;">
+                    <li>Browse compatible matches based on your preferences</li>
+                    <li>Review trust profiles and compatibility scores</li>
+                    <li>Send connection requests with appropriate context</li>
+                    <li>Progress through trust levels gradually</li>
+                    <li>Use safety features for in-person meetings</li>
+                </ol>
+
+                <div class="tip">
+                    <h4>💡 Start Small:</h4>
+                    <p>Begin with low-risk connections in community or business contexts to build confidence with the platform.</p>
+                </div>
+
+                <div class="screenshot">
+                    <p>📱 Screenshot: Main dashboard with trust levels, safety status, and connection requests</p>
+                </div>
+
+                <div class="completion-checklist">
+                    <h4>✅ Completion Checklist:</h4>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step7-1">
+                        <label for="step7-1">Dashboard explored and understood</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step7-2">
+                        <label for="step7-2">Trust levels and safety status reviewed</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step7-3">
+                        <label for="step7-3">First connection request sent or received</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step7-4">
+                        <label for="step7-4">Safety features tested</label>
+                    </div>
+                </div>
+
+                <button class="action-button success" onclick="markStepComplete(7)">Mark Step Complete ✓</button>
+            </div>
+        </div>
+
+        <!-- Step 8: Ongoing Usage -->
+        <div class="step-container" data-step="8">
+            <div class="step-header" onclick="toggleStep(8)">
+                <div class="step-number">8</div>
+                <div class="step-title">Master Ongoing Usage & Best Practices</div>
+                <div class="step-toggle">▼</div>
+            </div>
+            <div class="step-content">
+                <p>Congratulations! You're now ready to use LifeSync effectively. Here are the best practices for ongoing success.</p>
+
+                <h3>🔄 Regular Maintenance:</h3>
+
+                <h4>Profile Updates</h4>
+                <ul style="margin: 0.5rem 0; padding-left: 2rem;">
+                    <li>Keep your profile information current</li>
+                    <li>Update relationship preferences as they evolve</li>
+                    <li>Refresh your safety information regularly</li>
+                </ul>
+
+                <h4>Trust Building</h4>
+                <ul style="margin: 0.5rem 0; padding-left: 2rem;">
+                    <li>Progress through trust levels gradually</li>
+                    <li>Provide honest feedback on interactions</li>
+                    <li>Maintain consistent communication</li>
+                </ul>
+
+                <h4>Safety First</h4>
+                <ul style="margin: 0.5rem 0; padding-left: 2rem;">
+                    <li>Always use safety features for new meetings</li>
+                    <li>Keep emergency contacts updated</li>
+                    <li>Report any safety concerns immediately</li>
+                </ul>
+
+                <h3>📞 Getting Help:</h3>
+                <ul style="margin: 1rem 0; padding-left: 2rem;">
+                    <li><strong>Help Center:</strong> Comprehensive guides and FAQs</li>
+                    <li><strong>Community Support:</strong> Connect with other users</li>
+                    <li><strong>Safety Hotline:</strong> 24/7 emergency support</li>
+                    <li><strong>Technical Support:</strong> App and account issues</li>
+                </ul>
+
+                <div class="tip">
+                    <h4>💡 Community Building:</h4>
+                    <p>Join LifeSync community groups to learn from experienced users and share best practices.</p>
+                </div>
+
+                <div class="warning">
+                    <h4>⚠️ Remember:</h4>
+                    <p>Your safety and privacy are your responsibility. Always trust your instincts and use platform safety features.</p>
+                </div>
+
+                <div style="text-align: center; margin: 2rem 0;">
+                    <h3>🎉 Welcome to the LifeSync Community!</h3>
+                    <p>You're now equipped to build meaningful, safe relationships across all areas of life.</p>
+                    <button class="action-button" style="font-size: 1.25rem; padding: 1rem 2rem; margin-top: 1rem;">Start Exploring LifeSync →</button>
+                </div>
+
+                <div class="completion-checklist">
+                    <h4>✅ Completion Checklist:</h4>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step8-1">
+                        <label for="step8-1">Best practices understood</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step8-2">
+                        <label for="step8-2">Support resources identified</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step8-3">
+                        <label for="step8-3">Safety protocols committed to memory</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step8-4">
+                        <label for="step8-4">Ready for ongoing LifeSync usage</label>
+                    </div>
+                </div>
+
+                <button class="action-button success" onclick="markStepComplete(8)">Complete Setup ✓</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalSteps = 8;
+        const completedSteps = new Set();
+
+        function toggleStep(stepNumber) {
+            const stepContent = document.querySelector(`[data-step="${stepNumber}"] .step-content`);
+            const toggleIcon = document.querySelector(`[data-step="${stepNumber}"] .step-toggle`);
+
+            if (stepContent.classList.contains('active')) {
+                stepContent.classList.remove('active');
+                toggleIcon.classList.remove('rotated');
+            } else {
+                // Close other steps
+                document.querySelectorAll('.step-content.active').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.querySelectorAll('.step-toggle.rotated').forEach(icon => {
+                    icon.classList.remove('rotated');
+                });
+
+                stepContent.classList.add('active');
+                toggleIcon.classList.add('rotated');
+            }
+        }
+
+        function markStepComplete(stepNumber) {
+            completedSteps.add(stepNumber);
+            updateProgress();
+            updateNavigation();
+
+            // Auto-open next step if current is completed
+            if (stepNumber < totalSteps) {
+                setTimeout(() => toggleStep(stepNumber + 1), 500);
+            }
+        }
+
+        function updateProgress() {
+            const progress = (completedSteps.size / totalSteps) * 100;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+            document.getElementById('stepCounter').textContent = `Step ${currentStep} of ${totalSteps}`;
+        }
+
+        function updateNavigation() {
+            document.getElementById('prevButton').disabled = currentStep === 1;
+            document.getElementById('nextButton').disabled = currentStep === totalSteps;
+        }
+
+        function navigateStep(direction) {
+            const newStep = currentStep + direction;
+            if (newStep >= 1 && newStep <= totalSteps) {
+                currentStep = newStep;
+                updateProgress();
+                updateNavigation();
+                toggleStep(currentStep);
+            }
+        }
+
+        // Event listeners
+        document.getElementById('prevButton').addEventListener('click', () => navigateStep(-1));
+        document.getElementById('nextButton').addEventListener('click', () => navigateStep(1));
+
+        // Initialize
+        updateProgress();
+        updateNavigation();
+        toggleStep(1); // Open first step by default
+
+        // Add smooth scrolling for navigation
+        document.querySelectorAll('.nav-button:not(:disabled)').forEach(button => {
+            button.addEventListener('click', function(e) {
+                const stepElement = document.querySelector(`[data-step="${currentStep}"]`);
+                stepElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+    </script>
+</body>
+</html>

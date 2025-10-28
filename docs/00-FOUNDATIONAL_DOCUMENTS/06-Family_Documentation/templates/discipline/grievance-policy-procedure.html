@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HRHelp - Grievance Policy and Procedure</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700;900&family=Manrope:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand-color: #3b82f6; /* blue-500 */
+            --brand-color-dark: #60a5fa; /* blue-400 */
+        }
+        body { 
+            font-family: 'Manrope', sans-serif; 
+            background-color: #f1f5f9; /* slate-100 */
+            color: #0f172a; /* slate-900 */
+            line-height: 1.6; 
+        }
+        .dark body {
+            background-color: #020617; /* slate-950 */
+            color: #e2e8f0; /* slate-200 */
+        }
+        .document-page { 
+            width: 210mm; 
+            min-height: 297mm; 
+            background-color: #ffffff; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+            margin: 2rem auto; 
+            border-radius: 0.5rem; 
+            border: 1px solid #e2e8f0; /* slate-200 */
+            display: flex; 
+            flex-direction: column; 
+            position: relative; 
+        }
+        .dark .document-page {
+            background-color: #1e293b; /* slate-800 */
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            border-color: #334155; /* slate-700 */
+        }
+        .cover-page, .back-cover-page { justify-content: space-between; align-items: center; padding: 2rem 1.5rem; text-align: center; }
+        .hrhelp-logo-svg { 
+            height: 80px; 
+            width: auto; 
+        }
+        .dark .hrhelp-logo-svg .logo-text-dark { fill: white; }
+        .hrhelp-logo-svg .logo-accent { fill: var(--brand-color); }
+        .dark .hrhelp-logo-svg .logo-accent-dark { fill: var(--brand-color-dark); }
+        .cover-title { font-size: 2.5rem; font-weight: 900; line-height: 1.2; color: var(--brand-color); text-transform: uppercase; margin-bottom: 1rem; font-family: 'Roboto Slab', serif; }
+        .dark .cover-title { color: var(--brand-color-dark); }
+        .page-footer { position: absolute; bottom: 1cm; left: 2cm; right: 2cm; display: flex; justify-content: space-between; font-size: 10pt; color: #64748b; }
+        .content-page { padding: 2.5cm 2cm; flex-grow: 1; position: relative; }
+        h1, h2, h3 { font-family: 'Roboto Slab', serif; color: var(--brand-color); }
+        .dark h1, .dark h2, .dark h3 { color: var(--brand-color-dark); }
+        h1 { font-size: 2.25rem; font-weight: 900; margin-bottom: 0.5rem; }
+        h2 { font-size: 1.75rem; margin-top: 2rem; margin-bottom: 1rem; border-bottom: 1px solid #cbd5e1; padding-bottom: 0.5rem; }
+        .dark h2 { border-color: #475569; }
+        [contenteditable="true"] { outline: 2px dashed transparent; transition: all 0.3s; padding: 0.25rem; border-radius: 0.25rem; }
+        [contenteditable="true"]:focus, [contenteditable="true"]:hover { outline-color: var(--brand-color); background-color: rgba(59, 130, 246, 0.05); }
+        .dark [contenteditable="true"]:focus, .dark [contenteditable="true"]:hover { outline-color: var(--brand-color-dark); background-color: rgba(96, 165, 250, 0.1); }
+        .action-buttons { position: fixed; top: 1rem; right: 1rem; display: flex; flex-direction: column; gap: 0.75rem; z-index: 1001; background-color: rgba(30, 41, 59, 0.8); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); padding: 1rem; border-radius: 0.75rem; border: 1px solid #334155; }
+        .action-buttons button { background-color: #334155; color: #f1f5f9; border: 1px solid #475569; border-radius: 0.5rem; padding: 0.5rem 1rem; cursor: pointer; transition: all 0.2s ease; text-align: left; display: flex; align-items: center; gap: 0.5rem; }
+        .action-buttons button:hover { background-color: var(--brand-color); border-color: var(--brand-color-dark); }
+        .page-actions { position: absolute; top: 0.5rem; right: 0.5rem; display: flex; gap: 0.25rem; }
+        .page-actions button { background: #475569; border: none; color: white; border-radius: 50%; width: 28px; height: 28px; font-size: 0.8rem; cursor: pointer; }
+        .sign-off-section { margin-top: auto; padding-top: 1.5rem; }
+        .toc-list ul { list-style-type: none; padding-left: 0; }
+        .toc-list li a { text-decoration: none; color: #334155; display: block; padding: 0.25rem 0; }
+        .dark .toc-list li a { color: #94a3b8; }
+        .toc-list li a:hover { color: var(--brand-color); }
+        .dark .toc-list li a:hover { color: var(--brand-color-dark); }
+        @media print {
+            body { background-color: white; color: black; }
+            .document-page { box-shadow: none; margin: 0; border: none; page-break-after: always; color: black; background-color: white; }
+            .action-buttons, .page-actions { display: none; }
+            .dark .document-page, .dark body { background-color: white !important; color: black !important; }
+            .dark h1, .dark h2, .dark h3, .dark .cover-title { color: var(--brand-color) !important; }
+            .dark .hrhelp-logo-svg .logo-text-dark { fill: black; }
+            .dark .hrhelp-logo-svg .logo-accent-dark, .hrhelp-logo-svg .logo-accent { fill: var(--brand-color) !important; }
+            [contenteditable="true"] { outline: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="action-buttons">
+        <button onclick="window.print()"><i class="fas fa-print fa-fw"></i><span>Print / Save PDF</span></button>
+        <button onclick="shareDocument()"><i class="fas fa-share-alt fa-fw"></i><span>Share Document</span></button>
+        <button id="restore-pages-btn" onclick="restoreDefaultPages()" class="hidden"><i class="fas fa-undo fa-fw"></i><span>Restore Pages</span></button>
+    </div>
+
+    <div class="document-page cover-page" data-page-type="cover">
+        <div class="text-center mb-8">
+            <div class="hrhelp-logo-svg inline-block">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 60" class="hrhelp-logo-svg">
+                    <g class="logo-accent" fill="#3b82f6">
+                        <path d="M54.4,22.4c-5.3-5.3-13.8-5.3-19.1,0L32,25.7l-3.3-3.3c-5.3-5.3-13.8-5.3-19.1,0c-5.3,5.3-5.3,13.8,0,19.1L22,54l2.2,2.2c1,1,2.6,1,3.5,0L32,52.1l4.2-4.2l-8.4-8.4l5.3-5.3l8.4,8.4L48,38.4l9.6-9.6C62.9,29.6,59.7,25.6,54.4,22.4z"/>
+                        <circle cx="12.8" cy="12.8" r="8"/>
+                        <circle cx="51.2" cy="12.8" r="8"/>
+                    </g>
+                    <text x="70" y="45" font-family="Roboto Slab, serif" font-size="40" font-weight="700" class="logo-text-dark" fill="black">HR</text>
+                    <text x="120" y="45" font-family="Roboto Slab, serif" font-size="40" font-weight="900" class="logo-accent-dark logo-accent" fill="#3b82f6">Help</text>
+                </svg>
+            </div>
+        </div>
+        <div class="flex flex-col justify-center items-center flex-grow">
+            <h1 class="cover-title" contenteditable="true">Grievance Policy and Procedure</h1>
+            <p class="text-lg mt-2 text-slate-600 dark:text-slate-400" contenteditable="true">Company Policy</p>
+        </div>
+        <div class="w-full max-w-md mx-auto text-left text-sm">
+             <div id="cover-details" class="border border-slate-200 dark:border-slate-700 rounded-lg p-4 space-y-2">
+                </div>
+             <button onclick="addCoverField()" class="text-xs text-blue-600 dark:text-blue-400 hover:underline mt-2"><i class="fas fa-plus-circle mr-1"></i>Add Custom Field</button>
+        </div>
+    </div>
+
+    <div class="document-page content-page" data-page-type="introduction">
+        <div class="page-actions"><button onclick="togglePageVisibility(this)" title="Remove Page"><i class="fas fa-times"></i></button></div>
+        <h2 class="!mt-0">1. Purpose & Scope</h2>
+        <p contenteditable="true">The purpose of this policy is to provide a fair and effective procedure for employees to raise and resolve work-related grievances. It aims to ensure that all grievances are dealt with promptly, fairly, and consistently, without fear of victimization. This policy applies to all employees of <span data-bind="companyName">[Company Name]</span>.</p>
+        
+        <h2>2. What is a Grievance?</h2>
+        <p contenteditable="true">A grievance is any feeling of dissatisfaction or injustice an employee has concerning their work, working conditions, or relationships with colleagues or managers. This procedure is not for challenging disciplinary actions, which must be handled through the appeal process of the Disciplinary Procedure.</p>
+        <div class="page-footer"><span>&copy; <span class="current-year"></span> HRHelp</span><span data-bind="companyName">[Company Name]</span> - Confidential<span>Page <span class="page-number"></span> of <span class="total-pages"></span></span></div>
+    </div>
+
+    <div class="document-page content-page" data-page-type="content">
+        <main id="main-content">
+            <h2 contenteditable="true">3. The Grievance Procedure</h2>
+            <h3 class="text-lg font-bold">Step 1: Informal Discussion</h3>
+            <p contenteditable="true">Employees are encouraged to first attempt to resolve the issue informally by discussing it directly with their immediate Line Manager. If the grievance involves the Line Manager, the employee should approach the next level of management or the HR department.</p>
+
+            <h3 class="text-lg font-bold mt-4">Step 2: Formal Written Grievance</h3>
+            <p contenteditable="true">If the issue cannot be resolved informally, the employee must submit a formal, written grievance to their Line Manager or the HR department using the official Grievance Form. The form should clearly state the nature of the complaint and the desired resolution.</p>
+
+            <h3 class="text-lg font-bold mt-4">Step 3: Grievance Hearing</h3>
+            <p contenteditable="true">The company will arrange a formal grievance hearing, typically within 5 working days of receiving the written grievance. The employee has the right to be accompanied by a fellow employee or a trade union representative. The company will investigate the matter and provide a formal written outcome after the hearing.</p>
+            
+            <h3 class="text-lg font-bold mt-4">Step 4: Appeal</h3>
+             <p contenteditable="true">If the employee is dissatisfied with the outcome, they may appeal the decision in writing to a more senior level of management within 5 working days. The outcome of the appeal is final within the organization. Should the matter remain unresolved, the employee may refer the dispute to the CCMA.</p>
+        </main>
+        <div class="page-footer"><span>&copy; <span class="current-year"></span> HRHelp</span><span data-bind="companyName">[Company Name]</span> - Confidential<span>Page <span class="page-number"></span> of <span class="total-pages"></span></span></div>
+    </div>
+
+    <div class="document-page content-page flex flex-col" data-page-type="signoff">
+        <h2 class="!mt-0">Acknowledgement of Policy</h2>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4" contenteditable="true">By signing below, the employee acknowledges that they have received, read, and understood the company's Grievance Policy and Procedure.</p>
+        
+        <div class="mt-auto">
+            <div class="form-field"><label>Employee Signature</label><p style="min-height: 4rem;"></p><div class="flex justify-between text-sm mt-1"><span data-bind="employeeName">[Employee Name]</span><span>Date:</span></div></div>
+        </div>
+        
+        <div class="page-footer"><span>&copy; <span class="current-year"></span> HRHelp</span><span data-bind="companyName">[Company Name]</span> - Confidential<span>Page <span class="page-number"></span> of <span class="total-pages"></span></span></div>
+    </div>
+
+    <div class="document-page back-cover-page" data-page-type="back-cover">
+        <div class="text-center mb-8">
+             <div class="hrhelp-logo-svg inline-block">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 60" class="hrhelp-logo-svg">
+                    <g class="logo-accent-dark logo-accent" fill="#60a5fa">
+                        <path d="M54.4,22.4c-5.3-5.3-13.8-5.3-19.1,0L32,25.7l-3.3-3.3c-5.3-5.3-13.8-5.3-19.1,0c-5.3,5.3-5.3,13.8,0,19.1L22,54l2.2,2.2c1,1,2.6,1,3.5,0L32,52.1l4.2-4.2l-8.4-8.4l5.3-5.3l8.4,8.4L48,38.4l9.6-9.6C62.9,29.6,59.7,25.6,54.4,22.4z"/>
+                        <circle cx="12.8" cy="12.8" r="8"/>
+                        <circle cx="51.2" cy="12.8" r="8"/>
+                    </g>
+                    <text x="70" y="45" font-family="Roboto Slab, serif" font-size="40" font-weight="700" class="logo-text-dark" fill="white">HR</text>
+                    <text x="120" y="45" font-family="Roboto Slab, serif" font-size="40" font-weight="900" class="logo-accent-dark logo-accent" fill="#60a5fa">Help</text>
+                </svg>
+            </div>
+        </div>
+        <div class="flex-grow flex flex-col justify-center items-center">
+            <h2 class="text-blue-400">Our Mission</h2>
+            <p class="max-w-xl text-slate-300">To provide accessible, intelligent, and comprehensive HR solutions that empower businesses to build fair, compliant, and productive workplaces.</p>
+            <h2 class="mt-8 text-blue-400">The Builder's Ethos</h2>
+            <div class="text-center space-y-1 text-slate-300">
+                <div><strong>STRUCTURE:</strong> 🛡️ We build organised, logical, and robust systems.</div>
+                <div><strong>ASSEMBLE:</strong> 🧩 We bring together disparate parts to create a cohesive whole.</div>
+                <div><strong>LEGACY:</strong> 🦅 We build upon the work of our predecessors.</div>
+                <div><strong>ARCHITECT:</strong> 🏛️ We design with vision and purpose for the future.</div>
+                <div><strong>TOOL-UP:</strong> 🛠️ We empower users with the right tools and knowledge.</div>
+                <div><strong>INNOVATE:</strong> 💡 We constantly seek better ways to solve problems.</div>
+                <div><strong>SUSTAIN:</strong> 🌱 We build things that are meant to last.</div>
+                <div><strong>OBSERVE:</strong> 👁️ We pay close attention to identify needs and find solutions.</div>
+            </div>
+        </div>
+        <div class="text-xs text-slate-500 mt-auto pt-4"><span>https://salatiso.com/hrhelp/</span> | <span>hrhelp@salatiso.com</span> | <span>&copy; <span class="current-year"></span> HRHelp</span></div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeDataBinding();
+            initializeCoverDetails();
+            generateTOC();
+            updatePageNumbers();
+        });
+
+        function initializeDataBinding() {
+            document.body.addEventListener('input', (e) => {
+                const target = e.target;
+                if (target.hasAttribute('data-bind')) {
+                    const bindKey = target.getAttribute('data-bind');
+                    const value = target.innerHTML;
+                    document.querySelectorAll(`[data-bind="${bindKey}"]`).forEach(elem => {
+                        if (elem !== target) {
+                            elem.innerHTML = value;
+                        }
+                    });
+                }
+            });
+        }
+        
+        function initializeCoverDetails() {
+            const details = [
+                { label: 'Company Name', bind: 'companyName', value: '[Enter Company Name]' },
+                { label: 'Policy No.', bind: 'docNo', value: 'HR-POL-002' },
+                { label: 'Version', bind: 'version', value: '1.0' },
+                { label: 'Effective Date', bind: 'date', value: new Date().toLocaleDateString('en-CA') },
+            ];
+            details.forEach(d => addCoverField(d.label, d.value, d.bind));
+        }
+
+        function addCoverField(label = 'Custom Field', value = '[Enter Value]', bindKey = null) {
+            const container = document.getElementById('cover-details');
+            const fieldDiv = document.createElement('div');
+            fieldDiv.className = 'flex items-center border-b border-slate-200 dark:border-slate-700 pb-1';
+            
+            const labelEl = document.createElement('strong');
+            labelEl.className = 'w-28 text-slate-500 dark:text-slate-400';
+            labelEl.setAttribute('contenteditable', 'true');
+            labelEl.textContent = label;
+            
+            const valueEl = document.createElement('span');
+            valueEl.className = 'flex-grow';
+            valueEl.setAttribute('contenteditable', 'true');
+            if(bindKey) valueEl.setAttribute('data-bind', bindKey);
+            valueEl.innerHTML = value;
+
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'ml-2 text-red-500 hover:text-red-700 text-xs hidden';
+            removeBtn.innerHTML = '<i class="fas fa-times-circle"></i>';
+            removeBtn.onclick = () => fieldDiv.remove();
+            
+            fieldDiv.addEventListener('mouseenter', () => removeBtn.classList.remove('hidden'));
+            fieldDiv.addEventListener('mouseleave', () => removeBtn.classList.add('hidden'));
+
+            fieldDiv.append(labelEl, valueEl, removeBtn);
+            container.appendChild(fieldDiv);
+        }
+
+        function generateTOC() {
+            const tocContainer = document.getElementById('toc-container');
+            tocContainer.innerHTML = ''; // Clear existing TOC
+            const tocList = document.createElement('ul');
+            const headings = document.querySelectorAll('.content-page[data-page-type="content"] h2, .content-page[data-page-type="content"] h3');
+            headings.forEach((h, index) => {
+                const title = h.textContent;
+                const anchorId = `section-${index}`;
+                h.id = anchorId;
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `<a href="#${anchorId}" style="padding-left: ${h.tagName === 'H3' ? '1rem' : '0'}">${title}</a>`;
+                tocList.appendChild(listItem);
+            });
+            if (tocList.children.length === 0) {
+                tocContainer.innerHTML = '<p class="text-slate-500">No sections found in document.</p>';
+            } else {
+                tocContainer.appendChild(tocList);
+            }
+        }
+
+        function updatePageNumbers() {
+            const pages = document.querySelectorAll('.document-page:not(.hidden)');
+            pages.forEach((page, index) => {
+                const pageNumEl = page.querySelector('.page-number');
+                const totalPagesEl = page.querySelector('.total-pages');
+                if(pageNumEl) pageNumEl.textContent = index + 1;
+                if(totalPagesEl) totalPagesEl.textContent = pages.length;
+            });
+        }
+
+        function togglePageVisibility(button) {
+            const page = button.closest('.document-page');
+            page.classList.add('hidden');
+            document.getElementById('restore-pages-btn').classList.remove('hidden');
+            updatePageNumbers();
+        }
+
+        function restoreDefaultPages() {
+            document.querySelectorAll('.document-page.hidden').forEach(p => p.classList.remove('hidden'));
+            document.getElementById('restore-pages-btn').classList.add('hidden');
+            updatePageNumbers();
+        }
+        
+        async function shareDocument() { 
+            const title = document.querySelector('.cover-title').textContent;
+            const text = `Please review this HR document: ${title}`;
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: title,
+                        text: text,
+                        url: window.location.href
+                    });
+                } catch (err) {
+                    console.error('Error sharing:', err);
+                }
+            } else {
+                navigator.clipboard.writeText(`${text}\n${window.location.href}`).then(() => alert('Share link copied to clipboard!')).catch(err => console.error(err));
+            }
+         }
+    </script>
+</body>
+</html>

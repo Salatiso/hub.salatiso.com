@@ -1,0 +1,56 @@
+/* src/components/navigation/Sidebar.css */
+
+/* Sidebar base styling */
+aside[role="navigation"] {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(71, 85, 105, 0.5) transparent;
+}
+
+aside[role="navigation"]::-webkit-scrollbar {
+  width: 6px;
+}
+
+aside[role="navigation"]::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+aside[role="navigation"]::-webkit-scrollbar-thumb {
+  background-color: rgba(71, 85, 105, 0.5);
+  border-radius: 3px;
+}
+
+aside[role="navigation"]::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(71, 85, 105, 0.7);
+}
+
+/* Navigation items smooth transitions */
+a[role="link"],
+button[role="button"] {
+  transition: all 150ms ease-out;
+}
+
+a[role="link"]:hover,
+button[role="button"]:hover {
+  transform: translateX(2px);
+}
+
+/* Focus styles for accessibility */
+a[role="link"]:focus-visible,
+button[role="button"]:focus-visible {
+  outline: 2px solid rgb(59, 130, 246);
+  outline-offset: 2px;
+}
+
+/* Mobile drawer animation */
+@media (max-width: 1023px) {
+  aside[role="navigation"] {
+    box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  aside[role="navigation"] {
+    width: 100vw;
+  }
+}

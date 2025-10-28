@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Corporate Banking Application - Mlandeli Notemba Investments | DocuHelp</title>
+    <meta name="viewport" content="width=210mm, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700;900&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Manrope', sans-serif; }
+        .a4 { width: 210mm; min-height: 297mm; margin: 1rem auto; background: #fff; box-shadow: 0 0 8px #ccc; }
+        @media print { .no-print { display: none !important; } .a4 { box-shadow: none; margin: 0; } }
+        .watermark { position: absolute; opacity: 0.06; left: 50%; top: 50%; transform: translate(-50%,-50%); font-size: 7rem; font-weight: bold; color: #0540F2; pointer-events: none; }
+        .form-field { border-bottom: 1px solid #ccc; min-height: 20px; display: inline-block; width: 100%; padding: 2px 0; }
+        .checkbox { width: 16px; height: 16px; border: 1px solid #333; display: inline-block; margin-right: 5px; position: relative; }
+        .checkbox.checked::after { content: "✓"; position: absolute; left: 2px; top: -2px; font-size: 12px; }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="no-print flex justify-between items-center max-w-3xl mx-auto mt-4 mb-2">
+        <div>
+            <button onclick="window.print()" class="bg-blue-600 text-white px-3 py-1 rounded mr-2">Print</button>
+            <button onclick="fillForm()" class="bg-green-600 text-white px-3 py-1 rounded">Review Information</button>
+        </div>
+    </div>
+
+    <!-- Page 1: Application Form -->
+    <div class="a4 relative p-8 mb-8 bg-white">
+        <div class="watermark">DocuHelp</div>
+        
+        <!-- DocuHelp Header -->
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-blue-200">
+            <div class="flex items-center">
+                <svg class="h-12 w-12 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                    <path d="M15 25 L35 25 L40 30 L85 30 L85 75 L15 75 Z" fill="#0540F2" stroke="#2563EB" stroke-width="1"/>
+                    <rect x="25" y="40" width="45" height="28" fill="#3B82F6" stroke="#1D4ED8" stroke-width="1" rx="2"/>
+                    <rect x="30" y="45" width="35" height="3" fill="white" rx="1"/>
+                    <rect x="30" y="52" width="35" height="2" fill="white" rx="1"/>
+                    <rect x="30" y="57" width="25" height="2" fill="white" rx="1"/>
+                </svg>
+                <div>
+                    <span class="font-bold text-2xl text-blue-900" style="font-family: 'Roboto Slab', serif;">DocuHelp</span>
+                    <p class="text-blue-700 text-sm">Professional Banking Application Services</p>
+                </div>
+            </div>
+            <div class="text-right text-sm text-gray-600">
+                <p>Application Date: August 19, 2025</p>
+                <p>Document: Corporate Banking Application</p>
+            </div>
+        </div>
+
+        <!-- Application Header -->
+        <div class="text-center mb-6">
+            <h1 class="text-2xl font-bold text-blue-900 mb-2">CORPORATE BANKING APPLICATION</h1>
+            <h2 class="text-xl text-blue-700 mb-2">Business Account Opening</h2>
+            <p class="text-sm text-gray-600">Complete application for business banking services</p>
+        </div>
+
+        <!-- Section 1: Company Information -->
+        <div class="mb-6">
+            <h3 class="text-lg font-bold mb-3 bg-blue-100 p-2">1. COMPANY INFORMATION</h3>
+            
+            <div class="grid grid-cols-1 gap-4">
+                <div>
+                    <label class="text-sm font-semibold">Legal Company Name:</label>
+                    <div class="form-field">Mlandeli Notemba Investments (Proprietary) Limited</div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-sm font-semibold">Trading Name (if different):</label>
+                        <div class="form-field">Mlandeli Notemba Investments</div>
+                    </div>
+                    <div>
+                        <label class="text-sm font-semibold">Company Registration Number:</label>
+                        <div class="form-field">To be allocated by CIPC</div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-sm font-semibold">Date of Incorporation:</label>
+                        <div class="form-field">Upon CIPC registration</div>
+                    </div>
+                    <div>
+                        <label class="text-sm font-semibold">VAT Registration Number:</label>
+                        <div class="form-field">To be registered with SARS</div>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="text-sm font-semibold">Nature of Business:</label>
+                    <div class="form-field">Investment holding company and family business management</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Registered Address -->
+        <div class="mb-6">
+            <h3 class="text-lg font-bold mb-3 bg-blue-100 p-2">2. REGISTERED OFFICE ADDRESS</h3>
+            
+            <div class="grid grid-cols-1 gap-3">
+                <div>
+                    <label class="text-sm font-semibold">Street Address:</label>
+                    <div class="form-field">123 Ubuntu Business Park</div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-sm font-semibold">Suburb:</label>
+                        <div class="form-field">Sandton</div>
+                    </div>
+                    <div>
+                        <label class="text-sm font-semibold">City:</label>
+                        <div class="form-field">Johannesburg</div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-sm font-semibold">Province:</label>
+                        <div class="form-field">Gauteng</div>
+                    </div>
+                    <div>
+                        <label class="text-sm font-semibold">Postal Code:</label>
+                        <div class="form-field">2196</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Business Address -->
+        <div class="mb-6">
+            <h3 class="text-lg font-bold mb-3 bg-blue-100 p-2">3. PRINCIPAL BUSINESS ADDRESS</h3>
+            
+            <div class="flex items-center mb-3">
+                <span class="checkbox checked"></span>
+                <label class="text-sm">Same as registered address</label>
+            </div>
+            
+            <div class="grid grid-cols-1 gap-3 text-gray-600">
+                <div>
+                    <label class="text-sm font-semibold">Street Address:</label>
+                    <div class="form-field">123 Ubuntu Business Park</div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-sm font-semibold">Suburb:</label>
+                        <div class="form-field">Sandton</div>
+                    </div>
+                    <div>
+                        <label class="text-sm font-semibold">City:</label>
+                        <div class="form-field">Johannesburg</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 4: Contact Information -->
+        <div class="mb-6">
+            <h3 class="text-lg font-bold mb-3 bg-blue-100 p-2">4. CONTACT INFORMATION</h3>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-sm font-semibold">Business Telephone:</label>
+                    <div class="form-field">To be provided</div>
+                </div>
+                <div>
+                    <label class="text-sm font-semibold">Business Fax:</label>
+                    <div class="form-field">N/A</div>
+                </div>
+                <div>
+                    <label class="text-sm font-semibold">Business Email:</label>
+                    <div class="form-field">info@mlandeli-notemba.co.za</div>
+                </div>
+                <div>
+                    <label class="text-sm font-semibold">Website:</label>
+                    <div class="form-field">www.mlandeli-notemba.co.za</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 5: Account Requirements -->
+        <div class="mb-6">
+            <h3 class="text-lg font-bold mb-3 bg-blue-100 p-2">5. ACCOUNT REQUIREMENTS</h3>
+            
+            <div class="space-y-3">
+                <p class="text-sm font-semibold">Account Types Required:</p>
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="flex items-center">
+                        <span class="checkbox checked"></span>
+                        <label class="text-sm">Business Current Account</label>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="checkbox checked"></span>
+                        <label class="text-sm">Business Savings Account</label>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="checkbox"></span>
+                        <label class="text-sm">Fixed Deposit Account</label>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="checkbox"></span>
+                        <label class="text-sm">Credit Facility</label>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <label class="text-sm font-semibold">Initial Deposit Amount:</label>
+                    <div class="form-field">R 100,000</div>
+                </div>
+                
+                <div>
+                    <label class="text-sm font-semibold">Expected Monthly Turnover:</label>
+                    <div class="form-field">R 250,000 - R 500,000</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 6: Purpose of Account -->
+        <div class="mb-6">
+            <h3 class="text-lg font-bold mb-3 bg-blue-100 p-2">6. PURPOSE OF ACCOUNT</h3>
+            
+            <div class="text-sm">
+                <p class="mb-2">The account will be used for:</p>
+                <ul class="list-disc ml-6 space-y-1">
+                    <li>Receiving dividend payments from operating subsidiaries</li>
+                    <li>Making investments in new business ventures and subsidiaries</li>
+                    <li>Paying management fees and operational expenses</li>
+                    <li>Collecting intellectual property licensing fees</li>
+                    <li>Managing family trust distributions and investments</li>
+                    <li>Conducting business transactions for holding company operations</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 2: Directors and Signatories -->
+    <div class="a4 relative p-8 mb-8 bg-white">
+        <div class="watermark">DocuHelp</div>
+        
+        <!-- Section 7: Directors Information -->
+        <div class="mb-6">
+            <h3 class="text-lg font-bold mb-3 bg-blue-100 p-2">7. DIRECTORS INFORMATION</h3>
+            
+            <!-- Director 1 -->
+            <div class="border border-gray-300 p-4 mb-4">
+                <h4 class="font-semibold mb-3 text-blue-800">DIRECTOR 1 - Chief Executive Officer</h4>
+                
+                <div class="grid grid-cols-2 gap-4 mb-3">
+                    <div>
+                        <label class="text-xs font-semibold">Full Names:</label>
+                        <div class="form-field">Visa Sande Mdeni</div>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold">ID Number:</label>
+                        <div class="form-field">To be provided</div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 mb-3">
+                    <div>
+                        <label class="text-xs font-semibold">Date of Birth:</label>
+                        <div class="form-field">To be provided</div>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold">Nationality:</label>
+                        <div class="form-field">South African</div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="text-xs font-semibold">Residential Address:</label>
+                    <div class="form-field">To be provided - Private residential address</div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 mb-3">
+                    <div>
+                        <label class="text-xs font-semibold">Mobile Number:</label>
+                        <div class="form-field">To be provided</div>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold">Email Address:</label>
+                        <div class="form-field">visa@mlandeli-notemba.co.za</div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <p class="text-xs font-semibold mb-2">Authorized Signatory:</p>
+                    <div class="flex items-center">
+                        <span class="checkbox checked"></span>
+                        <label class="text-xs">Yes - Single signatory up to R50,000</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Director 2 -->
+            <div class="border border-gray-300 p-4 mb-4">
+                <h4 class="font-semibold mb-3 text-blue-800">DIRECTOR 2 - Chairman</h4>
+                
+                <div class="grid grid-cols-2 gap-4 mb-3">
+                    <div>
+                        <label class="text-xs font-semibold">Full Names:</label>
+                        <div class="form-field">Salatiso Lonwabo Mdeni</div>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold">ID Number:</label>
+                        <div class="form-field">To be provided</div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 mb-3">
+                    <div>
+                        <label class="text-xs font-semibold">Date of Birth:</label>
+                        <div class="form-field">To be provided</div>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold">Nationality:</label>
+                        <div class="form-field">South African</div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="text-xs font-semibold">Residential Address:</label>
+                    <div class="form-field">To be provided - Private residential address</div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 mb-3">
+                    <div>
+                        <label class="text-xs font-semibold">Mobile Number:</label>
+                        <div class="form-field">To be provided</div>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold">Email Address:</label>
+                        <div class="form-field">salatiso@mlandeli-notemba.co.za</div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <p class="text-xs font-semibold mb-2">Authorized Signatory:</p>
+                    <div class="flex items-center">
+                        <span class="checkbox checked"></span>
+                        <label class="text-xs">Yes - Dual signatory required for amounts above R50,000</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 8: Shareholding Structure -->
+        <div class="mb-6">
+            <h3 class="text-lg font-bold mb-3 bg-blue-100 p-2">8. SHAREHOLDING STRUCTURE</h3>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse border border-gray-300 text-sm">
+                    <thead>
+                        <tr class="bg-blue-50">
+                            <th class="border border-gray-300 p-2 text-left">Shareholder Name</th>
+                            <th class="border border-gray-300 p-2 text-center">ID/Registration Number</th>
+                            <th class="border border-gray-300 p-2 text-center">Shares Held</th>
+                            <th class="border border-gray-300 p-2 text-center">Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="border border-gray-300 p-2">The Mlandeli Notemba Family Trust</td>
+                            <td class="border border-gray-300 p-2 text-center">To be provided</td>
+                            <td class="border border-gray-300 p-2 text-center">10,000</td>
+                            <td class="border border-gray-300 p-2 text-center">100%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Section 9: Business Activities -->
+        <div class="mb-6">
+            <h3 class="text-lg font-bold mb-3 bg-blue-100 p-2">9. DETAILED BUSINESS ACTIVITIES</h3>
+            
+            <div class="space-y-4 text-sm">
+                <div>
+                    <h4 class="font-semibold text-blue-700">Primary Business Activities:</h4>
+                    <ul class="list-disc ml-6 space-y-1">
+                        <li>Investment holding company managing family business portfolio</li>
+                        <li>Ownership and management of operating subsidiaries</li>
+                        <li>Intellectual property ownership and licensing</li>
+                        <li>Family wealth management and succession planning</li>
+                        <li>Risk management through subsidiary structure</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-blue-700">Planned Subsidiaries:</h4>
+                    <ul class="list-disc ml-6 space-y-1">
+                        <li><strong>SafetyHelp (Pty) Ltd:</strong> Occupational health and safety services</li>
+                        <li><strong>BizHelp (Pty) Ltd:</strong> Business development and consulting</li>
+                        <li><strong>DocuHelp (Pty) Ltd:</strong> Professional documentation services</li>
+                        <li><strong>Additional subsidiaries:</strong> As business opportunities develop</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-blue-700">Revenue Sources:</h4>
+                    <ul class="list-disc ml-6 space-y-1">
+                        <li>Dividend income from operating subsidiaries</li>
+                        <li>Intellectual property licensing fees</li>
+                        <li>Management fees from subsidiaries</li>
+                        <li>Investment returns on family assets</li>
+                        <li>Strategic asset appreciation</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 10: Banking Services Required -->
+        <div class="mb-6">
+            <h3 class="text-lg font-bold mb-3 bg-blue-100 p-2">10. BANKING SERVICES REQUIRED</h3>
+            
+            <div class="grid grid-cols-2 gap-2 text-sm">
+                <div class="flex items-center">
+                    <span class="checkbox checked"></span>
+                    <label>Internet Banking</label>
+                </div>
+                <div class="flex items-center">
+                    <span class="checkbox checked"></span>
+                    <label>Mobile Banking</label>
+                </div>
+                <div class="flex items-center">
+                    <span class="checkbox checked"></span>
+                    <label>Business Debit Cards</label>
+                </div>
+                <div class="flex items-center">
+                    <span class="checkbox"></span>
+                    <label>Credit Cards</label>
+                </div>
+                <div class="flex items-center">
+                    <span class="checkbox checked"></span>
+                    <label>Electronic Funds Transfer</label>
+                </div>
+                <div class="flex items-center">
+                    <span class="checkbox checked"></span>
+                    <label>Direct Debits</label>
+                </div>
+                <div class="flex items-center">
+                    <span class="checkbox"></span>
+                    <label>Merchant Services</label>
+                </div>
+                <div class="flex items-center">
+                    <span class="checkbox checked"></span>
+                    <label>Investment Services</label>
+                </div>
+                <div class="flex items-center">
+                    <span class="checkbox checked"></span>
+                    <label>Foreign Exchange</label>
+                </div>
+                <div class="flex items-center">
+                    <span class="checkbox"></span>
+                    <label>Business Loans</label>
+                </div>
+                <div class="flex items-center">
+                    <span class="checkbox checked"></span>
+                    <label>Cash Management</label>
+                </div>
+                <div class="flex items-center">
+                    <span class="checkbox checked"></span>
+                    <label>Financial Advisory</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 11: References -->
+        <div class="mb-6">
+            <h3 class="text-lg font-bold mb-3 bg-blue-100 p-2">11. BUSINESS REFERENCES</h3>
+            
+            <div class="space-y-4">
+                <div class="border border-gray-300 p-3">
+                    <h4 class="font-semibold text-sm">Professional Reference 1:</h4>
+                    <div class="grid grid-cols-2 gap-3 mt-2 text-xs">
+                        <div>
+                            <label class="font-semibold">Company/Individual:</label>
+                            <div class="form-field">To be provided - Legal Advisor</div>
+                        </div>
+                        <div>
+                            <label class="font-semibold">Contact Person:</label>
+                            <div class="form-field">To be provided</div>
+                        </div>
+                        <div>
+                            <label class="font-semibold">Telephone:</label>
+                            <div class="form-field">To be provided</div>
+                        </div>
+                        <div>
+                            <label class="font-semibold">Relationship:</label>
+                            <div class="form-field">Legal and Corporate Advisor</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="border border-gray-300 p-3">
+                    <h4 class="font-semibold text-sm">Professional Reference 2:</h4>
+                    <div class="grid grid-cols-2 gap-3 mt-2 text-xs">
+                        <div>
+                            <label class="font-semibold">Company/Individual:</label>
+                            <div class="form-field">To be provided - Accounting Firm</div>
+                        </div>
+                        <div>
+                            <label class="font-semibold">Contact Person:</label>
+                            <div class="form-field">To be provided</div>
+                        </div>
+                        <div>
+                            <label class="font-semibold">Telephone:</label>
+                            <div class="form-field">To be provided</div>
+                        </div>
+                        <div>
+                            <label class="font-semibold">Relationship:</label>
+                            <div class="form-field">Financial and Tax Advisor</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ubuntu Values Statement -->
+        <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6">
+            <h4 class="font-bold text-green-800 mb-2">Ubuntu Business Values</h4>
+            <p class="text-sm text-green-700">"Mlandeli Notemba Investments embodies Ubuntu principles in all business relationships. We believe that 'I am because we are' - our success strengthens our community, and our community's success strengthens us. This banking relationship is built on mutual respect, transparency, and long-term partnership."</p>
+        </div>
+
+        <!-- Declaration and Signatures -->
+        <div class="mb-6">
+            <h3 class="text-lg font-bold mb-3 bg-blue-100 p-2">12. DECLARATION</h3>
+            
+            <div class="text-sm space-y-2">
+                <p>We, the undersigned directors, hereby declare that:</p>
+                <ul class="list-disc ml-6 space-y-1 text-xs">
+                    <li>All information provided in this application is true, complete, and accurate</li>
+                    <li>We undertake to inform the bank of any material changes to this information</li>
+                    <li>We agree to comply with all banking terms and conditions</li>
+                    <li>We understand our obligations under anti-money laundering legislation</li>
+                    <li>We authorize the bank to conduct due diligence and credit checks</li>
+                    <li>We commit to operating this account in accordance with Ubuntu principles and family values</li>
+                </ul>
+                
+                <div class="grid grid-cols-2 gap-8 mt-8">
+                    <div class="text-center">
+                        <div class="border-b-2 border-gray-400 mb-4 h-16"></div>
+                        <p class="font-bold">Visa Sande Mdeni</p>
+                        <p class="text-xs">Chief Executive Officer</p>
+                        <p class="text-xs">Date: ________________</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="border-b-2 border-gray-400 mb-4 h-16"></div>
+                        <p class="font-bold">Salatiso Lonwabo Mdeni</p>
+                        <p class="text-xs">Chairman and Founder</p>
+                        <p class="text-xs">Date: ________________</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center text-xs text-gray-500 mt-8 pt-4 border-t border-gray-200">
+            <p>Corporate Banking Application - Mlandeli Notemba Investments (Proprietary) Limited</p>
+            <p>Prepared by DocuHelp Professional Services | www.docuhelp.co.za</p>
+            <p>This application complies with banking regulations and know-your-customer requirements</p>
+        </div>
+    </div>
+    
+    <script>
+        function fillForm() {
+            alert('Application Review: All available company information has been pre-populated. Please complete personal details (ID numbers, addresses, contact details) and gather required supporting documents before submission.');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<!-- 
+  GENERIC ECOSYSTEM TEMPLATE - INSTRUCTIONS:
+  1. Set the brand: Change `data-brand="default"` to your brand (e.g., "docuhelp", "hrhelp", "safetyhelp").
+     Example: <html lang="en" data-brand="safetyhelp">
+  2. Link branding CSS: Make sure you have a <link> to your central branding.css file in the <head>.
+  3. Update Title: Change the content of the <title> tag.
+  4. Update Content: Edit the placeholder text inside all `contenteditable` elements and `[square brackets]`.
+  5. Update TOC: Change the `data-toc` attributes on h1/h2 tags to match your new section titles.
+-->
+<html lang="en" data-brand="default">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generic Document Title</title>
+    
+    <!-- External Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700;900&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <!-- 
+      IMPORTANT: Link to your central branding.css file here.
+      This file should contain the brand definitions as specified in the documentation.
+      Example: <link rel="stylesheet" href="../assets/css/branding.css"> 
+    -->
+
+    <style>
+        /* CORE STYLES - These use CSS variables defined in your external branding.css.
+          They should not need to be edited.
+        */
+        :root {
+            /* Default/Fallback Brand Variables (if branding.css is not linked or brand is not found) */
+            --brand-primary-color: #475569; /* Slate 600 */
+            --brand-secondary-color: #94a3b8; /* Slate 400 */
+            --brand-text-main: #1f2937;
+            --brand-text-light: #6b7280;
+            --brand-bg-main: #f3f4f6;
+            --brand-bg-page: #ffffff;
+            --brand-heading-font: 'Roboto Slab', serif;
+            --brand-body-font: 'Manrope', sans-serif;
+        }
+        body {
+            font-family: var(--brand-body-font);
+            background-color: var(--brand-bg-main);
+            color: var(--brand-text-main);
+            line-height: 1.7;
+        }
+        .document-page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 1.5rem auto;
+            background-color: var(--brand-bg-page);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 15mm 20mm;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .document-title {
+            font-family: var(--brand-heading-font);
+            color: var(--brand-primary-color);
+            font-weight: 900;
+            border-bottom: 4px solid var(--brand-secondary-color);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        h1, h2, h3, h4 {
+            font-family: var(--brand-heading-font);
+            font-weight: 700;
+            color: #111827;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        h1 { font-size: 2.25rem; }
+        h2 { font-size: 1.75rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.25rem; }
+        h3 { font-size: 1.25rem; }
+        p { margin-bottom: 1rem; }
+        .editable { background-color: #fefce8; padding: 2px 4px; border-radius: 3px; outline-color: var(--brand-secondary-color); }
+        .page-num { position: absolute; bottom: 10mm; right: 20mm; font-size: 0.8rem; color: var(--brand-text-light); }
+        .sidebar { position: fixed; left: 20px; top: 50%; transform: translateY(-50%); background-color: var(--brand-bg-page); border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); padding: 1rem; z-index: 1000; }
+        .sidebar button { display: flex; align-items: center; width: 100%; padding: 0.75rem; margin-bottom: 0.5rem; border-radius: 6px; background-color: #f3f4f6; color: #374151; font-weight: 600; transition: all 0.2s; border: 1px solid #e5e7eb; }
+        .sidebar button:hover { background-color: var(--brand-primary-color); color: white; }
+        .sidebar button i { margin-right: 0.75rem; width: 20px; text-align: center; }
+        .sidebar .divider { height: 1px; background-color: #e5e7eb; margin: 1rem 0; }
+        .help-button { background-color: #f59e0b !important; color: white !important; }
+        
+        /* Modal Styles */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 2000; opacity: 0; visibility: hidden; transition: all 0.3s; }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-content { background: white; padding: 2rem; border-radius: 10px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; }
+        .modal-content h2 { margin-top: 0; color: var(--brand-primary-color) }
+        .modal-content code { background: #e5e7eb; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+        .modal-close { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.5rem; cursor: pointer; }
+
+        @media print {
+            body { background-color: white; }
+            .no-print { display: none !important; }
+            .document-page { margin: 0; box-shadow: none; border: none; }
+            .editable { background-color: transparent !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- INSTRUCTIONS MODAL -->
+    <div id="help-modal" class="modal-overlay no-print">
+        <div class="modal-content">
+            <button class="modal-close" onclick="toggleModal(false)">&times;</button>
+            <h2>Customization Guide</h2>
+            <p>Follow these steps to brand this generic template:</p>
+            <ol class="list-decimal list-inside space-y-4">
+                <li>
+                    <strong>Set the Brand:</strong> In your HTML file, find the `<html>` tag and change the `data-brand` attribute from `"default"` to your brand's name (e.g., `"hrhelp"`).
+                    <br><code>&lt;html lang="en" data-brand="hrhelp"&gt;</code>
+                </li>
+                <li>
+                    <strong>Link Branding CSS:</strong> Ensure your central `branding.css` file is linked in the `<head>` section of your HTML file. This file contains the color and font definitions for all ecosystem brands.
+                </li>
+                <li>
+                    <strong>Update Document Title:</strong> Change the text inside the `<title>` tag in the `<head>` to reflect the document's purpose.
+                </li>
+                <li>
+                    <strong>Fill Content:</strong> Click on any text with a yellow background or within main paragraphs to edit it. Replace all placeholder text like `[Placeholder]` with your specific content.
+                </li>
+                <li>
+                    <strong>Customize Table of Contents:</strong> Find the headings (like `<h1>` or `<h2>`) you want in the TOC and ensure they have a `data-toc` attribute with the desired text.
+                    <br><code>&lt;h1 class="document-title" data-toc="New Section Title"&gt;...&lt;/h1&gt;</code>
+                </li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- INTERACTIVE SIDEBAR -->
+    <div class="sidebar no-print">
+        <h3 class="font-bold text-center mb-4 text-lg">Controls</h3>
+        <button onclick="window.print()"><i class="fas fa-print"></i> Print</button>
+        <button id="download-pdf"><i class="fas fa-file-pdf"></i> Download PDF</button>
+        <button id="reset-fields"><i class="fas fa-undo"></i> Reset Fields</button>
+        <div class="divider"></div>
+        <h4 class="font-semibold text-center my-2 text-md">Toggle Pages</h4>
+        <button onclick="togglePage('cover-page')"><i class="fas fa-file-powerpoint"></i> Cover</button>
+        <button onclick="togglePage('toc-page')"><i class="fas fa-list-ul"></i> Contents</button>
+        <button onclick="togglePage('sign-off-page')"><i class="fas fa-file-signature"></i> Sign-off</button>
+        <button onclick="togglePage('annexure-page')"><i class="fas fa-paperclip"></i> Annexure</button>
+        <button onclick="togglePage('back-page')"><i class="fas fa-info-circle"></i> Back Page</button>
+        <div class="divider"></div>
+        <button onclick="restorePages()"><i class="fas fa-eye"></i> Show All</button>
+        <button class="help-button mt-4" onclick="toggleModal(true)"><i class="fas fa-question-circle"></i> Help</button>
+    </div>
+
+    <!-- COVER PAGE -->
+    <div id="cover-page" class="document-page">
+        <div class="flex-grow flex flex-col justify-center items-center text-center">
+            <div class="mb-8" id="logo-placeholder">
+                <!-- Generic Logo SVG - will be colored by CSS variables -->
+                <svg class="h-20 w-20 mx-auto" style="color: var(--brand-primary-color);" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" /></svg>
+            </div>
+            <h1 class="document-title !border-none !text-5xl" contenteditable="true">Document Title</h1>
+            <p class="text-xl text-gray-600 mt-4" contenteditable="true">A brief subtitle or description of the document.</p>
+        </div>
+        <div class="text-center text-gray-500 mt-auto">
+            <p><strong>Date:</strong> <span contenteditable="true" class="editable">[Date]</span></p>
+            <p><strong>Version:</strong> <span contenteditable="true" class="editable">1.0</span></p>
+        </div>
+        <div class="page-num"></div>
+    </div>
+
+    <!-- TABLE OF CONTENTS -->
+    <div id="toc-page" class="document-page">
+        <h1 class="document-title">Table of Contents</h1>
+        <ul class="text-lg space-y-2" id="toc-list">
+            <!-- TOC will be generated here by script -->
+        </ul>
+        <div class="page-num"></div>
+    </div>
+    
+    <!-- MAIN CONTENT PAGE -->
+    <div class="document-page">
+        <h1 class="document-title" data-toc="Introduction">1. Introduction</h1>
+        <p contenteditable="true">[This is the main content area of your document. Replace this placeholder text with the actual content for this section. You can add more paragraphs, lists, and headings as needed.]</p>
+        
+        <h2 data-toc="Subsection 1.1">1.1. Subsection Title</h2>
+        <p contenteditable="true">[Elaborate on a specific point here. Use clear and concise language.]</p>
+        
+        <div class="page-num"></div>
+    </div>
+
+    <!-- SIGN-OFF PAGE -->
+    <div id="sign-off-page" class="document-page">
+        <h1 class="document-title" data-toc="Agreement & Sign-off">Agreement & Sign-off</h1>
+        <p contenteditable="true">[By signing below, the parties acknowledge that they have read, understood, and agree to be bound by the terms and conditions outlined in this document.]</p>
+        
+        <div class="grid md:grid-cols-2 gap-12 mt-16">
+            <div>
+                <div class="signature-line mt-12"></div>
+                <p contenteditable="true" class="editable">[Party A Name]</p>
+                <p class="font-semibold">Party A Signature</p>
+            </div>
+            <div>
+                <div class="signature-line mt-12"></div>
+                <p contenteditable="true" class="editable">[Party B Name]</p>
+                <p class="font-semibold">Party B Signature</p>
+            </div>
+        </div>
+        <div class="page-num"></div>
+    </div>
+
+    <!-- ANNEXURE PAGE -->
+    <div id="annexure-page" class="document-page">
+        <h1 class="document-title" data-toc="Annexures">Annexures</h1>
+        <h2 data-toc="Annexure A">Annexure A: [Title of Supporting Document]</h2>
+        <p contenteditable="true">[This section is for supplementary materials. Add content directly or reference external documents.]</p>
+        <div class="page-num"></div>
+    </div>
+
+    <!-- BACK PAGE -->
+    <div id="back-page" class="document-page" style="background-color: var(--brand-text-main); color: white;">
+        <div class="flex-grow flex flex-col justify-center items-center text-center">
+            <div id="back-logo-placeholder">
+                 <svg class="h-24 w-24 mx-auto" style="color: var(--brand-primary-color);" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" /></svg>
+            </div>
+            <h2 class="text-4xl font-roboto-slab font-bold text-white mt-6 brand-name">Brand Name</h2>
+            <p class="text-lg text-gray-300 mt-2">[Brand Slogan or Tagline]</p>
+        </div>
+        <div class="text-center text-gray-400 mt-auto">
+            <p>This document was generated on the <span class="brand-name">Brand Name</span> platform.</p>
+            <p>For support, contact <a href="mailto:support@example.com" style="color: var(--brand-secondary-color);" class="underline">[support@example.com]</a></p>
+            <p>&copy; 2025 [Company Name]. All Rights Reserved.</p>
+        </div>
+        <div class="page-num"></div>
+    </div>
+
+    <script>
+        // Self-contained script for all template functionality.
+        document.addEventListener('DOMContentLoaded', function () {
+            const initialValues = {};
+            
+            document.querySelectorAll('.editable').forEach((el, i) => {
+                const id = `editable-${i}`;
+                el.id = id;
+                initialValues[id] = el.innerHTML;
+            });
+
+            document.getElementById('download-pdf').addEventListener('click', () => {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'mm', 'a4');
+                const pagesToProcess = Array.from(document.querySelectorAll('.document-page')).filter(p => p.style.display !== 'none');
+                let processedPages = 0;
+                
+                const pdfButton = document.getElementById('download-pdf');
+                pdfButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+
+                if (pagesToProcess.length === 0) {
+                    alert("No pages to generate PDF from!");
+                    pdfButton.innerHTML = '<i class="fas fa-file-pdf"></i> Download PDF';
+                    return;
+                }
+
+                pagesToProcess.forEach((page, index) => {
+                    html2canvas(page, { scale: 2, windowWidth: page.scrollWidth, windowHeight: page.scrollHeight }).then(canvas => {
+                        const imgData = canvas.toDataURL('image/png');
+                        if (index > 0) doc.addPage();
+                        doc.addImage(imgData, 'PNG', 0, 0, 210, 297, undefined, 'FAST');
+                        if (++processedPages === pagesToProcess.length) {
+                            doc.save('Generated-Document.pdf');
+                            pdfButton.innerHTML = '<i class="fas fa-file-pdf"></i> Download PDF';
+                        }
+                    });
+                });
+            });
+
+            document.getElementById('reset-fields').addEventListener('click', () => {
+                // Using a custom modal instead of confirm()
+                showConfirmationModal('Are you sure you want to reset all editable fields?', () => {
+                    for (const id in initialValues) {
+                        document.getElementById(id).innerHTML = initialValues[id];
+                    }
+                });
+            });
+            
+            updatePageNumbers();
+            generateTOC();
+        });
+
+        function togglePage(pageId) {
+            const page = document.getElementById(pageId);
+            if (page) {
+                page.style.display = page.style.display === 'none' ? 'flex' : 'none';
+                updatePageNumbers();
+            }
+        }
+
+        function restorePages() {
+            document.querySelectorAll('.document-page').forEach(page => page.style.display = 'flex');
+            updatePageNumbers();
+        }
+
+        function updatePageNumbers() {
+            const visiblePages = Array.from(document.querySelectorAll('.document-page')).filter(p => p.style.display !== 'none');
+            visiblePages.forEach((page, idx) => {
+                let numEl = page.querySelector('.page-num');
+                if (numEl) numEl.innerText = `Page ${idx + 1} of ${visiblePages.length}`;
+            });
+        }
+        
+        function generateTOC() {
+            const tocList = document.getElementById('toc-list');
+            if(!tocList) return;
+            tocList.innerHTML = '';
+            document.querySelectorAll('.document-page[style*="display: flex"] [data-toc], .document-page:not([style]) [data-toc]').forEach(h => {
+                const li = document.createElement('li');
+                li.textContent = h.getAttribute('data-toc');
+                tocList.appendChild(li);
+            });
+        }
+
+        function toggleModal(show) {
+            const modal = document.getElementById('help-modal');
+            if (modal) modal.classList.toggle('active', show);
+        }
+
+        function showConfirmationModal(message, onConfirm) {
+            const existingModal = document.getElementById('confirm-modal-overlay');
+            if (existingModal) existingModal.remove();
+
+            const modalOverlay = document.createElement('div');
+            modalOverlay.id = 'confirm-modal-overlay';
+            modalOverlay.className = 'modal-overlay active no-print';
+            
+            const modalContent = document.createElement('div');
+            modalContent.className = 'modal-content text-center';
+            
+            modalContent.innerHTML = `
+                <h2 class="text-xl mb-4">Confirmation</h2>
+                <p class="mb-6">${message}</p>
+                <div class="flex justify-center gap-4">
+                    <button id="confirm-cancel" class="bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded">Cancel</button>
+                    <button id="confirm-ok" class="text-white font-bold py-2 px-6 rounded" style="background-color: var(--brand-primary-color);">OK</button>
+                </div>
+            `;
+            
+            modalOverlay.appendChild(modalContent);
+            document.body.appendChild(modalOverlay);
+
+            document.getElementById('confirm-ok').onclick = () => {
+                onConfirm();
+                modalOverlay.remove();
+            };
+            document.getElementById('confirm-cancel').onclick = () => {
+                modalOverlay.remove();
+            };
+        }
+    </script>
+</body>
+</html>

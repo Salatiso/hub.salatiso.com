@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HRHelp - Career Module Explainer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700;900&family=Manrope:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand-color: #3b82f6; /* blue-500 */
+            --brand-color-dark: #60a5fa; /* blue-400 */
+        }
+        body { 
+            font-family: 'Manrope', sans-serif; 
+            background-color: #e5e7eb; /* gray-200 */
+            color: #1f2937; /* gray-800 */
+        }
+        .dark body {
+            background-color: #111827; /* gray-900 */
+            color: #d1d5db; /* gray-300 */
+        }
+        .a4-landscape {
+            width: 297mm;
+            height: 210mm;
+            margin: 1rem auto;
+            background-color: #ffffff;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            page-break-after: always; /* Ensures each side prints on a new sheet */
+        }
+        .dark .a4-landscape {
+            background-color: #1f2937; /* gray-800 */
+        }
+        .panel {
+            padding: 1.5rem;
+            border-left: 1px dashed #d1d5db; /* gray-300 */
+            display: flex;
+            flex-direction: column;
+        }
+        .dark .panel {
+            border-left-color: #4b5563; /* gray-600 */
+        }
+        .panel:first-child {
+            border-left: none;
+        }
+        h1, h2, h3 {
+            font-family: 'Roboto Slab', serif;
+            color: var(--brand-color);
+            font-weight: 700;
+        }
+        .dark h1, .dark h2, .dark h3 {
+            color: var(--brand-color-dark);
+        }
+        .hrhelp-logo-svg { 
+            height: 50px; 
+            width: auto; 
+        }
+        .dark .hrhelp-logo-svg .logo-text-dark { fill: white; }
+        .hrhelp-logo-svg .logo-accent { fill: var(--brand-color); }
+        .dark .hrhelp-logo-svg .logo-accent-dark { fill: var(--brand-color-dark); }
+        
+        .front-panel { text-align: center; justify-content: center; align-items: center; }
+        .back-panel { background-color: #1e293b; color: #d1d5db; }
+        .dark .back-panel { background-color: #111827; }
+
+        [contenteditable="true"] { outline: 2px dashed transparent; padding: 0.25rem; border-radius: 0.25rem; }
+        [contenteditable="true"]:hover, [contenteditable="true"]:focus { outline-color: var(--brand-color); background-color: rgba(59, 130, 246, 0.1); }
+
+        .feature-list li { display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.75rem; }
+        .feature-list i { margin-top: 0.25rem; color: var(--brand-color); }
+        .dark .feature-list i { color: var(--brand-color-dark); }
+
+
+        .no-print { text-align: center; padding: 1rem; }
+
+        /* --- PRINT STYLES --- */
+        @page {
+            size: A4 landscape;
+            margin: 0;
+        }
+        @media print {
+            body { background-color: white; }
+            .no-print { display: none; }
+            .a4-landscape { margin: 0; box-shadow: none; width: 100%; height: 100%; }
+            
+            .back-panel, .front-panel-branded-bg {
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+
+            .dark .a4-landscape, .dark .panel { background-color: #ffffff !important; color: #1f2937 !important; border-left-color: #d1d5db !important; }
+            .dark h1, .dark h2, .dark h3 { color: var(--brand-color) !important; }
+            .dark .hrhelp-logo-svg .logo-text-dark { fill: #1f2937 !important; }
+            .dark .hrhelp-logo-svg .logo-accent-dark { fill: var(--brand-color) !important; }
+            
+            .dark .back-panel {
+                background-color: #111827 !important;
+                color: #d1d5db !important;
+            }
+            .dark .back-panel h2, .dark .back-panel i, .dark .back-panel a {
+                color: var(--brand-color-dark) !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print">
+        <h2 class="text-xl font-bold">Career Module Explainer Pamphlet</h2>
+        <p class="text-sm text-slate-600 dark:text-slate-400">Print this page (both sides) in landscape orientation. Fold along the dashed lines.</p>
+        <button onclick="window.print()" class="mt-2 bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors">
+            <i class="fas fa-print mr-2"></i>Print Pamphlet
+        </button>
+    </div>
+
+    <!-- PAGE 1: This is the OUTSIDE of the folded pamphlet -->
+    <div class="a4-landscape">
+        <!-- Panel 1: Inner flap (when folded) -->
+        <div class="panel">
+            <h2 class="text-2xl">Your Career, Your Way</h2>
+            <p class="text-sm mt-2">Your career is more than a series of jobs. It's a journey of growth, learning, and contribution. Our toolkit is designed to support you at every stage, giving you the power to shape your own future.</p>
+            <h3 class="text-lg mt-4">Key Features:</h3>
+            <ul class="text-sm space-y-3 mt-2 feature-list">
+                <li><i class="fas fa-id-card fa-fw"></i><div><strong>Dynamic Life CV Creation:</strong> Build a holistic profile that evolves with you, capturing skills beyond the traditional resume.</div></li>
+                <li><i class="fas fa-sitemap fa-fw"></i><div><strong>Career Path Visualization:</strong> Discover potential career trajectories based on your unique skills and aspirations.</div></li>
+                <li><i class="fas fa-bullseye fa-fw"></i><div><strong>Personal Development Planning:</strong> Create actionable plans to acquire new skills and achieve your professional goals.</div></li>
+                <li><i class="fas fa-handshake fa-fw"></i><div><strong>Salary Negotiation Guides:</strong> Enter negotiations with confidence, armed with data and proven strategies.</div></li>
+                <li><i class="fas fa-book-open fa-fw"></i><div><strong>Vast Template Library:</strong> Access professionally crafted documents for every career milestone.</div></li>
+            </ul>
+             <div class="mt-auto pt-4 text-center">
+                <p class="text-sm font-bold">Start your journey today at:</p>
+                <p class="font-bold text-blue-600 dark:text-blue-400">https://salatiso.com/hrhelp/</p>
+            </div>
+        </div>
+
+        <!-- Panel 2: Back Cover (when folded) -->
+        <div class="panel back-panel">
+            <div class="flex-grow">
+                <h2 class="!text-blue-400 text-2xl">The Sazi Ecosystem</h2>
+                <p class="text-xs mt-2 text-slate-400">HRHelp is part of a wider ecosystem of tools designed to empower you in every aspect of your life. Your one account gives you access to all platforms.</p>
+                <ul class="text-sm space-y-3 mt-4 feature-list">
+                    <li><i class="fas fa-hard-hat fa-fw"></i><div><strong>SafetyHelp</strong><br><a href="https://safetyfirst.help" target="_blank" class="text-xs text-slate-400 hover:underline">safetyfirst.help</a></div></li>
+                    <li><i class="fas fa-gavel fa-fw"></i><div><strong>LegalHelp</strong><br><a href="https://salatiso.com/legalhelp" target="_blank" class="text-xs text-slate-400 hover:underline">salatiso.com/legalhelp</a></div></li>
+                    <li><i class="fas fa-users fa-fw"></i><div><strong>FamilyValue</strong><br><a href="https://salatiso.com/FamilyValue" target="_blank" class="text-xs text-slate-400 hover:underline">salatiso.com/FamilyValue</a></div></li>
+                    <li><i class="fas fa-brain fa-fw"></i><div><strong>Sazi.life</strong><br><a href="https://sazi.life" target="_blank" class="text-xs text-slate-400 hover:underline">sazi.life</a></div></li>
+                </ul>
+            </div>
+            <div class="text-xs text-center text-slate-400">
+                <p>A Salatiso Initiative</p>
+                <p>&copy; <span class="year"></span> HRHelp</p>
+            </div>
+        </div>
+
+        <!-- Panel 3: Front Cover (when folded) -->
+        <div class="panel front-panel">
+            <div class="hrhelp-logo-svg inline-block">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 60" class="hrhelp-logo-svg">
+                    <g class="logo-accent" fill="#3b82f6"><path d="M54.4,22.4c-5.3-5.3-13.8-5.3-19.1,0L32,25.7l-3.3-3.3c-5.3-5.3-13.8-5.3-19.1,0c-5.3,5.3-5.3,13.8,0,19.1L22,54l2.2,2.2c1,1,2.6,1,3.5,0L32,52.1l4.2-4.2l-8.4-8.4l5.3-5.3l8.4,8.4L48,38.4l9.6-9.6C62.9,29.6,59.7,25.6,54.4,22.4z"/><circle cx="12.8" cy="12.8" r="8"/><circle cx="51.2" cy="12.8" r="8"/></g>
+                    <text x="70" y="45" font-family="Roboto Slab, serif" font-size="40" font-weight="700" class="logo-text-dark" fill="black">HR</text>
+                    <text x="120" y="45" font-family="Roboto Slab, serif" font-size="40" font-weight="900" class="logo-accent-dark logo-accent" fill="#3b82f6">Help</text>
+                </svg>
+            </div>
+            <h1 class="text-4xl mt-6">Individual Career Toolkit</h1>
+            <p class="mt-4 text-slate-600 dark:text-slate-400">All the tools you need to build your career and shape your future.</p>
+            <p class="mt-4 text-lg font-bold text-blue-600 dark:text-blue-400">https://salatiso.com/hrhelp/</p>
+            
+            <div class="mt-auto pt-8 text-sm text-slate-500 dark:text-slate-400">
+                <p>Prepared for:</p>
+                <p class="font-bold text-lg text-slate-700 dark:text-slate-200" contenteditable="true">[Enter Your Name Here]</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 2: This is the INSIDE of the folded pamphlet -->
+    <div class="a4-landscape">
+        <!-- Panel 4: Inner Left -->
+        <div class="panel">
+            <h2 class="text-2xl">The Life CV</h2>
+            <p class="text-sm mt-2">The Life CV is a dynamic, holistic profile that captures more than just your job history. It's a living document that showcases your full range of capabilities, ensuring you get recognized for all your talents.</p>
+            <ul class="text-sm space-y-3 mt-4 feature-list">
+                <li><i class="fas fa-check-circle fa-fw"></i><div><strong>Verifiable Skills:</strong> Log competencies from formal courses, on-the-job training, and real-world application.</div></li>
+                <li><i class="fas fa-project-diagram fa-fw"></i><div><strong>Project Portfolio:</strong> Showcase tangible work you've completed with descriptions, links, and images.</div></li>
+                <li><i class="fas fa-users fa-fw"></i><div><strong>Community Contributions:</strong> Get recognition for mentorship, volunteering, and other vital, often overlooked, roles.</div></li>
+                <li><i class="fas fa-lightbulb fa-fw"></i><div><strong>Life Experience:</strong> Turn informal learning and life lessons into valuable, recognized experience points.</div></li>
+            </ul>
+        </div>
+
+        <!-- Panel 5: Inner Middle -->
+        <div class="panel">
+            <h2 class="text-2xl">Plan & Develop</h2>
+            <p class="text-sm mt-2">Proactive career management is key to long-term success. Our planning tools help you set a course, identify opportunities, and stay on track to achieve your ambitions.</p>
+            <ul class="text-sm space-y-3 mt-4 feature-list">
+                <li><i class="fas fa-map-signs fa-fw"></i><div><strong>Career Path Mapper:</strong> Visualize potential career trajectories and the skills needed to get there.</div></li>
+                <li><i class="fas fa-tasks fa-fw"></i><div><strong>Personal Development Plan:</strong> Create a structured, actionable plan to acquire new skills and achieve your goals.</div></li>
+                <li><i class="fas fa-search-plus fa-fw"></i><div><strong>Skills Audit:</strong> Identify your strengths and areas for development with our guided questionnaires.</div></li>
+                <li><i class="fas fa-user-friends fa-fw"></i><div><strong>Mentorship Agreements:</strong> Formalize mentorship relationships to accelerate your growth and knowledge sharing.</div></li>
+            </ul>
+        </div>
+
+        <!-- Panel 6: Inner Right -->
+        <div class="panel">
+            <h2 class="text-2xl">Practical Tools</h2>
+            <p class="text-sm mt-2">Access a comprehensive library of templates and forms for every stage of your career lifecycle, ensuring you are always prepared and professional.</p>
+            <ul class="text-sm space-y-3 mt-4 feature-list">
+                <li><i class="fas fa-file-alt fa-fw"></i><div><strong>Professional CV Templates:</strong> Choose from multiple styles to create a polished, professional resume.</div></li>
+                <li><i class="fas fa-envelope-open-text fa-fw"></i><div><strong>Cover Letter Builders:</strong> Craft compelling cover letters tailored to specific job applications.</div></li>
+                <li><i class="fas fa-file-signature fa-fw"></i><div><strong>Resignation Letters:</strong> Handle your departure professionally with our clear and concise templates.</div></li>
+                <li><i class="fas fa-exclamation-circle fa-fw"></i><div><strong>Employee Grievance Forms:</strong> Ensure your concerns are documented and addressed formally and fairly.</div></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="no-print mt-4">
+        <h3 class="text-lg font-bold">Folding Instructions</h3>
+        <ol class="list-decimal list-inside text-sm text-slate-600 dark:text-slate-400">
+            <li>Print both pages of this document, preferably double-sided.</li>
+            <li>With the "Individual Career Toolkit" page facing up, fold the leftmost panel inwards.</li>
+            <li>Fold the rightmost panel over the top to form the front cover.</li>
+        </ol>
+    </div>
+
+    <script>
+        document.querySelectorAll('.year').forEach(el => el.textContent = new Date().getFullYear());
+    </script>
+
+</body>
+</html>

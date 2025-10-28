@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tina's Role - Online Marketing & Promotion Lead</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3 {
+            color: #6B46C1;
+        }
+        .role-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background: #fafafa;
+        }
+        .deliverable {
+            background: #e8f4fd;
+            padding: 10px;
+            margin: 5px 0;
+            border-left: 4px solid #6B46C1;
+        }
+        .progress-bar {
+            width: 100%;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 20px;
+            background-color: #D69E2E;
+            border-radius: 5px;
+            width: 70%; /* Adjustable */
+        }
+        button {
+            background: #6B46C1;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #5a3a9e;
+        }
+        .editable {
+            border: 1px dashed #ccc;
+            padding: 5px;
+            min-height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Tina Mdeni - Online Marketing & Promotion Lead</h1>
+        <p><em>Ubuntu Wisdom: "I am because we are" - Amplifying our family's voice in the digital world</em></p>
+
+        <h2>Career Overview</h2>
+        <div class="role-card">
+            <p><strong>Career Path:</strong> Digital Enthusiast → Marketing Specialist → Online Promotion Lead</p>
+            <p><strong>Current Focus:</strong> Digital Marketing Coordination</p>
+            <p><strong>Brand Ambassador Role:</strong> Connecting MNI's Ubuntu message with global audiences</p>
+        </div>
+
+        <h2>Key Responsibilities</h2>
+        <div class="role-card">
+            <ul>
+                <li>Develop and execute online marketing campaigns</li>
+                <li>Manage social media presence across platforms</li>
+                <li>Create promotional content aligned with Ubuntu values</li>
+                <li>Analyze campaign effectiveness and ROI</li>
+                <li>Coordinate with Solo for AI-generated marketing assets</li>
+            </ul>
+        </div>
+
+        <h2>Deliverables</h2>
+        <div class="deliverable">
+            <h3>Marketing Campaign Reports</h3>
+            <p>Status: <span class="editable" contenteditable="true">70% Complete</span></p>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 70%;"></div>
+            </div>
+            <button onclick="updateProgress('campaigns')">Update Progress</button>
+        </div>
+        <div class="deliverable">
+            <h3>Social Media Content Calendars</h3>
+            <p>Status: <span class="editable" contenteditable="true">85% Complete</span></p>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 85%;"></div>
+            </div>
+            <button onclick="updateProgress('calendar')">Update Progress</button>
+        </div>
+        <div class="deliverable">
+            <h3>Promotional Material Designs</h3>
+            <p>Status: <span class="editable" contenteditable="true">60% Complete</span></p>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 60%;"></div>
+            </div>
+            <button onclick="updateProgress('designs')">Update Progress</button>
+        </div>
+
+        <h2>Training Prerequisites</h2>
+        <div class="role-card">
+            <ul>
+                <li>Digital marketing certifications</li>
+                <li>Social media management training</li>
+                <li>Content creation workshops</li>
+                <li>Analytics and reporting skills</li>
+            </ul>
+            <p><strong>Completed Training:</strong> <span class="editable" contenteditable="true">Google Digital Garage, Social Media Marketing Course</span></p>
+        </div>
+
+        <h2>HR Requirements</h2>
+        <div class="role-card">
+            <ul>
+                <li>Marketing tool subscriptions (Hootsuite, Canva Pro)</li>
+                <li>Creative software access</li>
+                <li>Campaign budget management</li>
+                <li>Performance tracking systems</li>
+            </ul>
+            <button onclick="requestResource()">Request Additional Resources</button>
+        </div>
+
+        <h2>Recent Achievements</h2>
+        <div class="role-card">
+            <ul class="editable" contenteditable="true">
+                <li>Launched MNI LinkedIn and Instagram presence</li>
+                <li>Created Ubuntu-themed social media content series</li>
+                <li>Achieved 40% engagement increase on promotional posts</li>
+            </ul>
+        </div>
+
+        <h2>Goals & Development</h2>
+        <div class="role-card">
+            <p><strong>Short-term Goals:</strong> <span class="editable" contenteditable="true">Complete Q4 marketing calendar, integrate AI content from Solo</span></p>
+            <p><strong>Long-term Vision:</strong> <span class="editable" contenteditable="true">Establish MNI as digital marketing leader in Ubuntu-inspired businesses</span></p>
+        </div>
+
+        <h2>Ubuntu Integration</h2>
+        <div class="role-card">
+            <p>How my work contributes to family unity: <span class="editable" contenteditable="true">By sharing our collective story and values with the world, strengthening our community bonds</span></p>
+        </div>
+    </div>
+
+    <script>
+        function updateProgress(type) {
+            alert('Progress updated for ' + type + '. In production, this would sync with MNI intranet database.');
+        }
+
+        function requestResource() {
+            alert('Resource request submitted. HR will review and follow up.');
+        }
+    </script>
+</body>
+</html>

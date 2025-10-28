@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salatiso Ecosystem Template Specification v1.0</title>
+    <style>
+        :root {
+            --primary-blue: #1E3A8A;
+            --ubuntu-orange: #EA580C;
+            --success-green: #10B981;
+            --warning-amber: #F59E0B;
+            --error-red: #EF4444;
+            --lifecv-purple: #7C3AED;
+            --text-dark: #1F2937;
+            --text-light: #6B7280;
+            --bg-light: #F9FAFB;
+            --bg-card: #FFFFFF;
+            --border-light: #E5E7EB;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+            background: var(--bg-light);
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-blue), var(--ubuntu-orange));
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="30" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="70" r="1.5" fill="rgba(255,255,255,0.1)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .tagline {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 1rem;
+        }
+
+        .version-badge {
+            background: var(--success-green);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .section {
+            background: var(--bg-card);
+            margin: 2rem 0;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid var(--primary-blue);
+        }
+
+        .section h2 {
+            color: var(--primary-blue);
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section h3 {
+            color: var(--ubuntu-orange);
+            font-size: 1.3rem;
+            margin: 1.5rem 0 1rem 0;
+        }
+
+        .section h4 {
+            color: var(--lifecv-purple);
+            font-size: 1.1rem;
+            margin: 1rem 0 0.5rem 0;
+        }
+
+        .code-block {
+            background: var(--bg-light);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--success-green), var(--primary-blue));
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .feature-card {
+            background: var(--bg-light);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--ubuntu-orange);
+            text-align: center;
+        }
+
+        .feature-card h4 {
+            color: var(--primary-blue);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .checklist {
+            background: var(--bg-light);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            margin: 0.5rem 0;
+        }
+
+        .checklist-item::before {
+            content: '☐';
+            margin-right: 0.5rem;
+            color: var(--ubuntu-orange);
+        }
+
+        .btn {
+            background: var(--ubuntu-orange);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+            display: inline-block;
+            margin: 0.5rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #d4550a;
+        }
+
+        .btn.secondary {
+            background: var(--primary-blue);
+        }
+
+        .btn.secondary:hover {
+            background: #152c6b;
+        }
+
+        footer {
+            background: var(--text-dark);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+
+        footer .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        footer .footer-section h4 {
+            color: var(--ubuntu-orange);
+            margin-bottom: 1rem;
+        }
+
+        footer .footer-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        footer .footer-section ul li {
+            margin-bottom: 0.5rem;
+        }
+
+        footer .footer-section a {
+            color: white;
+            text-decoration: none;
+        }
+
+        footer .footer-section a:hover {
+            text-decoration: underline;
+        }
+
+        /* Customization Panel Styles */
+        .customization-panel {
+            background: white;
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .form-field {
+            margin-bottom: 1rem;
+        }
+
+        .form-field label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .form-field input, .form-field select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border-light);
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        /* Share Section Styles */
+        .share-section {
+            background: var(--bg-light);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        .share-buttons {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .share-btn {
+            background: var(--primary-blue);
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s;
+        }
+
+        .share-btn:hover {
+            background: var(--ubuntu-orange);
+        }
+
+        .qr-code {
+            background: white;
+            border: 1px solid var(--border-light);
+            border-radius: 4px;
+            padding: 1rem;
+            display: inline-block;
+            margin-top: 0.5rem;
+            font-family: monospace;
+            font-size: 0.8rem;
+        }
+
+        /* Print Styles */
+        @media print {
+            .customization-panel, .share-section, .no-print {
+                display: none !important;
+            }
+        }
+
+        .no-print {
+            display: block;
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+        }
+
+        /* Table Styles */
+        .spec-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        .spec-table th, .spec-table td {
+            border: 1px solid var(--border-light);
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        .spec-table th {
+            background: var(--bg-light);
+            color: var(--primary-blue);
+            font-weight: 600;
+        }
+
+        .spec-table tr:nth-child(even) {
+            background: var(--bg-light);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">📋 Salatiso Ecosystem</div>
+            <div class="tagline">Template Specification v1.0 - Standardized Framework</div>
+            <div class="version-badge">Version 1.0.0 - October 8, 2025</div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Customization Panel -->
+        <div class="customization-panel" id="customizationPanel">
+            <h3 style="color: var(--primary-blue); margin-bottom: 1rem;">✏️ Customize This Specification</h3>
+            <div class="form-field">
+                <label>Developer Name:</label>
+                <input type="text" id="developerName" placeholder="Enter your full name">
+            </div>
+            <div class="form-field">
+                <label>Organization:</label>
+                <input type="text" id="organization" placeholder="Enter organization or company name">
+            </div>
+            <div class="form-field">
+                <label>Implementation Date:</label>
+                <input type="date" id="implementationDate" value="2025-10-08">
+            </div>
+            <div class="form-field">
+                <label>Target App:</label>
+                <select id="targetApp">
+                    <option value="">Select target application...</option>
+                    <option value="bizhelp">BizHelp - Business Formalization</option>
+                    <option value="lifecv">LifeCV - Career Portfolio</option>
+                    <option value="familyvalue">FamilyValue - Family Wealth</option>
+                    <option value="legalhelp">LegalHelp - Legal Services</option>
+                    <option value="sazi">Sazi Life Academy - Training</option>
+                    <option value="other">Other Salatiso App</option>
+                </select>
+            </div>
+            <div class="form-field">
+                <label>Specification Version:</label>
+                <input type="text" id="specVersion" value="Template Specification v1.0" placeholder="e.g., Template Specification v1.0">
+            </div>
+            <button onclick="applyCustomization()" style="background: var(--ubuntu-orange); color: white; padding: 0.5rem 1rem; border: none; border-radius: 4px; cursor: pointer;">Apply Changes</button>
+            <button onclick="toggleCustomization()" style="background: var(--text-light); color: white; padding: 0.5rem 1rem; border: none; border-radius: 4px; cursor: pointer; margin-left: 0.5rem;">Hide Panel</button>
+        </div>
+
+        <!-- Share Section -->
+        <div class="share-section">
+            <h3 style="color: var(--primary-blue); margin-bottom: 1rem;">📤 Share This Specification</h3>
+            <div class="share-buttons">
+                <button onclick="downloadPDF()" class="share-btn">📄 Download PDF</button>
+                <button onclick="shareLink()" class="share-btn">🔗 Copy Link</button>
+                <button onclick="printDoc()" class="share-btn">🖨️ Print</button>
+            </div>
+            <div class="qr-code" id="qrCode">QR Code<br>Coming Soon</div>
+            <p style="font-size: 0.9rem; color: var(--text-light); margin-top: 1rem;">
+                Perfect for sharing with development teams and stakeholders
+            </p>
+        </div>
+
+        <!-- Toggle Button -->
+        <div style="text-align: center; margin: 1rem 0;">
+            <button onclick="toggleCustomization()" style="background: var(--primary-blue); color: white; padding: 0.5rem 1rem; border: none; border-radius: 4px; cursor: pointer;" class="no-print">⚙️ Customize Document</button>
+        </div>
+
+        <div class="section">
+            <h2>🎯 Executive Summary</h2>
+            <div class="highlight-box">
+                <h3>Standardized Template Framework for All Salatiso Apps</h3>
+                <p>This specification establishes the standardized template framework for all Salatiso Ecosystem applications. Every app must implement templates following these guidelines to ensure consistency, professionalism, and user experience excellence across the entire ecosystem.</p>
+            </div>
+
+            <h3>Key Requirements</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🖨️ Print-Friendly</h4>
+                    <p>Optimized for physical printing and PDF generation with clean layouts</p>
+                </div>
+                <div class="feature-card">
+                    <h4>✏️ Customizable</h4>
+                    <p>User personalization capabilities with dynamic content updates</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📤 Shareable</h4>
+                    <p>Easy distribution and collaboration features across platforms</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📱 Responsive</h4>
+                    <p>Works on all devices and screen sizes with mobile-first design</p>
+                </div>
+                <div class="feature-card">
+                    <h4>♿ Accessible</h4>
+                    <p>WCAG 2.1 AA compliance with screen reader and keyboard support</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🎨 Branded</h4>
+                    <p>Consistent Salatiso visual identity with app-specific adaptations</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🏗️ Template Architecture</h2>
+
+            <h3>File Structure Standard</h3>
+            <div class="code-block">
+Template_Name_v[Version]_[Type].html
+├── HTML5 Document Structure
+├── CSS3 Styling (Embedded)
+├── Vanilla JavaScript (Embedded)
+└── Print Media Queries
+            </div>
+
+            <h3>Naming Convention</h3>
+            <div class="code-block">
+[APP]_[Category]_[Subcategory]_[Name]_v[Version]_[Type].html
+
+Examples:
+• BIZHELP_Family_F1_Business-Together_v1.0_Guide.html
+• LIFECV_Personal_P1_Profile-Setup_v1.0_Brochure.html
+• FAMILYVALUE_Trust_T1_Estate-Planning_v1.0_Manual.html
+            </div>
+
+            <h3>Version Control System</h3>
+            <table class="spec-table">
+                <thead>
+                    <tr>
+                        <th>Version Type</th>
+                        <th>Format</th>
+                        <th>Description</th>
+                        <th>Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Major</td>
+                        <td>v[X].0.0</td>
+                        <td>Breaking changes, new features</td>
+                        <td>v2.0.0</td>
+                    </tr>
+                    <tr>
+                        <td>Minor</td>
+                        <td>v[X].[Y].0</td>
+                        <td>Enhancements, bug fixes</td>
+                        <td>v1.1.0</td>
+                    </tr>
+                    <tr>
+                        <td>Patch</td>
+                        <td>v[X].[Y].[Z]</td>
+                        <td>Content updates, corrections</td>
+                        <td>v1.0.1</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>🧩 Core Components</h2>
+
+            <h3>1. Header Section (Required)</h3>
+            <div class="code-block">
+&lt;header class="header"&gt;
+    &lt;div class="header-content"&gt;
+        &lt;div class="logo"&gt;[App Name] by Salatiso&lt;/div&gt;
+        &lt;div class="tagline"&gt;[Document Purpose/Title]&lt;/div&gt;
+        &lt;div class="progress-bar" id="progressBar"&gt;
+            &lt;div class="progress-fill" id="progressFill"&gt;&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div&gt;Progress: &lt;span id="progressText"&gt;0%&lt;/span&gt;&lt;/div&gt;
+    &lt;/div&gt;
+&lt;/header&gt;
+            </div>
+
+            <h3>2. Customization Panel (Required)</h3>
+            <div class="code-block">
+&lt;div class="customization-panel" id="customizationPanel"&gt;
+    &lt;h3&gt;✏️ Customize This [Document Type]&lt;/h3&gt;
+    &lt;div class="form-field"&gt;
+        &lt;label&gt;[User Field Name]:&lt;/label&gt;
+        &lt;input type="[input-type]" id="[fieldId]" placeholder="[Placeholder]"&gt;
+    &lt;/div&gt;
+    &lt;button onclick="applyCustomization()"&gt;Apply Changes&lt;/button&gt;
+    &lt;button onclick="toggleCustomization()"&gt;Hide Panel&lt;/button&gt;
+&lt;/div&gt;
+            </div>
+
+            <h3>3. Share Section (Required)</h3>
+            <div class="code-block">
+&lt;div class="share-section"&gt;
+    &lt;h3&gt;📤 Share This [Document Type]&lt;/h3&gt;
+    &lt;div class="share-buttons"&gt;
+        &lt;button onclick="downloadPDF()"&gt;📄 Download PDF&lt;/button&gt;
+        &lt;button onclick="shareLink()"&gt;🔗 Copy Link&lt;/button&gt;
+        &lt;button onclick="printDoc()"&gt;🖨️ Print&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;div class="qr-code" id="qrCode"&gt;[QR Code Placeholder]&lt;/div&gt;
+&lt;/div&gt;
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🎨 Styling Standards</h2>
+
+            <h3>CSS Variables (Required)</h3>
+            <div class="code-block">
+:root {
+    --primary-blue: #1E3A8A;
+    --ubuntu-orange: #EA580C;
+    --success-green: #10B981;
+    --warning-amber: #F59E0B;
+    --error-red: #EF4444;
+    --lifecv-purple: #7C3AED;
+    --text-dark: #1F2937;
+    --text-light: #6B7280;
+    --bg-light: #F9FAFB;
+    --bg-card: #FFFFFF;
+    --border-light: #E5E7EB;
+}
+            </div>
+
+            <h3>Typography Standards</h3>
+            <table class="spec-table">
+                <thead>
+                    <tr>
+                        <th>Element</th>
+                        <th>Font Family</th>
+                        <th>Size</th>
+                        <th>Weight</th>
+                        <th>Line Height</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Body Text</td>
+                        <td>Inter</td>
+                        <td>16px (1rem)</td>
+                        <td>400</td>
+                        <td>1.6</td>
+                    </tr>
+                    <tr>
+                        <td>Headings</td>
+                        <td>Poppins</td>
+                        <td>1.8rem - 2.5rem</td>
+                        <td>600-700</td>
+                        <td>1.2</td>
+                    </tr>
+                    <tr>
+                        <td>Captions</td>
+                        <td>Inter</td>
+                        <td>0.9rem</td>
+                        <td>400</td>
+                        <td>1.4</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Print Optimization (Required)</h3>
+            <div class="code-block">
+@media print {
+    .customization-panel,
+    .share-section,
+    .no-print {
+        display: none !important;
+    }
+
+    .container { max-width: none; padding: 1rem; }
+    .header { background: white !important; color: black !important; }
+}
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>⚙️ JavaScript Framework</h2>
+
+            <h3>Core Functions (Required)</h3>
+            <div class="code-block">
+function applyCustomization() {
+    const userName = document.getElementById('userName').value;
+    const entityName = document.getElementById('entityName').value;
+    const docDate = document.getElementById('docDate').value;
+    const docVersion = document.getElementById('docVersion').value;
+
+    // Update document title
+    document.title = `[Custom Title] - ${entityName || 'Document'} - ${docVersion}`;
+
+    // Update header and footer
+    // ... implementation details
+}
+
+function toggleCustomization() {
+    const panel = document.getElementById('customizationPanel');
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+            </div>
+
+            <h3>Sharing Functions</h3>
+            <div class="code-block">
+function downloadPDF() {
+    window.print();
+    alert('💡 Tip: Use your browser\'s "Save as PDF" option when printing');
+}
+
+function shareLink() {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+        alert('🔗 Link copied to clipboard!');
+    });
+}
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📚 Implementation Guide</h2>
+
+            <h3>7-Step Implementation Process</h3>
+            <div class="checklist">
+                <div class="checklist-item">Define Purpose: What problem does this template solve?</div>
+                <div class="checklist-item">Identify Audience: Who will use this template?</div>
+                <div class="checklist-item">Content Structure: Outline sections and information hierarchy</div>
+                <div class="checklist-item">Interactive Elements: What user interactions are needed?</div>
+                <div class="checklist-item">Customization Fields: What personalization options to include?</div>
+                <div class="checklist-item">HTML Structure: Copy base template and modify content</div>
+                <div class="checklist-item">Styling Implementation: Update CSS variables and responsive design</div>
+                <div class="checklist-item">JavaScript Integration: Copy core functions and customize logic</div>
+                <div class="checklist-item">Content Development: Write clear, actionable information</div>
+                <div class="checklist-item">Testing & Validation: Cross-browser and accessibility testing</div>
+                <div class="checklist-item">Deployment: Version control and production release</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔗 Ecosystem Integration</h2>
+
+            <h3>App-Specific Branding Standards</h3>
+            <table class="spec-table">
+                <thead>
+                    <tr>
+                        <th>Application</th>
+                        <th>Primary Color</th>
+                        <th>Secondary Color</th>
+                        <th>Focus Area</th>
+                        <th>Template Types</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>BizHelp</td>
+                        <td>Ubuntu Orange (#EA580C)</td>
+                        <td>Primary Blue (#1E3A8A)</td>
+                        <td>Business Formalization</td>
+                        <td>Business guides, legal docs</td>
+                    </tr>
+                    <tr>
+                        <td>LifeCV</td>
+                        <td>LifeCV Purple (#7C3AED)</td>
+                        <td>Success Green (#10B981)</td>
+                        <td>Career Portfolio</td>
+                        <td>Career guides, skill development</td>
+                    </tr>
+                    <tr>
+                        <td>FamilyValue</td>
+                        <td>Trust Purple (#7C3AED)</td>
+                        <td>Primary Blue (#1E3A8A)</td>
+                        <td>Family Wealth</td>
+                        <td>Estate planning, succession</td>
+                    </tr>
+                    <tr>
+                        <td>LegalHelp</td>
+                        <td>Professional Blue (#1E3A8A)</td>
+                        <td>Warning Amber (#F59E0B)</td>
+                        <td>Legal Services</td>
+                        <td>Legal guides, contracts</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Cross-App Integration Features</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🔄 Shared Components</h4>
+                    <p>Common UI elements and functions across all apps</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🧭 Unified Navigation</h4>
+                    <p>Links between related templates and apps</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📊 Data Sharing</h4>
+                    <p>Seamless information flow between applications</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🛡️ Trust Integration</h4>
+                    <p>LifeSync trust scores and badges</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📋 LifeCV Proof</h4>
+                    <p>Achievement tracking across all apps</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🌐 14 Languages</h4>
+                    <p>Complete ecosystem language support</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>✅ Quality Assurance</h2>
+
+            <h3>Automated Testing Requirements</h3>
+            <div class="checklist">
+                <div class="checklist-item">HTML Validation: W3C markup validation</div>
+                <div class="checklist-item">CSS Validation: W3C CSS validation</div>
+                <div class="checklist-item">JavaScript Linting: ESLint with ecosystem rules</div>
+                <div class="checklist-item">Accessibility: axe-core automated testing</div>
+                <div class="checklist-item">Performance: Lighthouse scoring (90+ target)</div>
+            </div>
+
+            <h3>Manual Testing Checklist</h3>
+            <div class="checklist">
+                <div class="checklist-item">Template loads in all supported browsers</div>
+                <div class="checklist-item">Customization panel functions correctly</div>
+                <div class="checklist-item">Share features work (PDF, link, print)</div>
+                <div class="checklist-item">Print layout is clean and readable</div>
+                <div class="checklist-item">Mobile responsive design works</div>
+                <div class="checklist-item">All links and navigation work</div>
+                <div class="checklist-item">Form validation functions</div>
+                <div class="checklist-item">Progress tracking (if applicable)</div>
+                <div class="checklist-item">Accessibility features work</div>
+                <div class="checklist-item">Content is accurate and up-to-date</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔧 Maintenance Procedures</h2>
+
+            <h3>Version Control Process</h3>
+            <div class="code-block">
+1. Branch Creation: feature/template-[name]-v[major].[minor]
+2. Development: Implement changes following standards
+3. Code Review: Peer review of changes
+4. Testing: Complete QA process
+5. Merge: Squash merge to main branch
+6. Tag: Create version tag v[major].[minor].[patch]
+7. Deploy: Push to production
+            </div>
+
+            <h3>Change Log Format</h3>
+            <div class="code-block">
+## [v1.0.1] - 2025-10-XX
+### Added
+- New feature description
+
+### Changed
+- Modified feature description
+
+### Fixed
+- Bug fix description
+
+### Removed
+- Deprecated feature description
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📞 Support & Resources</h2>
+
+            <h3>Documentation & Support</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>📚 Template Library</h4>
+                    <p>https://github.com/salatiso/templates</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🛠️ Implementation Guide</h4>
+                    <p>This specification document</p>
+                </div>
+                <div class="feature-card">
+                    <h4>💻 Code Examples</h4>
+                    <p>Working template samples</p>
+                </div>
+                <div class="feature-card">
+                    <h4>✨ Best Practices</h4>
+                    <p>Ecosystem standards guide</p>
+                </div>
+            </div>
+
+            <h3>Contact Information</h3>
+            <div class="highlight-box">
+                <p><strong>Template Team:</strong> templates@salatiso.com</p>
+                <p><strong>Ecosystem Hub:</strong> https://lifecv-d2724.web.app</p>
+                <p><strong>Professional Network:</strong> Connect through marketplace</p>
+                <p><strong>Technical Issues:</strong> GitHub Issues</p>
+                <p><strong>Implementation Help:</strong> Ecosystem Slack #templates</p>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin: 3rem 0;">
+            <h2 style="color: var(--primary-blue);">Ready to Implement Templates?</h2>
+            <p>Follow this specification to create consistent, professional templates across the Salatiso Ecosystem.</p>
+            <button onclick="startImplementation()" class="btn">🚀 Start Implementation Guide</button>
+            <a href="https://github.com/salatiso/templates" class="btn secondary" target="_blank">📚 View Template Library</a>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>🌟 Salatiso Ecosystem</h4>
+                <ul>
+                    <li><a href="https://lifecv-d2724.web.app">Ecosystem Hub</a></li>
+                    <li><a href="https://bizhelp-lifecv.web.app">BizHelp</a></li>
+                    <li><a href="https://lifecv-d2724.web.app/training/">Sazi Life Academy</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>📋 Template Resources</h4>
+                <ul>
+                    <li><a href="#implementation-guide">Implementation Guide</a></li>
+                    <li><a href="#quality-assurance">Quality Assurance</a></li>
+                    <li><a href="#maintenance-procedures">Maintenance</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>🛠️ Development</h4>
+                <ul>
+                    <li><a href="https://github.com/salatiso/templates">Template Library</a></li>
+                    <li><a href="#support-resources">Support & Resources</a></li>
+                    <li><a href="#version-control">Version Control</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>🎯 Remember</h4>
+                <p>Consistency First • Quality Always</p>
+                <p>Powered by Salatiso</p>
+            </div>
+        </div>
+        <p style="margin-top: 2rem; opacity: 0.8;">© 2025 Salatiso Ecosystem - Template Specification v1.0. Prepared for Professional Developer on October 8, 2025</p>
+    </footer>
+
+    <script>
+        // Customization Functions
+        function applyCustomization() {
+            const developerName = document.getElementById('developerName').value;
+            const organization = document.getElementById('organization').value;
+            const implementationDate = document.getElementById('implementationDate').value;
+            const targetApp = document.getElementById('targetApp').value;
+            const specVersion = document.getElementById('specVersion').value;
+
+            // Update document title
+            document.title = `Salatiso Template Specification - ${organization || 'Implementation'} - ${specVersion}`;
+
+            // Update header
+            const header = document.querySelector('.tagline');
+            if (header) {
+                const appName = targetApp ? document.getElementById('targetApp').options[document.getElementById('targetApp').selectedIndex].text : 'All Apps';
+                header.innerHTML = `Template Specification v1.0 - ${appName}`;
+            }
+
+            // Update footer
+            const footer = document.querySelector('footer p');
+            if (footer) {
+                footer.innerHTML = `© 2025 Salatiso Ecosystem - ${specVersion}. Prepared for ${developerName || 'Professional Developer'} on ${new Date(implementationDate).toLocaleDateString()}`;
+            }
+
+            alert('✅ Specification customized successfully!');
+        }
+
+        function toggleCustomization() {
+            const panel = document.getElementById('customizationPanel');
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Sharing Functions
+        function downloadPDF() {
+            window.print(); // For now, use print as PDF download
+            alert('💡 Tip: Use your browser\'s "Save as PDF" option when printing');
+        }
+
+        function shareLink() {
+            const url = window.location.href;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('🔗 Link copied to clipboard!');
+            }).catch(() => {
+                alert('Link: ' + url);
+            });
+        }
+
+        function printDoc() {
+            window.print();
+        }
+
+        // Implementation Functions
+        function startImplementation() {
+            const implementationSteps = `
+🚀 SALATISO TEMPLATE IMPLEMENTATION GUIDE
+
+Step 1: Planning Phase (1-2 hours)
+• Define template purpose and target audience
+• Identify required customization fields
+• Plan content structure and sections
+• Select appropriate app branding
+
+Step 2: Base Template Setup (30 minutes)
+• Copy existing template as starting point
+• Update HTML structure and content
+• Modify CSS variables for app branding
+• Test basic layout and responsiveness
+
+Step 3: Core Features Implementation (2-3 hours)
+• Implement customization panel
+• Add sharing functionality
+• Integrate progress tracking (if needed)
+• Test all interactive elements
+
+Step 4: Content Development (2-4 hours)
+• Write clear, actionable content
+• Add examples and case studies
+• Include visual elements and icons
+• Ensure content is culturally appropriate
+
+Step 5: Quality Assurance (1-2 hours)
+• Cross-browser testing
+• Mobile responsiveness validation
+• Print layout optimization
+• Accessibility compliance check
+
+Step 6: Deployment Preparation (30 minutes)
+• Version control and tagging
+• Documentation updates
+• Final testing and validation
+• Prepare deployment package
+
+Step 7: Launch & Monitoring (Ongoing)
+• Deploy to production
+• Monitor user feedback
+• Track usage analytics
+• Plan maintenance updates
+
+Need help? Contact templates@salatiso.com
+            `;
+
+            alert(implementationSteps);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('implementationDate').value = today;
+        });
+    </script>
+</body>
+</html>

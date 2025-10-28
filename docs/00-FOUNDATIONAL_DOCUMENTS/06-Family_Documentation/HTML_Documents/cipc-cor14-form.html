@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CIPC COR14.1 - Notice of Amendment of Memorandum of Incorporation | DocuHelp</title>
+    <meta name="viewport" content="width=210mm, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700;900&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Manrope', sans-serif; }
+        .a4 { width: 210mm; min-height: 297mm; margin: 1rem auto; background: #fff; box-shadow: 0 0 8px #ccc; }
+        @media print { .no-print { display: none !important; } .a4 { box-shadow: none; margin: 0; } }
+        .watermark { position: absolute; opacity: 0.06; left: 50%; top: 50%; transform: translate(-50%,-50%); font-size: 7rem; font-weight: bold; color: #0540F2; pointer-events: none; }
+        .form-field { border-bottom: 1px solid #ccc; min-height: 20px; display: inline-block; width: 100%; padding: 2px 0; }
+        .checkbox { width: 16px; height: 16px; border: 1px solid #333; display: inline-block; margin-right: 5px; position: relative; }
+        .checkbox.checked::after { content: "✓"; position: absolute; left: 2px; top: -2px; font-size: 12px; }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="no-print flex justify-between items-center max-w-3xl mx-auto mt-4 mb-2">
+        <div>
+            <button onclick="window.print()" class="bg-blue-600 text-white px-3 py-1 rounded mr-2">Print</button>
+            <button onclick="fillForm()" class="bg-green-600 text-white px-3 py-1 rounded">Fill Form</button>
+        </div>
+    </div>
+    
+    <div class="a4 relative p-8 mb-8 bg-white">
+        <div class="watermark">DocuHelp</div>
+        
+        <!-- DocuHelp Header -->
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-blue-200">
+            <div class="flex items-center">
+                <svg class="h-12 w-12 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                    <path d="M15 25 L35 25 L40 30 L85 30 L85 75 L15 75 Z" fill="#0540F2" stroke="#2563EB" stroke-width="1"/>
+                    <rect x="25" y="40" width="45" height="28" fill="#3B82F6" stroke="#1D4ED8" stroke-width="1" rx="2"/>
+                    <rect x="30" y="45" width="35" height="3" fill="white" rx="1"/>
+                    <rect x="30" y="52" width="35" height="2" fill="white" rx="1"/>
+                    <rect x="30" y="57" width="25" height="2" fill="white" rx="1"/>
+                </svg>
+                <div>
+                    <span class="font-bold text-2xl text-blue-900" style="font-family: 'Roboto Slab', serif;">DocuHelp</span>
+                    <p class="text-blue-700 text-sm">Professional CIPC Registration Services</p>
+                </div>
+            </div>
+            <div class="text-right text-sm text-gray-600">
+                <p>Prepared for: Mlandeli Notemba Investments</p>
+                <p>Date: August 19, 2025</p>
+            </div>
+        </div>
+
+        <!-- CIPC Header -->
+        <div class="text-center mb-6">
+            <h1 class="text-xl font-bold mb-2">COMPANIES AND INTELLECTUAL PROPERTY COMMISSION</h1>
+            <h2 class="text-lg font-bold mb-2">COR14.1 - NOTICE OF AMENDMENT OF MEMORANDUM OF INCORPORATION</h2>
+            <p class="text-sm mb-2">Section 16(1)(c) of the Companies Act, 2008 (Act No. 71 of 2008)</p>
+            <div class="border border-gray-400 p-2 bg-gray-50">
+                <p class="text-xs">FOR OFFICIAL USE ONLY</p>
+                <div class="grid grid-cols-3 gap-4 mt-2">
+                    <div>
+                        <p class="text-xs">Date Received:</p>
+                        <div class="form-field"></div>
+                    </div>
+                    <div>
+                        <p class="text-xs">Reference Number:</p>
+                        <div class="form-field"></div>
+                    </div>
+                    <div>
+                        <p class="text-xs">Fee Paid R:</p>
+                        <div class="form-field"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 1: Company Details -->
+        <div class="mb-6">
+            <h3 class="text-lg font-bold mb-3 bg-blue-100 p-2">1. COMPANY DETAILS</h3>
+            
+            <div class="grid grid-cols-1 gap-4">
+                <div>
+                    <label class="text-sm font-semibold">Company Registration Number:</label>
+                    <div class="form-field" id="regNumber">To be allocated by CIPC</div>
+                </div>
+                
+                <div>
+                    <label class="text-sm font-semibold">Company Name:</label>
+                    <div class="form-field" id="companyName">Mlandeli Notemba Investments (Proprietary) Limited</div>
+                </div>
+                
+                <div>
+                    <label class="text-sm font-semibold">Previous Name (if changed):</label>
+                    <div class="form-field" id="previousName">N/A - New Registration</div>
+                </div>
+                
+                <div>
+                    <label class="text-sm font-semibold">Date of Incorporation:</label>
+                    <div class="form-field" id="incorpDate">To be completed upon registration</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Registered Office -->
+        <div class="mb-6">
+            <h3 class="text-lg font-bold mb-3 bg-blue-100 p-2">2. REGISTERED OFFICE ADDRESS</h3>
+            
+            <div class="grid grid-cols-1 gap-4">
+                <div>
+                    <label class="text-sm font-semibold">Street Address:</label>
+                    <div class="form-field" id="streetAddress">123 Ubuntu Business Park</div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-sm font-semibold">Suburb:</label>
+                        <div class="form-field" id="suburb">Sandton</div>
+                    </div>
+                    <div>
+                        <label class="text-sm font-semibold">City:</label>
+                        <div class="form-field" id="city">Johannesburg</div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-sm font-semibold">Province:</label>
+                        <div class="form-field" id="province">Gauteng</div>
+                    </div>
+                    <div>
+                        <label class="text-sm font-semibold">Postal Code:</label>
+                        <div class="form-field" id="postalCode">2196</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Nature of Amendment -->
+        <div class="mb-6">
+            <h3 class="text-lg font-bold mb-3 bg-blue-100 p-2">3. NATURE OF AMENDMENT</h3>
+            
+            <p class="text-sm mb-3">Indicate the nature of the amendment to the Memorandum of Incorporation:</p>
+            
+            <div class="space-y-2">
+                <div class="flex items-center">
+                    <span class="checkbox checked" id="amendmentType1"></span>
+                    <label class="text-sm">Amendment to the company's name</label>
+                </div>
+                <div class="flex items-center">
+                    <span class="checkbox" id="amendmentType2"></span>
+                    <label class="text-sm">Amendment to the company's main business</label>
+                </div>
+                <div class="flex items-center">
+                    <span class="checkbox checked" id="amendmentType3"></span>
+                    <label class="text-sm">Amendment to the share capital and rights attached to shares</label>
+                </div>
+                <div class="flex items-center">
+                    <span class="checkbox" id="amendmentType4"></span>
+                    <label class="text-sm">Amendment to the provisions relating to directors</label>
+                </div>
+                <div class="flex items-center">
+                    <span class="checkbox" id="amendmentType5"></span>
+                    <label class="text-sm">Other (specify below)</label>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <label class="text-sm font-semibold">Details of Amendment:</label>
+                <div class="border border-gray-300 p-3 min-h-24 text-sm" id="amendmentDetails">
+                    Initial incorporation of Mlandeli Notemba Investments (Proprietary) Limited as a private company with the following key provisions:
+                    
+                    1. Company name established as "Mlandeli Notemba Investments (Proprietary) Limited"
+                    2. Share capital structure: 10,000 authorized ordinary shares with no par value
+                    3. Initial shareholding: 100% owned by The Mlandeli Notemba Family Trust
+                    4. Main business: Investment holding company and family business management
+                    5. Directors: Visa Sande Mdeni (CEO) and Salatiso Lonwabo Mdeni (Chairman)
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 4: Directors -->
+        <div class="mb-6">
+            <h3 class="text-lg font-bold mb-3 bg-blue-100 p-2">4. CURRENT DIRECTORS</h3>
+            
+            <div class="space-y-4">
+                <!-- Director 1 -->
+                <div class="border border-gray-300 p-3">
+                    <h4 class="font-semibold mb-2">Director 1:</h4>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-xs">Full Names:</label>
+                            <div class="form-field" id="dir1Names">Visa Sande Mdeni</div>
+                        </div>
+                        <div>
+                            <label class="text-xs">ID Number:</label>
+                            <div class="form-field" id="dir1ID">To be provided</div>
+                        </div>
+                        <div>
+                            <label class="text-xs">Designation:</label>
+                            <div class="form-field" id="dir1Designation">Chief Executive Officer</div>
+                        </div>
+                        <div>
+                            <label class="text-xs">Appointment Date:</label>
+                            <div class="form-field" id="dir1Date">Date of incorporation</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Director 2 -->
+                <div class="border border-gray-300 p-3">
+                    <h4 class="font-semibold mb-2">Director 2:</h4>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-xs">Full Names:</label>
+                            <div class="form-field" id="dir2Names">Salatiso Lonwabo Mdeni</div>
+                        </div>
+                        <div>
+                            <label class="text-xs">ID Number:</label>
+                            <div class="form-field" id="dir2ID">To be provided</div>
+                        </div>
+                        <div>
+                            <label class="text-xs">Designation:</label>
+                            <div class="form-field" id="dir2Designation">Chairman and Founder</div>
+                        </div>
+                        <div>
+                            <label class="text-xs">Appointment Date:</label>
+                            <div class="form-field" id="dir2Date">Date of incorporation</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 5: Shareholder Details -->
+        <div class="mb-6">
+            <h3 class="text-lg font-bold mb-3 bg-blue-100 p-2">5. SHAREHOLDER DETAILS</h3>
+            
+            <div class="border border-gray-300 p-3">
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="text-xs font-semibold">Shareholder Name:</label>
+                        <div class="form-field" id="shareholderName">The Mlandeli Notemba Family Trust</div>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold">Number of Shares:</label>
+                        <div class="form-field" id="shareCount">10,000</div>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold">Percentage:</label>
+                        <div class="form-field" id="sharePercentage">100%</div>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <label class="text-xs font-semibold">Trust Registration Number:</label>
+                    <div class="form-field" id="trustRegNumber">To be provided upon trust registration</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 6: Company Secretary -->
+        <div class="mb-6">
+            <h3 class="text-lg font-bold mb-3 bg-blue-100 p-2">6. COMPANY SECRETARY (If Applicable)</h3>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-sm font-semibold">Full Names:</label>
+                    <div class="form-field" id="secretaryName">To be appointed</div>
+                </div>
+                <div>
+                    <label class="text-sm font-semibold">Qualification:</label>
+                    <div class="form-field" id="secretaryQual">N/A</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Declaration -->
+        <div class="mb-6">
+            <h3 class="text-lg font-bold mb-3 bg-blue-100 p-2">7. DECLARATION</h3>
+            
+            <p class="text-sm mb-4">I/We hereby declare that:</p>
+            <ul class="text-xs space-y-1 ml-4 list-disc mb-4">
+                <li>The information provided in this form is true and correct</li>
+                <li>I/We understand that this amendment is subject to approval by CIPC</li>
+                <li>I/We undertake to comply with all provisions of the Companies Act</li>
+                <li>The company will conduct its business in accordance with its Memorandum of Incorporation</li>
+            </ul>
+            
+            <div class="grid grid-cols-2 gap-8 mt-6">
+                <div>
+                    <p class="text-sm font-semibold">Director Signature:</p>
+                    <div class="form-field mt-8"></div>
+                    <p class="text-xs">Visa Sande Mdeni - CEO</p>
+                    <p class="text-xs">Date: ________________</p>
+                </div>
+                <div>
+                    <p class="text-sm font-semibold">Director Signature:</p>
+                    <div class="form-field mt-8"></div>
+                    <p class="text-xs">Salatiso Lonwabo Mdeni - Chairman</p>
+                    <p class="text-xs">Date: ________________</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center text-xs text-gray-500 mt-8 pt-4 border-t border-gray-200">
+            <p>Form COR14.1 - Notice of Amendment of Memorandum of Incorporation</p>
+            <p>Prepared by DocuHelp Professional Services | www.docuhelp.co.za</p>
+            <p>This form complies with Companies Act requirements and CIPC regulations</p>
+        </div>
+    </div>
+    
+    <script>
+        function fillForm() {
+            // This function could be enhanced to dynamically fill form fields
+            alert('Form auto-fill feature: All available information has been pre-populated. Please review and complete any missing details before submission.');
+        }
+    </script>
+</body>
+</html>

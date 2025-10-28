@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Trust Registration Application - The Mlandeli Notemba Family Trust | Family Value</title>
+    <meta name="viewport" content="width=210mm, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700;900&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Manrope', sans-serif; }
+        .a4 { width: 210mm; min-height: 297mm; margin: 1rem auto; background: #fff; box-shadow: 0 0 8px #ccc; }
+        @media print { .no-print { display: none !important; } .a4 { box-shadow: none; margin: 0; } }
+        .watermark { position: absolute; opacity: 0.06; left: 50%; top: 50%; transform: translate(-50%,-50%); font-size: 7rem; font-weight: bold; color: #10B981; pointer-events: none; }
+        .form-field { border-bottom: 1px solid #ccc; min-height: 20px; display: inline-block; width: 100%; padding: 2px 0; }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="no-print flex justify-between items-center max-w-3xl mx-auto mt-4 mb-2">
+        <div>
+            <button onclick="window.print()" class="bg-green-600 text-white px-3 py-1 rounded">Print</button>
+        </div>
+    </div>
+
+    <!-- Cover Page -->
+    <div class="a4 relative p-12 mb-8 bg-white">
+        <div class="watermark">Family Value</div>
+        
+        <!-- Family Value Header -->
+        <div class="flex items-center justify-between mb-8 pb-4 border-b border-green-200">
+            <div class="flex items-center">
+                <svg class="h-16 w-16 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="45" fill="#10B981" stroke="#059669" stroke-width="2"/>
+                    <path d="M30 35 Q50 25 70 35 Q50 45 30 35" fill="#F59E0B"/>
+                    <circle cx="35" cy="45" r="8" fill="#F59E0B"/>
+                    <circle cx="50" cy="55" r="8" fill="#F59E0B"/>
+                    <circle cx="65" cy="45" r="8" fill="#F59E0B"/>
+                    <path d="M30 65 Q50 75 70 65" stroke="#F59E0B" stroke-width="3" fill="none"/>
+                </svg>
+                <div>
+                    <span class="font-bold text-3xl text-green-800" style="font-family: 'Roboto Slab', serif;">Family Value</span>
+                    <p class="text-green-600 text-sm">Ubuntu-Centered Family Governance</p>
+                </div>
+            </div>
+            <div class="text-right text-sm text-gray-600">
+                <p>Application Date: August 19, 2025</p>
+                <p>Document: Trust Registration</p>
+            </div>
+        </div>
+
+        <!-- Trust Registration Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-green-900 mb-4">TRUST REGISTRATION APPLICATION</h1>
+            <h2 class="text-xl text-green-700 mb-2">Master of the High Court</h2>
+            <p class="text-lg text-gray-600">The Mlandeli Notemba Family Trust</p>
+        </div>
+
+        <!-- Trust Details -->
+        <div class="bg-green-50 border border-green-200 p-6 rounded mb-8">
+            <h3 class="text-xl font-bold text-green-900 mb-4">TRUST DETAILS</h3>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <p class="font-semibold">Trust Name:</p>
+                    <p>The Mlandeli Notemba Family Trust</p>
+                </div>
+                <div>
+                    <p class="font-semibold">Trust Type:</p>
+                    <p>Inter Vivos Family Trust</p>
+                </div>
+                <div>
+                    <p class="font-semibold">Date of Establishment:</p>
+                    <p>August 19, 2025</p>
+                </div>
+                <div>
+                    <p class="font-semibold">Jurisdiction:</p>
+                    <p>South Africa - Gauteng High Court</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Founder Information -->
+        <div class="mb-8">
+            <h3 class="text-xl font-bold text-green-900 mb-4">FOUNDER INFORMATION</h3>
+            <div class="bg-amber-50 border border-amber-200 p-4 rounded">
+                <div class="space-y-3">
+                    <div>
+                        <p class="font-semibold">Primary Founder (Founder):</p>
+                        <p>Salatiso Lonwabo Mdeni</p>
+                        <p class="text-sm">22 Lineata Avenue, Glenvista, 2091</p>
+                        <p class="text-sm">Phone: 087 092 7250</p>
+                        <p class="text-sm">Email: salatiso@salatiso-ecosystem.co.za</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trustees Information -->
+        <div class="mb-8">
+            <h3 class="text-xl font-bold text-green-900 mb-4">TRUSTEES INFORMATION</h3>
+            
+            <!-- Trustee 1 -->
+            <div class="bg-blue-50 border border-blue-200 p-4 rounded mb-4">
+                <h4 class="font-semibold text-blue-800 mb-2">TRUSTEE 1 - Chairman</h4>
+                <div class="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                        <p class="font-semibold">Full Names:</p>
+                        <p>Salatiso Lonwabo Mdeni</p>
+                    </div>
+                    <div>
+                        <p class="font-semibold">ID Number:</p>
+                        <p>To be provided</p>
+                    </div>
+                    <div>
+                        <p class="font-semibold">Residential Address:</p>
+                        <p>22 Lineata Avenue, Glenvista, 2091</p>
+                    </div>
+                    <div>
+                        <p class="font-semibold">Role:</p>
+                        <p>Founder and Chairman of Trustees</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trustee 2 -->
+            <div class="bg-purple-50 border border-purple-200 p-4 rounded mb-4">
+                <h4 class="font-semibold text-purple-800 mb-2">TRUSTEE 2 - Executive Trustee</h4>
+                <div class="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                        <p class="font-semibold">Full Names:</p>
+                        <p>Visa Sande Mdeni</p>
+                    </div>
+                    <div>
+                        <p class="font-semibold">ID Number:</p>
+                        <p>850705 1036 081</p>
+                    </div>
+                    <div>
+                        <p class="font-semibold">Residential Address:</p>
+                        <p>No 3 Leopard Rock, Ridgeway, 2091</p>
+                    </div>
+                    <div>
+                        <p class="font-semibold">Role:</p>
+                        <p>Executive Trustee and Business Operations</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trustee 3 -->
+            <div class="bg-amber-50 border border-amber-200 p-4 rounded">
+                <h4 class="font-semibold text-amber-800 mb-2">TRUSTEE 3 - Family Representative</h4>
+                <div class="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                        <p class="font-semibold">Full Names:</p>
+                        <p>Tina Sisonke Mdeni</p>
+                    </div>
+                    <div>
+                        <p class="font-semibold">ID Number:</p>
+                        <p>900521 1188 081</p>
+                    </div>
+                    <div>
+                        <p class="font-semibold">Residential Address:</p>
+                        <p>22 Lineata Avenue, Glenvista, 2091</p>
+                    </div>
+                    <div>
+                        <p class="font-semibold">Role:</p>
+                        <p>Family Representative and Beneficiary Advocate</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ubuntu Foundation -->
+        <div class="bg-green-50 border-l-4 border-green-500 p-6">
+            <h4 class="font-bold text-green-800 mb-2">Ubuntu Trust Foundation</h4>
+            <p class="text-sm text-green-700 italic">"This trust honors the legacy of Mlandeli Nelson Mdeni and Nozukile Cynthia Mdeni (Notemba), our beloved grandparents. Through Ubuntu principles - 'I am because we are' - this trust ensures that individual prosperity strengthens family unity, and family unity enables individual flourishing. We preserve their memory by building a foundation for generations to come."</p>
+        </div>
+    </div>
+
+    <!-- Trust Deed Application Page -->
+    <div class="a4 relative p-12 mb-8 bg-white">
+        <div class="watermark">Family Value</div>
+        
+        <h2 class="text-2xl font-bold text-green-900 mb-6">TRUST DEED AND PURPOSE</h2>
+
+        <h3 class="text-xl font-bold text-green-800 mb-4">1. TRUST PURPOSE AND OBJECTIVES</h3>
+        <div class="space-y-4 mb-6">
+            <p class="font-semibold text-green-700">Primary Purpose:</p>
+            <p>To hold, manage, and preserve family wealth for the benefit of the Mdeni family lineage, ensuring the perpetuation of Ubuntu values, cultural heritage, and economic prosperity across generations.</p>
+            
+            <div class="bg-green-50 border border-green-200 p-4 rounded">
+                <p class="font-semibold text-green-800 mb-2">Specific Objectives:</p>
+                <ul class="list-disc ml-6 space-y-1 text-sm">
+                    <li>Preserve and grow family wealth through prudent investment and business ownership</li>
+                    <li>Provide education and development opportunities for all beneficiaries</li>
+                    <li>Maintain family unity and Ubuntu principles in all trust activities</li>
+                    <li>Support community development and social responsibility initiatives</li>
+                    <li>Ensure sustainable succession planning for future generations</li>
+                    <li>Protect family assets from external risks and potential claims</li>
+                    <li>Honor the memory and values of Mlandeli and Notemba Mdeni</li>
+                </ul>
+            </div>
+        </div>
+
+        <h3 class="text-xl font-bold text-green-800 mb-4">2. BENEFICIARIES</h3>
+        
+        <h4 class="text-lg font-semibold text-green-700 mb-3">2.1 Current Generation Beneficiaries</h4>
+        <div class="grid grid-cols-1 gap-3 mb-4">
+            <div class="border border-gray-300 p-3 rounded">
+                <p class="font-semibold">Salatiso Lonwabo Mdeni</p>
+                <p class="text-sm">Son of Mlandeli Nelson Mdeni | Founder and Primary Beneficiary</p>
+                <p class="text-xs">Address: 22 Lineata Avenue, Glenvista, 2091</p>
+            </div>
+            <div class="border border-gray-300 p-3 rounded">
+                <p class="font-semibold">Visa Sande Mdeni (ID: 850705 1036 081)</p>
+                <p class="text-sm">Sister of Salatiso | Executive Beneficiary and CEO Designate</p>
+                <p class="text-xs">Address: No 3 Leopard Rock, Ridgeway, 2091</p>
+            </div>
+            <div class="border border-gray-300 p-3 rounded">
+                <p class="font-semibold">Tina Sisonke Mdeni (ID: 900521 1188 081)</p>
+                <p class="text-sm">Sister of Salatiso | Family Representative and Beneficiary</p>
+                <p class="text-xs">Address: 22 Lineata Avenue, Glenvista, 2091</p>
+            </div>
+            <div class="border border-gray-300 p-3 rounded">
+                <p class="font-semibold">Kwakho Eyona Mdeni (ID: 920915 1290 085)</p>
+                <p class="text-sm">Sister of Salatiso | Beneficiary and Family Member</p>
+                <p class="text-xs">Address: 22 Lineata Avenue, Glenvista, 2091</p>
+            </div>
+        </div>
+
+        <h4 class="text-lg font-semibold text-green-700 mb-3">2.2 Next Generation Beneficiaries</h4>
+        <div class="grid grid-cols-1 gap-3 mb-4">
+            <div class="border border-amber-300 p-3 rounded bg-amber-50">
+                <p class="font-semibold">Lukhanyo Sazi Mkosana</p>
+                <p class="text-sm">Son of Salatiso Lonwabo Mdeni | Born: March 28, 2018</p>
+                <p class="text-xs">Future beneficiary with 1% birthright share upon maturity</p>
+            </div>
+            <div class="border border-blue-300 p-3 rounded bg-blue-50">
+                <p class="font-semibold">Solonwabo Mdeni</p>
+                <p class="text-sm">Child of family member | Future beneficiary</p>
+                <p class="text-xs">Beneficiary rights to be determined upon majority</p>
+            </div>
+            <div class="border border-purple-300 p-3 rounded bg-purple-50">
+                <p class="font-semibold">Milande Mdeni</p>
+                <p class="text-sm">Child of family member | Future beneficiary</p>
+                <p class="text-xs">Beneficiary rights to be determined upon majority</p>
+            </div>
+        </div>
+
+        <h4 class="text-lg font-semibold text-green-700 mb-3">2.3 Future Beneficiaries Clause</h4>
+        <div class="bg-blue-50 border border-blue-200 p-4 rounded">
+            <p class="text-sm"><strong>Bloodline Continuation:</strong> Any future children born to current beneficiaries who can prove their lineage through DNA verification shall automatically become beneficiaries of this trust upon reaching the age of 18 years, subject to the Family Value advancement system and Ubuntu principles adherence.</p>
+        </div>
+
+        <h3 class="text-xl font-bold text-green-800 mb-4 mt-6">3. TRUST ASSETS</h3>
+        
+        <h4 class="text-lg font-semibold text-green-700 mb-3">3.1 Initial Trust Assets</h4>
+        <div class="space-y-3">
+            <div class="border border-gray-300 p-3 rounded">
+                <p class="font-semibold">Intellectual Property Assets</p>
+                <ul class="list-disc ml-4 text-sm space-y-1">
+                    <li>Salatiso Ecosystem platforms and technology</li>
+                    <li>Family Value Quantification System (Patent pending)</li>
+                    <li>Ubuntu business methodology and frameworks</li>
+                    <li>Training curricula and educational content</li>
+                    <li>Trademarks and brand assets</li>
+                </ul>
+            </div>
+            
+            <div class="border border-gray-300 p-3 rounded">
+                <p class="font-semibold">Business Investments</p>
+                <ul class="list-disc ml-4 text-sm space-y-1">
+                    <li>100% shareholding in Mlandeli Notemba Investments (Pty) Ltd</li>
+                    <li>Operating subsidiary companies (SafetyHelp, BizHelp, DocuHelp, etc.)</li>
+                    <li>Future business acquisitions and investments</li>
+                    <li>Real estate and property investments</li>
+                </ul>
+            </div>
+            
+            <div class="border border-gray-300 p-3 rounded">
+                <p class="font-semibold">Financial Assets</p>
+                <ul class="list-disc ml-4 text-sm space-y-1">
+                    <li>Cash and cash equivalents</li>
+                    <li>Investment portfolios and securities</li>
+                    <li>Pension and retirement funding</li>
+                    <li>Insurance policies and benefits</li>
+                </ul>
+            </div>
+        </div>
+
+        <h4 class="text-lg font-semibold text-green-700 mb-3 mt-4">3.2 Asset Growth Strategy</h4>
+        <div class="bg-amber-50 border border-amber-200 p-4 rounded">
+            <p class="text-sm">Trust assets shall be grown through:</p>
+            <ul class="list-disc ml-4 text-sm space-y-1 mt-2">
+                <li><strong>Business Revenue:</strong> Profits from operating companies and subsidiaries</li>
+                <li><strong>IP Licensing:</strong> Revenue from intellectual property licensing agreements</li>
+                <li><strong>Investment Returns:</strong> Returns from diversified investment portfolios</li>
+                <li><strong>Strategic Acquisitions:</strong> Purchase of complementary businesses and assets</li>
+                <li><strong>Family Contributions:</strong> Additional contributions from successful beneficiaries</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Governance and Management Page -->
+    <div class="a4 relative p-12 mb-8 bg-white">
+        <div class="watermark">Family Value</div>
+        
+        <h3 class="text-xl font-bold text-green-800 mb-4">4. TRUST GOVERNANCE AND MANAGEMENT</h3>
+
+        <h4 class="text-lg font-semibold text-green-700 mb-3">4.1 Trustee Powers and Responsibilities</h4>
+        <div class="space-y-4 mb-6">
+            <div class="bg-blue-50 border border-blue-200 p-4 rounded">
+                <h5 class="font-bold text-blue-800 mb-2">Chairman of Trustees (Salatiso L. Mdeni)</h5>
+                <ul class="list-disc ml-4 text-sm space-y-1">
+                    <li>Strategic direction and vision setting for trust activities</li>
+                    <li>Final decision authority on major asset acquisitions and disposals</li>
+                    <li>Family governance and Ubuntu principles enforcement</li>
+                    <li>Appointment and removal of other trustees (with family consultation)</li>
+                    <li>Trust deed amendment authority (with beneficiary approval)</li>
+                </ul>
+            </div>
+            
+            <div class="bg-purple-50 border border-purple-200 p-4 rounded">
+                <h5 class="font-bold text-purple-800 mb-2">Executive Trustee (Visa S. Mdeni)</h5>
+                <ul class="list-disc ml-4 text-sm space-y-1">
+                    <li>Day-to-day operational management of trust assets</li>
+                    <li>Business operations oversight and performance monitoring</li>
+                    <li>Financial management and investment decision implementation</li>
+                    <li>Beneficiary development and advancement coordination</li>
+                    <li>Compliance and regulatory management</li>
+                </ul>
+            </div>
+            
+            <div class="bg-amber-50 border border-amber-200 p-4 rounded">
+                <h5 class="font-bold text-amber-800 mb-2">Family Representative Trustee (Tina S. Mdeni)</h5>
+                <ul class="list-disc ml-4 text-sm space-y-1">
+                    <li>Beneficiary advocacy and interest protection</li>
+                    <li>Family unity and relationship maintenance</li>
+                    <li>Cultural preservation and Ubuntu values implementation</li>
+                    <li>Next-generation development and education oversight</li>
+                    <li>Community liaison and social responsibility coordination</li>
+                </ul>
+            </div>
+        </div>
+
+        <h4 class="text-lg font-semibold text-green-700 mb-3">4.2 Decision-Making Process</h4>
+        <div class="space-y-3 mb-6">
+            <div class="border border-gray-300 p-3 rounded">
+                <p class="font-semibold text-gray-800">Unanimous Decisions Required:</p>
+                <ul class="list-disc ml-4 text-sm space-y-1">
+                    <li>Major asset sales or acquisitions (>R1 million)</li>
+                    <li>Trust deed amendments</li>
+                    <li>Addition or removal of trustees</li>
+                    <li>Change in trust tax residency</li>
+                    <li>Trust dissolution or winding up</li>
+                </ul>
+            </div>
+            
+            <div class="border border-gray-300 p-3 rounded">
+                <p class="font-semibold text-gray-800">Majority Decisions (2 of 3 trustees):</p>
+                <ul class="list-disc ml-4 text-sm space-y-1">
+                    <li>Investment decisions (<R1 million)</li>
+                    <li>Beneficiary distributions and support</li>
+                    <li>Business operational decisions</li>
+                    <li>Annual budget approval</li>
+                    <li>Professional service provider appointments</li>
+                </ul>
+            </div>
+            
+            <div class="border border-gray-300 p-3 rounded">
+                <p class="font-semibold text-gray-800">Executive Authority (Executive Trustee):</p>
+                <ul class="list-disc ml-4 text-sm space-y-1">
+                    <li>Routine operational decisions</li>
+                    <li>Banking and financial transactions</li>
+                    <li>Tax compliance and reporting</li>
+                    <li>Contractual commitments (<R100,000)</li>
+                    <li>Emergency decisions (with subsequent ratification)</li>
+                </ul>
+            </div>
+        </div>
+
+        <h4 class="text-lg font-semibold text-green-700 mb-3">4.3 Family Council Integration</h4>
+        <div class="bg-green-50 border border-green-200 p-4 rounded mb-6">
+            <p class="font-semibold text-green-800 mb-2">Ubuntu Family Governance</p>
+            <p class="text-sm">A Family Council comprising all adult beneficiaries shall meet quarterly to:</p>
+            <ul class="list-disc ml-4 text-sm space-y-1 mt-2">
+                <li>Review trust performance and beneficiary development</li>
+                <li>Provide input on major trust decisions</li>
+                <li>Resolve family disputes through Ubuntu principles</li>
+                <li>Plan intergenerational knowledge transfer</li>
+                <li>Evaluate Family Value advancement progress</li>
+                <li>Approve annual community benefit initiatives</li>
+            </ul>
+        </div>
+
+        <h3 class="text-xl font-bold text-green-800 mb-4">5. BENEFICIARY RIGHTS AND OBLIGATIONS</h3>
+
+        <h4 class="text-lg font-semibold text-green-700 mb-3">5.1 Beneficiary Rights</h4>
+        <div class="space-y-3">
+            <div class="border border-blue-300 p-3 rounded">
+                <p class="font-semibold text-blue-800">Financial Rights</p>
+                <ul class="list-disc ml-4 text-sm space-y-1">
+                    <li>Right to reasonable financial support for education and development</li>
+                    <li>Right to annual trust performance information</li>
+                    <li>Right to participate in family business opportunities</li>
+                    <li>Right to inheritance according to advancement merit</li>
+                </ul>
+            </div>
+            
+            <div class="border border-green-300 p-3 rounded">
+                <p class="font-semibold text-green-800">Governance Rights</p>
+                <ul class="list-disc ml-4 text-sm space-y-1">
+                    <li>Right to participate in Family Council meetings</li>
+                    <li>Right to voice concerns about trust management</li>
+                    <li>Right to request trustee accountability</li>
+                    <li>Right to Ubuntu-based dispute resolution</li>
+                </ul>
+            </div>
+        </div>
+
+        <h4 class="text-lg font-semibold text-green-700 mb-3 mt-4">5.2 Beneficiary Obligations</h4>
+        <div class="space-y-3">
+            <div class="border border-amber-300 p-3 rounded">
+                <p class="font-semibold text-amber-800">Ubuntu Obligations</p>
+                <ul class="list-disc ml-4 text-sm space-y-1">
+                    <li>Adhere to Ubuntu principles in all activities</li>
+                    <li>Contribute to family unity and collective success</li>
+                    <li>Support community development initiatives</li>
+                    <li>Mentor and develop next-generation family members</li>
+                </ul>
+            </div>
+            
+            <div class="border border-purple-300 p-3 rounded">
+                <p class="font-semibold text-purple-800">Development Obligations</p>
+                <ul class="list-disc ml-4 text-sm space-y-1">
+                    <li>Pursue continuous learning and skill development</li>
+                    <li>Demonstrate evidence-based competency advancement</li>
+                    <li>Participate in Sazi Life Academy professional development</li>
+                    <li>Contribute to family business growth and success</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="bg-red-50 border border-red-200 p-4 rounded mt-4">
+            <p class="font-semibold text-red-800 mb-2">Beneficiary Exclusion Conditions</p>
+            <p class="text-sm">Beneficiaries may be excluded from distributions for:</p>
+            <ul class="list-disc ml-4 text-sm space-y-1 mt-1">
+                <li>Willful violation of Ubuntu principles</li>
+                <li>Actions that harm family unity or reputation</li>
+                <li>Criminal convictions involving dishonesty</li>
+                <li>Persistent failure to contribute to family advancement</li>
+                <li>Substance abuse or destructive behavior patterns</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Legal and Administrative Page -->
+    <div class="a4 relative p-12 mb-8 bg-white">
+        <div class="watermark">Family Value</div>
+        
+        <h3 class="text-xl font-bold text-green-800 mb-4">6. TRUST ADMINISTRATION</h3>
+
+        <h4 class="text-lg font-semibold text-green-700 mb-3">6.1 Tax and Legal Structure</h4>
+        <div class="space-y-4 mb-6">
+            <div class="bg-blue-50 border border-blue-200 p-4 rounded">
+                <p class="font-semibold text-blue-800 mb-2">Tax Registration</p>
+                <ul class="list-disc ml-4 text-sm space-y-1">
+                    <li>South African Revenue Service (SARS) trust registration</li>
+                    <li>Income tax reference number allocation</li>
+                    <li>Annual tax return submission obligations</li>
+                    <li>Distributions tax planning and optimization</li>
+                    <li>Capital gains tax planning for asset disposals</li>
+                </ul>
+            </div>
+            
+            <div class="bg-purple-50 border border-purple-200 p-4 rounded">
+                <p class="font-semibold text-purple-800 mb-2">Legal Compliance</p>
+                <ul class="list-disc ml-4 text-sm space-y-1">
+                    <li>Trust Property Control Act compliance</li>
+                    <li>Master of the High Court registration</li>
+                    <li>Annual financial statement preparation</li>
+                    <li>Trustee appointment documentation</li>
+                    <li>Beneficiary register maintenance</li>
+                </ul>
+            </div>
+        </div>
+
+        <h4 class="text-lg font-semibold text-green-700 mb-3">6.2 Professional Service Providers</h4>
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="border border-gray-300 p-3 rounded">
+                <p class="font-semibold">Legal Advisors</p>
+                <p class="text-sm">To be appointed - specialized in trust law and family business structures</p>
+            </div>
+            <div class="border border-gray-300 p-3 rounded">
+                <p class="font-semibold">Tax Advisors</p>
+                <p class="text-sm">To be appointed - expertise in trust taxation and estate planning</p>
+            </div>
+            <div class="border border-gray-300 p-3 rounded">
+                <p class="font-semibold">Investment Advisors</p>
+                <p class="text-sm">To be appointed - family office and wealth management specialists</p>
+            </div>
+            <div class="border border-gray-300 p-3 rounded">
+                <p class="font-semibold">Auditors</p>
+                <p class="text-sm">To be appointed - qualified chartered accountants with trust experience</p>
+            </div>
+        </div>
+
+        <h4 class="text-lg font-semibold text-green-700 mb-3">6.3 Record Keeping and Reporting</h4>
+        <div class="space-y-3 mb-6">
+            <div class="bg-gray-50 border border-gray-200 p-3 rounded">
+                <p class="font-semibold">Required Records</p>
+                <ul class="list-disc ml-4 text-sm space-y-1">
+                    <li>Trust deed and all amendments</li>
+                    <li>Trustee appointment and resignation documents</li>
+                    <li>Beneficiary register with DNA verification records</li>
+                    <li>Financial records and investment documentation</li>
+                    <li>Family Council meeting minutes and decisions</li>
+                    <li>Annual financial statements and tax returns</li>
+                </ul>
+            </div>
+            
+            <div class="bg-green-50 border border-green-200 p-3 rounded">
+                <p class="font-semibold">Reporting Schedule</p>
+                <ul class="list-disc ml-4 text-sm space-y-1">
+                    <li><strong>Monthly:</strong> Financial statements and cash flow reports</li>
+                    <li><strong>Quarterly:</strong> Family Council meetings and beneficiary updates</li>
+                    <li><strong>Annually:</strong> Audited financial statements and tax submissions</li>
+                    <li><strong>Annual:</strong> Trust performance review and strategic planning</li>
+                </ul>
+            </div>
+        </div>
+
+        <h3 class="text-xl font-bold text-green-800 mb-4">7. TRUST TERMINATION AND SUCCESSION</h3>
+
+        <h4 class="text-lg font-semibold text-green-700 mb-3">7.1 Trust Duration</h4>
+        <div class="bg-amber-50 border border-amber-200 p-4 rounded mb-4">
+            <p class="text-sm"><strong>Trust Term:</strong> This trust shall continue in perpetuity for the benefit of the Mdeni family lineage, unless terminated by unanimous decision of all trustees and majority consent of all adult beneficiaries. The trust is designed to serve multiple generations while adapting to changing family needs and circumstances.</p>
+        </div>
+
+        <h4 class="text-lg font-semibold text-green-700 mb-3">7.2 Succession Planning</h4>
+        <div class="space-y-3">
+            <div class="border border-blue-300 p-3 rounded">
+                <p class="font-semibold text-blue-800">Trustee Succession</p>
+                <ul class="list-disc ml-4 text-sm space-y-1">
+                    <li>New trustees appointed based on Family Value advancement metrics</li>
+                    <li>Minimum requirement: demonstrated Ubuntu principles adherence</li>
+                    <li>Business competency and family commitment evaluation</li>
+                    <li>Gradual transition with mentorship and knowledge transfer</li>
+                </ul>
+            </div>
+            
+            <div class="border border-green-300 p-3 rounded">
+                <p class="font-semibold text-green-800">Next Generation Preparation</p>
+                <ul class="list-disc ml-4 text-sm space-y-1">
+                    <li>Sazi Life Academy professional development programs</li>
+                    <li>Gradual responsibility increase through merit-based advancement</li>
+                    <li>Mentorship relationships with current generation</li>
+                    <li>Ubuntu principles education and cultural preservation</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="bg-green-50 border-l-4 border-green-500 p-4 mt-6">
+            <h5 class="font-bold text-green-800 mb-2">Legacy Commitment</h5>
+            <p class="text-sm text-green-700 italic">"Through this trust, we ensure that the values, wisdom, and love of Mlandeli and Notemba will guide our family for generations to come. Ubuntu teaches us that we are strongest when we work together, and this trust embodies that principle - creating a foundation where individual success strengthens our collective heritage."</p>
+        </div>
+
+        <!-- Signatures -->
+        <div class="grid grid-cols-3 gap-4 mt-12 pt-6 border-t border-gray-300">
+            <div class="text-center">
+                <div class="border-b-2 border-gray-400 mb-4 h-16"></div>
+                <p class="font-bold text-sm">Salatiso Lonwabo Mdeni</p>
+                <p class="text-xs">Founder and Chairman of Trustees</p>
+                <p class="text-xs text-gray-600">Date: August 19, 2025</p>
+            </div>
+            <div class="text-center">
+                <div class="border-b-2 border-gray-400 mb-4 h-16"></div>
+                <p class="font-bold text-sm">Visa Sande Mdeni</p>
+                <p class="text-xs">Executive Trustee</p>
+                <p class="text-xs text-gray-600">Date: August 19, 2025</p>
+            </div>
+            <div class="text-center">
+                <div class="border-b-2 border-gray-400 mb-4 h-16"></div>
+                <p class="font-bold text-sm">Tina Sisonke Mdeni</p>
+                <p class="text-xs">Family Representative Trustee</p>
+                <p class="text-xs text-gray-600">Date: August 19, 2025</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center text-xs text-gray-500 mt-8 pt-4 border-t border-gray-200">
+            <p>Trust Registration Application - The Mlandeli Notemba Family Trust</p>
+            <p>Prepared by Family Value Governance Services | Ubuntu-Centered Family Management</p>
+            <p>This application complies with South African trust law and Master of the High Court requirements</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salatiso Family Roles - Quick Reference Poster</title>
+    <style>
+        @page {
+            size: A3 landscape;
+            margin: 0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #388E3C 100%);
+            padding: 0;
+            margin: 0;
+        }
+        
+        .poster {
+            width: 100vw;
+            height: 100vh;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        header h1 {
+            font-size: 4em;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            font-size: 1.8em;
+            opacity: 0.95;
+        }
+        
+        .roles-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            flex: 1;
+        }
+        
+        .role-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+        }
+        
+        .role-card:hover {
+            transform: scale(1.05);
+        }
+        
+        .role-icon {
+            font-size: 4em;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .role-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+            color: #2E7D32;
+        }
+        
+        .role-age {
+            text-align: center;
+            color: #666;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .role-mission {
+            background: linear-gradient(135deg, #4CAF50, #66BB6A);
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        
+        .role-tasks {
+            list-style: none;
+            flex: 1;
+        }
+        
+        .role-tasks li {
+            padding: 8px 0;
+            border-bottom: 1px solid #E0E0E0;
+            font-size: 1.05em;
+        }
+        
+        .role-tasks li:before {
+            content: "✓ ";
+            color: #4CAF50;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        
+        .role-reward {
+            background: #FFF3E0;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: center;
+            font-weight: 600;
+            color: #E65100;
+            font-size: 1em;
+        }
+        
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            font-size: 1.3em;
+        }
+        
+        .ubuntu-banner {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 15px;
+            margin-top: 10px;
+            font-style: italic;
+        }
+        
+        @media print {
+            body {
+                background: white;
+            }
+            
+            .poster {
+                background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #388E3C 100%);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="poster">
+        <header>
+            <h1>🌍 Salatiso Ecosystem Family Roles</h1>
+            <p>Everyone Contributes • Everyone Benefits • Everyone Matters</p>
+        </header>
+        
+        <div class="roles-grid">
+            <!-- Children -->
+            <div class="role-card" style="border-top: 6px solid #FF6F00;">
+                <div class="role-icon">🎮</div>
+                <div class="role-title">CHILDREN</div>
+                <div class="role-age">Ages 4-12</div>
+                <div class="role-mission">Players & Explorers</div>
+                <ul class="role-tasks">
+                    <li>Play Sazi.Life games</li>
+                    <li>Learn languages</li>
+                    <li>Use SafetyHelp</li>
+                    <li>Tell us what's fun</li>
+                    <li>Help siblings learn</li>
+                </ul>
+                <div class="role-reward">🎁 LifeCV Points & Badges</div>
+            </div>
+            
+            <!-- Teenagers -->
+            <div class="role-card" style="border-top: 6px solid #9C27B0;">
+                <div class="role-icon">🚀</div>
+                <div class="role-title">TEENAGERS</div>
+                <div class="role-age">Ages 13-17</div>
+                <div class="role-mission">Testers & Creators</div>
+                <ul class="role-tasks">
+                    <li>Test all apps</li>
+                    <li>Find bugs</li>
+                    <li>Make videos</li>
+                    <li>Design graphics</li>
+                    <li>Social media posts</li>
+                </ul>
+                <div class="role-reward">📸 Credits & Portfolio</div>
+            </div>
+            
+            <!-- Young Adults -->
+            <div class="role-card" style="border-top: 6px solid #2196F3;">
+                <div class="role-icon">💼</div>
+                <div class="role-title">YOUNG ADULTS</div>
+                <div class="role-age">Ages 18-25</div>
+                <div class="role-mission">Developers & Innovators</div>
+                <ul class="role-tasks">
+                    <li>Write code</li>
+                    <li>Build features</li>
+                    <li>Run campaigns</li>
+                    <li>Close deals</li>
+                    <li>Train users</li>
+                </ul>
+                <div class="role-reward">💰 Partnerships & Shares</div>
+            </div>
+            
+            <!-- Adults -->
+            <div class="role-card" style="border-top: 6px solid #F44336;">
+                <div class="role-icon">👔</div>
+                <div class="role-title">ADULTS</div>
+                <div class="role-age">Ages 26-60</div>
+                <div class="role-mission">Operators & Leaders</div>
+                <ul class="role-tasks">
+                    <li>Manage operations</li>
+                    <li>Build clients</li>
+                    <li>Guide finances</li>
+                    <li>Mentor others</li>
+                    <li>Strategic decisions</li>
+                </ul>
+                <div class="role-reward">🎯 Board Seats & Equity</div>
+            </div>
+            
+            <!-- Elders -->
+            <div class="role-card" style="border-top: 6px solid #795548;">
+                <div class="role-icon">👵</div>
+                <div class="role-title">ELDERS</div>
+                <div class="role-age">Ages 60+</div>
+                <div class="role-mission">Advisors & Guardians</div>
+                <ul class="role-tasks">
+                    <li>Provide wisdom</li>
+                    <li>Teach Ubuntu</li>
+                    <li>Resolve conflicts</li>
+                    <li>Share history</li>
+                    <li>Guide values</li>
+                </ul>
+                <div class="role-reward">🏆 Legacy & Honor</div>
+            </div>
+        </div>
+        
+        <footer>
+            <div>Mlandeli Notemba Investments • Building Multi-Generational Wealth</div>
+            <div class="ubuntu-banner">"Umuntu ngumuntu ngabantu" - A person is a person through other people</div>
+        </footer>
+    </div>
+    
+    <script>
+        // Auto-print option when loaded
+        if (window.location.search.includes('print=true')) {
+            window.print();
+        }
+    </script>
+</body>
+</html>

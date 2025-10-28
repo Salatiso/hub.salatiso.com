@@ -1,0 +1,107 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://lifesync.salatiso.org/schemas/lifecv-profile.json",
+  "title": "LifeCV Shared Profile",
+  "type": "object",
+  "required": ["id", "createdAt", "kind"],
+  "properties": {
+    "id": { "type": "string", "description": "Stable UUIDv4 for the profile" },
+    "kind": { "type": "string", "enum": ["individual", "household", "group"], "default": "individual" },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" },
+    "appScope": { "type": "string", "enum": ["lifesync", "familyvalue", "pigeeback", "ekhaya", "ecosystem"], "default": "ecosystem" },
+    "owner": {
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "source": { "type": "string", "enum": ["hub", "lifesync", "familyvalue", "pigeeback", "ekhaya"] }
+      },
+      "required": ["source"]
+    },
+    "basic": {
+      "type": "object",
+      "properties": {
+        "fullName": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "dob": { "type": "string", "format": "date" },
+        "photoUrl": { "type": "string", "format": "uri" }
+      }
+    },
+    "privacy": {
+      "type": "object",
+      "properties": {
+        "shareLocation": { "type": "boolean", "default": false },
+        "shareAvailability": { "type": "boolean", "default": true },
+        "contactVisibility": { "type": "string", "enum": ["private", "trusted", "public"], "default": "trusted" }
+      }
+    },
+    "contacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "type": { "type": "string", "enum": ["child", "parent", "sibling", "guardian", "friend", "partner", "other"] },
+          "roles": { "type": "array", "items": { "type": "string", "enum": ["permanent-emergency", "per-event", "guardian", "approver"] } },
+          "channels": {
+            "type": "object",
+            "properties": {
+              "email": { "type": "string", "format": "email" },
+              "sms": { "type": "string" },
+              "push": { "type": "boolean" }
+            }
+          }
+        },
+        "required": ["id", "name"]
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "mode": { "type": "string", "enum": ["group", "solo"] },
+          "status": { "type": "string", "enum": ["planned", "active", "ended"] },
+          "shareLevel": { "type": "string", "enum": ["availability", "location"] },
+          "invitees": { "type": "array", "items": { "type": "object", "properties": { "id": { "type": "string" }, "status": { "type": "string", "enum": ["pending", "accepted", "declined"] } } } }
+        }
+      }
+    },
+    "geofences": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "lat": { "type": "number" },
+          "lng": { "type": "number" },
+          "radius": { "type": "number", "minimum": 50, "maximum": 50000 }
+        },
+        "required": ["id", "name", "lat", "lng", "radius"]
+      }
+    },
+    "checkIns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "frequency": { "type": "string", "enum": ["hourly", "daily", "weekly"] },
+          "timeOfDay": { "type": "string", "pattern": "^\\d{2}:\\d{2}$" },
+          "nextDue": { "type": "string", "format": "date-time" }
+        },
+        "required": ["id", "name", "frequency"]
+      }
+    }
+  },
+  "_notes": {
+      "2025-09-17": "Adapters now round-trip role, services, coverage areas, and contacts; reciprocity considers presence of name, contact, photo, gps, coverage, services, role."
+  }
+}

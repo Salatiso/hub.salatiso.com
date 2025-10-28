@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Value - Mlandeli Notemba Family Trust Deed</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700;900&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root { --brand-color: #059669; --family-gold: #f59e0b; }
+        body { font-family: 'Manrope', sans-serif; background-color: #f3f4f6; color: #1f2937; line-height: 1.7; }
+        .document-page { width: 210mm; min-height: 297mm; margin: 1.5rem auto; background-color: #ffffff; box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); position: relative; padding: 20mm; display: flex; flex-direction: column; }
+        .document-toolbar { position: sticky; top: 0; z-index: 1000; }
+        .page-header, .page-footer { position: absolute; left: 20mm; right: 20mm; font-size: 0.8rem; color: #6b7280; }
+        .page-header { top: 10mm; }
+        .page-footer { bottom: 10mm; }
+        .page-number { position: absolute; bottom: 10mm; right: 20mm; }
+        .brand-text { color: var(--brand-color); }
+        .family-gold { color: var(--family-gold); }
+        .cover-title, h1, h2, h3 { font-family: 'Roboto Slab', serif; }
+        h2 { border-bottom: 2px solid #e5e7eb; padding-bottom: 6px; margin-top: 1.5rem; margin-bottom: 1rem; font-weight: 700; color: #111827; }
+        .editable { border: 1px dashed #d1d5db; padding: 2px 4px; border-radius: 4px; min-width: 50px; display: inline-block; }
+        .editable:hover { border-style: solid; border-color: var(--brand-color); }
+        .control-btn { display: inline-flex; align-items: center; padding: 0.5rem 1rem; background-color: #f9fafb; border: 1px solid #d1d5db; border-radius: 0.375rem; font-weight: 600; color: #374151; transition: all 0.2s; }
+        .control-btn:hover { background-color: #f3f4f6; border-color: #9ca3af; }
+        .back-cover-page { background-color: #1f2937; color: #f3f4f6; }
+        @media print {
+            body { background-color: #fff; }
+            .document-toolbar, .no-print { display: none !important; }
+            .document-page { margin: 0; box-shadow: none; border: none; min-height: 297mm; }
+            .editable { border: none !important; padding: 2px 0; }
+            .back-cover-page { background-color: #1f2937 !important; color: #f3f4f6 !important; }
+        }
+    </style>
+</head>
+<body onload="updatePageNumbers()">
+    <!-- Toolbar -->
+    <div class="document-toolbar bg-white/90 backdrop-blur-lg p-3 flex items-center justify-center gap-3 border-b border-gray-200 no-print">
+        <span class="font-bold text-sm uppercase tracking-wider text-gray-500 hidden md:inline">Mlandeli Notemba Family Trust Deed</span>
+        <div class="flex-grow"></div>
+        <button onclick="printDocument()" class="control-btn" title="Print Document"><i class="fas fa-print"></i></button>
+        <button onclick="downloadPDF()" class="control-btn" title="Download as PDF"><i class="fas fa-file-pdf"></i></button>
+        <button onclick="shareDocument()" class="control-btn" title="Share Document"><i class="fas fa-share-alt"></i></button>
+    </div>
+
+    <!-- Cover Page -->
+    <div id="cover-page" class="document-page">
+        <div class="text-left mb-8 flex items-center gap-3">
+            <div class="w-12 h-12 bg-gradient-to-r from-green-600 to-amber-500 rounded-lg flex items-center justify-center">
+                <i class="fas fa-shield-alt text-white text-xl"></i>
+            </div>
+            <span class="font-bold text-3xl brand-text" style="font-family: 'Roboto Slab', serif;">Family Value</span>
+        </div>
+        <div class="flex-grow flex flex-col items-center justify-center text-center">
+            <h1 class="cover-title text-5xl font-black text-gray-800 mb-4">Trust Deed</h1>
+            <h2 class="text-2xl font-bold brand-text mb-2">The Mlandeli Notemba Family Trust</h2>
+            <p class="text-lg text-gray-600 mb-8">Trust Number: [To be assigned by Master of the High Court]</p>
+            <div class="bg-gradient-to-r from-green-50 to-amber-50 p-6 rounded-lg border border-green-200 max-w-md">
+                <p class="text-sm text-gray-700"><strong>Trust Registration:</strong> [Date to be inserted]</p>
+                <p class="text-sm text-gray-700"><strong>Master's Office:</strong> [Location to be determined]</p>
+                <p class="text-sm text-gray-700"><strong>Founding Purpose:</strong> Family Legacy Protection</p>
+            </div>
+        </div>
+        <div class="absolute bottom-8 left-8 text-xs text-gray-400">
+            <p>Ubuntu Legacy Trust - "Mlandeli Nelson Mdeni & Nozukile Cynthia Mdeni"</p>
+        </div>
+        <div class="page-footer"><span>The Mlandeli Notemba Family Trust - Trust Deed</span><span class="page-number">Page <span class="page-num"></span> of <span class="total-pages"></span></span></div>
+    </div>
+    
+    <!-- Trust Details Page -->
+    <div class="document-page">
+        <div class="page-header"><span class="font-bold brand-text">The Mlandeli Notemba Family Trust</span> | Trust Deed</div>
+        
+        <div class="bg-green-100 border-l-4 border-green-500 p-4 mb-6">
+            <p class="text-sm"><strong>Trust Motto:</strong> "Ubuntu: I am because we are" - Honoring the legacy of Mlandeli and Notemba through generational prosperity</p>
+        </div>
+
+        <h2 class="!mt-4">1. Trust Particulars</h2>
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <div>
+                <p><strong>Trust Name:</strong> The Mlandeli Notemba Family Trust</p>
+                <p><strong>Trust Type:</strong> Discretionary Family Trust</p>
+                <p><strong>Registration:</strong> South Africa</p>
+            </div>
+            <div>
+                <p><strong>Duration:</strong> 100 years from registration</p>
+                <p><strong>Tax Year:</strong> March - February</p>
+                <p><strong>Governing Law:</strong> Republic of South Africa</p>
+            </div>
+        </div>
+
+        <h2>2. Founder Declaration</h2>
+        <div class="bg-amber-50 border border-amber-200 p-4 rounded mb-4">
+            <p><strong>Trust Founder:</strong> Salatiso Lonwabo Mdeni</p>
+            <p><strong>Identity Number:</strong> 8507051036081</p>
+            <p><strong>Residential Address:</strong> [To be inserted]</p>
+            <p><strong>Founding Purpose:</strong> To honor the legacy of my father, Mlandeli Nelson Mdeni, and my mother, Nozukile Cynthia Mdeni (Notemba), by creating a structure that protects and grows family wealth for current and future generations while maintaining Ubuntu principles.</p>
+        </div>
+
+        <h2>3. Initial Trustees</h2>
+        <div class="space-y-3">
+            <div class="border-l-4 border-green-500 pl-4">
+                <p><strong>Trustee 1:</strong> Salatiso Lonwabo Mdeni (Founder/Trustee)</p>
+                <p><strong>ID Number:</strong> 8507051036081</p>
+                <p><strong>Role:</strong> Executive Trustee & Trust Administrator</p>
+            </div>
+            <div class="border-l-4 border-amber-500 pl-4">
+                <p><strong>Trustee 2:</strong> Nozukile Cynthia Mdeni (Notemba)</p>
+                <p><strong>ID Number:</strong> 6012160151089</p>
+                <p><strong>Role:</strong> Family Representative & Beneficiary Advocate</p>
+            </div>
+            <div class="border-l-4 border-blue-500 pl-4">
+                <p><strong>Trustee 3:</strong> [Independent Trustee to be appointed]</p>
+                <p><strong>ID Number:</strong> [To be provided]</p>
+                <p><strong>Role:</strong> Independent Professional Trustee</p>
+            </div>
+        </div>
+
+        <h2>4. Trust Assets</h2>
+        <div class="space-y-2">
+            <h3 class="text-lg font-bold">4.1 Initial Assets</h3>
+            <ul class="list-disc list-inside ml-4 space-y-1">
+                <li>100% shareholding in Mlandeli Notemba Investments (Pty) Ltd</li>
+                <li>All intellectual property rights of the Salatiso Ecosystem</li>
+                <li>Family residential and investment properties (to be transferred)</li>
+                <li>Cash and investment portfolios (to be consolidated)</li>
+            </ul>
+            
+            <h3 class="text-lg font-bold mt-4">4.2 Future Assets</h3>
+            <ul class="list-disc list-inside ml-4 space-y-1">
+                <li>All revenue generated by Salatiso Ecosystem platforms</li>
+                <li>Investment returns and capital appreciation</li>
+                <li>Additional properties and business acquisitions</li>
+                <li>Any assets donated or bequeathed to the trust</li>
+            </ul>
+        </div>
+
+        <div class="page-footer"><span>The Mlandeli Notemba Family Trust - Trust Deed</span><span class="page-number">Page <span class="page-num"></span> of <span class="total-pages"></span></span></div>
+    </div>
+
+    <!-- Beneficiaries Page -->
+    <div class="document-page">
+        <div class="page-header"><span class="font-bold brand-text">The Mlandeli Notemba Family Trust</span> | Trust Deed</div>
+
+        <h2 class="!mt-4">5. Trust Beneficiaries</h2>
+
+        <h3 class="text-lg font-bold mt-4 mb-2">5.1 Primary Beneficiaries (Current Generation)</h3>
+        <div class="space-y-3">
+            <div class="bg-green-50 border border-green-200 p-3 rounded">
+                <p><strong>Nozukile Cynthia Mdeni (Notemba)</strong> - Mother</p>
+                <p><strong>ID:</strong> 6012160151089 | <strong>Born:</strong> December 16, 1960</p>
+                <p><strong>Status:</strong> Income and Capital Beneficiary</p>
+            </div>
+            <div class="bg-amber-50 border border-amber-200 p-3 rounded">
+                <p><strong>Visa Sande Mdeni</strong> - Sister</p>
+                <p><strong>ID:</strong> [To be provided] | <strong>Status:</strong> Income and Capital Beneficiary</p>
+            </div>
+            <div class="bg-amber-50 border border-amber-200 p-3 rounded">
+                <p><strong>Tina Sisonke Mdeni</strong> - Sister</p>
+                <p><strong>ID:</strong> [To be provided] | <strong>Status:</strong> Income and Capital Beneficiary</p>
+            </div>
+            <div class="bg-amber-50 border border-amber-200 p-3 rounded">
+                <p><strong>Kwakho Eyona Mdeni</strong> - Sister</p>
+                <p><strong>ID:</strong> [To be provided] | <strong>Status:</strong> Income and Capital Beneficiary</p>
+            </div>
+        </div>
+
+        <h3 class="text-lg font-bold mt-6 mb-2">5.2 Next Generation Beneficiaries</h3>
+        <div class="space-y-3">
+            <div class="bg-blue-50 border border-blue-200 p-3 rounded">
+                <p><strong>Lukhanyo Sazi Mkosana</strong> - Son of Salatiso L. Mdeni</p>
+                <p><strong>ID:</strong> 1802286062086 | <strong>Born:</strong> March 28, 2018</p>
+                <p><strong>Status:</strong> Future Income and Capital Beneficiary (from age 18)</p>
+            </div>
+            <div class="bg-blue-50 border border-blue-200 p-3 rounded">
+                <p><strong>Solonwabo Milile Mdeni</strong> - Nephew</p>
+                <p><strong>ID:</strong> 1003185410084 | <strong>Born:</strong> March 18, 2010</p>
+                <p><strong>Status:</strong> Income and Capital Beneficiary</p>
+            </div>
+            <div class="bg-blue-50 border border-blue-200 p-3 rounded">
+                <p><strong>Milande Paton Mdeni</strong> - Nephew</p>
+                <p><strong>ID:</strong> 1705266070088 | <strong>Born:</strong> May 5, 2017</p>
+                <p><strong>Status:</strong> Future Income and Capital Beneficiary (from age 18)</p>
+            </div>
+        </div>
+
+        <h3 class="text-lg font-bold mt-6 mb-2">5.3 Future Beneficiaries</h3>
+        <p class="bg-gray-50 border border-gray-200 p-3 rounded">All future descendants of Mlandeli Nelson Mdeni and Nozukile Cynthia Mdeni, subject to DNA verification as outlined in the Family Charter. This includes:</p>
+        <ul class="list-disc list-inside ml-4 space-y-1 mt-2">
+            <li>Future children of current beneficiaries</li>
+            <li>Grandchildren and great-grandchildren</li>
+            <li>Adopted children formally accepted into the family</li>
+            <li>Spouses meeting the 15-year family membership requirement</li>
+        </ul>
+
+        <h2>6. DNA Verification Policy</h2>
+        <div class="bg-yellow-50 border border-yellow-300 p-4 rounded">
+            <h3 class="text-lg font-bold mb-2">6.1 Verification Requirement</h3>
+            <p>All beneficiaries must provide DNA verification confirming their descent from Mlandeli Nelson Mdeni and/or Nozukile Cynthia Mdeni. This requirement applies equally to all family members.</p>
+            
+            <h3 class="text-lg font-bold mt-4 mb-2">6.2 Precedent Established</h3>
+            <p>DNA verification precedent was established with Lukhanyo Sazi Mkosana, ensuring this requirement is applied fairly and consistently for all current and future beneficiaries.</p>
+        </div>
+
+        <div class="page-footer"><span>The Mlandeli Notemba Family Trust - Trust Deed</span><span class="page-number">Page <span class="page-num"></span> of <span class="total-pages"></span></span></div>
+    </div>
+
+    <!-- Powers and Duties Page -->
+    <div class="document-page">
+        <div class="page-header"><span class="font-bold brand-text">The Mlandeli Notemba Family Trust</span> | Trust Deed</div>
+
+        <h2 class="!mt-4">7. Powers of Trustees</h2>
+
+        <h3 class="text-lg font-bold mt-4 mb-2">7.1 Asset Management Powers</h3>
+        <p>The Trustees shall have the power to:</p>
+        <ul class="list-disc list-inside ml-4 space-y-1">
+            <li>Buy, sell, lease, or otherwise deal with immovable property</li>
+            <li>Invest trust funds in authorized investments and business ventures</li>
+            <li>Establish and manage subsidiary companies and business entities</li>
+            <li>Enter into partnerships and joint ventures for trust benefit</li>
+            <li>Employ professional advisors and service providers</li>
+            <li>Incur debt and provide security for trust obligations</li>
+        </ul>
+
+        <h3 class="text-lg font-bold mt-4 mb-2">7.2 Distribution Powers</h3>
+        <p>The Trustees have absolute discretion to:</p>
+        <ul class="list-disc list-inside ml-4 space-y-1">
+            <li>Distribute income to beneficiaries based on need and merit</li>
+            <li>Accumulate income within the trust for future distribution</li>
+            <li>Make capital distributions for beneficiary education, housing, or business needs</li>
+            <li>Advance funds to beneficiaries for approved purposes</li>
+            <li>Create sub-trusts for specific beneficiaries or purposes</li>
+        </ul>
+
+        <h3 class="text-lg font-bold mt-4 mb-2">7.3 Family Governance Powers</h3>
+        <p>The Trustees shall:</p>
+        <ul class="list-disc list-inside ml-4 space-y-1">
+            <li>Implement and oversee the Family Charter principles</li>
+            <li>Conduct annual family performance reviews</li>
+            <li>Facilitate family meetings and conflict resolution</li>
+            <li>Oversee the education and development of next-generation beneficiaries</li>
+            <li>Maintain family values and Ubuntu principles in all decisions</li>
+        </ul>
+
+        <h2>8. Trustee Duties and Responsibilities</h2>
+
+        <h3 class="text-lg font-bold mt-4 mb-2">8.1 Fiduciary Duties</h3>
+        <ul class="list-disc list-inside ml-4 space-y-1">
+            <li>Act in the best interests of all beneficiaries at all times</li>
+            <li>Exercise care, diligence, and skill in trust management</li>
+            <li>Avoid conflicts of interest and self-dealing</li>
+            <li>Keep accurate records and provide regular reporting</li>
+            <li>Maintain confidentiality of trust affairs</li>
+        </ul>
+
+        <h3 class="text-lg font-bold mt-4 mb-2">8.2 Family Responsibilities</h3>
+        <ul class="list-disc list-inside ml-4 space-y-1">
+            <li>Promote family unity and Ubuntu principles</li>
+            <li>Ensure fair treatment of all beneficiaries</li>
+            <li>Support beneficiary education and development</li>
+            <li>Plan for long-term family prosperity</li>
+            <li>Preserve family history and cultural heritage</li>
+        </ul>
+
+        <h2>9. Distribution Principles</h2>
+
+        <div class="bg-green-50 border border-green-200 p-4 rounded">
+            <h3 class="text-lg font-bold brand-text mb-2">9.1 Ubuntu-Based Distribution</h3>
+            <p>All distributions shall reflect Ubuntu principles: "I am because we are." Individual needs are met within the context of family prosperity and community benefit.</p>
+        </div>
+
+        <h3 class="text-lg font-bold mt-4 mb-2">9.2 Distribution Criteria</h3>
+        <ul class="list-disc list-inside ml-4 space-y-1">
+            <li><strong>Need:</strong> Financial circumstances and life requirements</li>
+            <li><strong>Merit:</strong> Contribution to family and community</li>
+            <li><strong>Potential:</strong> Investment in education and development</li>
+            <li><strong>Unity:</strong> Actions that strengthen family bonds</li>
+            <li><strong>Values:</strong> Adherence to Ubuntu and family principles</li>
+        </ul>
+
+        <div class="page-footer"><span>The Mlandeli Notemba Family Trust - Trust Deed</span><span class="page-number">Page <span class="page-num"></span> of <span class="total-pages"></span></span></div>
+    </div>
+
+    <!-- Governance and Conclusion Page -->
+    <div class="document-page">
+        <div class="page-header"><span class="font-bold brand-text">The Mlandeli Notemba Family Trust</span> | Trust Deed</div>
+
+        <h2 class="!mt-4">10. Trust Governance and Amendment</h2>
+
+        <h3 class="text-lg font-bold mt-4 mb-2">10.1 Family Council Integration</h3>
+        <p>The Trust shall operate in coordination with the Family Council established under the Family Charter, ensuring alignment between trust governance and family values.</p>
+
+        <h3 class="text-lg font-bold mt-4 mb-2">10.2 Amendment Process</h3>
+        <p>This Trust Deed may be amended by:</p>
+        <ul class="list-disc list-inside ml-4 space-y-1">
+            <li>Unanimous consent of all Trustees</li>
+            <li>Approval of the Family Council where amendments affect beneficiary rights</li>
+            <li>Compliance with South African trust law requirements</li>
+            <li>Registration of amendments with the Master of the High Court</li>
+        </ul>
+
+        <h3 class="text-lg font-bold mt-4 mb-2">10.3 Successor Trustees</h3>
+        <p>In the event of trustee retirement, death, or incapacity:</p>
+        <ul class="list-disc list-inside ml-4 space-y-1">
+            <li>Replacement trustees shall be appointed by remaining trustees</li>
+            <li>Family trustees should be selected from beneficiaries showing leadership</li>
+            <li>Independent trustees must be qualified professionals</li>
+            <li>All appointments subject to Master of the High Court approval</li>
+        </ul>
+
+        <h2>11. Trust Termination and Vesting</h2>
+
+        <h3 class="text-lg font-bold mt-4 mb-2">11.1 Vesting Date</h3>
+        <p>This Trust shall vest on the earlier of:</p>
+        <ul class="list-disc list-inside ml-4 space-y-1">
+            <li>100 years from the date of registration</li>
+            <li>The date determined by unanimous trustee resolution</li>
+            <li>The date when only one beneficiary remains</li>
+        </ul>
+
+        <h3 class="text-lg font-bold mt-4 mb-2">11.2 Final Distribution</h3>
+        <p>Upon vesting, trust assets shall be distributed to beneficiaries based on:</p>
+        <ul class="list-disc list-inside ml-4 space-y-1">
+            <li>Their shareholding in Mlandeli Notemba Investments (Pty) Ltd</li>
+            <li>Their historical contribution to family prosperity</li>
+            <li>Their role in maintaining family unity and values</li>
+            <li>The principle of Ubuntu and collective benefit</li>
+        </ul>
+
+        <h2>12. Execution and Witness</h2>
+
+        <div class="bg-amber-50 border border-amber-300 p-4 rounded mb-6">
+            <p class="font-bold">Trust Founding Declaration:</p>
+            <p class="italic">"In honor of Mlandeli Nelson Mdeni and Nozukile Cynthia Mdeni (Notemba), this Trust is established to protect and grow our family legacy, ensuring that Ubuntu principles guide our prosperity for generations to come."</p>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6 mt-8">
+            <div class="border-b border-gray-300 pb-2">
+                <p class="font-bold">Salatiso Lonwabo Mdeni (Founder & Trustee)</p>
+                <p class="text-sm text-gray-600">Signature: _________________________ Date: _________</p>
+            </div>
+            <div class="border-b border-gray-300 pb-2">
+                <p class="font-bold">Nozukile Cynthia Mdeni (Trustee & Beneficiary)</p>
+                <p class="text-sm text-gray-600">Signature: _________________________ Date: _________</p>
+            </div>
+            <div class="border-b border-gray-300 pb-2">
+                <p class="font-bold">Independent Trustee (To be appointed)</p>
+                <p class="text-sm text-gray-600">Signature: _________________________ Date: _________</p>
+            </div>
+        </div>
+
+        <div class="mt-6 pt-4 border-t border-gray-300">
+            <p class="font-bold">Witness:</p>
+            <p class="text-sm text-gray-600">Name: _________________________ Signature: _________________________ Date: _________</p>
+        </div>
+
+        <div class="page-footer"><span>The Mlandeli Notemba Family Trust - Trust Deed</span><span class="page-number">Page <span class="page-num"></span> of <span class="total-pages"></span></span></div>
+    </div>
+
+    <!-- Back Cover Page -->
+    <div class="document-page back-cover-page">
+        <div class="text-left mb-8 flex items-center gap-3">
+            <div class="w-12 h-12 bg-gradient-to-r from-green-400 to-amber-400 rounded-lg flex items-center justify-center">
+                <i class="fas fa-shield-alt text-white text-xl"></i>
+            </div>
+            <span class="font-bold text-3xl text-white" style="font-family: 'Roboto Slab', serif;">Family Value</span>
+        </div>
+        <div class="flex-grow flex flex-col items-center justify-center text-center">
+            <h2 class="text-2xl font-bold text-white mb-4">Ubuntu Legacy Protection</h2>
+            <p class="text-lg text-gray-300 mb-6">Honoring Mlandeli and Notemba through generational prosperity guided by family values and Ubuntu principles.</p>
+            <div class="bg-gray-800 rounded-lg p-6 max-w-lg">
+                <h3 class="text-lg font-bold text-white mb-2">Trust Purpose</h3>
+                <p class="text-sm text-gray-300">To protect and grow the Mdeni family legacy, ensuring that Ubuntu principles guide our prosperity and that individual success strengthens collective unity.</p>
+            </div>
+        </div>
+        <div class="absolute bottom-8 left-8 text-xs text-gray-400">
+            <p>Document Version: MNT-TRUSTDEED-V1.0 | Date: August 19, 2025</p>
+        </div>
+    </div>
+
+    <script>
+        function updatePageNumbers() {
+            const pages = document.querySelectorAll('.document-page');
+            const totalPages = pages.length;
+            
+            pages.forEach((page, index) => {
+                const pageNumSpan = page.querySelector('.page-num');
+                const totalPagesSpan = page.querySelector('.total-pages');
+                if (pageNumSpan) pageNumSpan.textContent = index + 1;
+                if (totalPagesSpan) totalPagesSpan.textContent = totalPages;
+            });
+        }
+
+        function printDocument() {
+            window.print();
+        }
+
+        function downloadPDF() {
+            window.print();
+        }
+
+        function shareDocument() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Mlandeli Notemba Family Trust Deed',
+                    text: 'Trust deed for the protection and management of the Mdeni family legacy'
+                });
+            }
+        }
+    </script>
+</body>
+</html>

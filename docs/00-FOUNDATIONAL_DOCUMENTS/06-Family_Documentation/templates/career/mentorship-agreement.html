@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HRHelp - Mentorship Agreement</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700;900&family=Manrope:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root { --brand-color: #3b82f6; --brand-color-dark: #60a5fa; }
+        body { font-family: 'Manrope', sans-serif; background-color: #f1f5f9; color: #0f172a; line-height: 1.6; }
+        .dark body { background-color: #020617; color: #e2e8f0; }
+        .document-page { width: 210mm; min-height: 297mm; margin: 1.5rem auto; background-color: #ffffff; box-shadow: 0 0 15px rgba(0,0,0,0.1); position: relative; padding: 20mm; display: flex; flex-direction: column; }
+        .dark .document-page { background-color: #1e293b; border: 1px solid #334155; }
+        .document-toolbar { position: sticky; top: 0; z-index: 1000; }
+        .page-header, .page-footer { position: absolute; left: 20mm; right: 20mm; font-size: 0.75rem; color: #64748b; }
+        .dark .page-header, .dark .page-footer { color: #94a3b8; }
+        .page-header { top: 10mm; }
+        .page-footer { bottom: 10mm; }
+        .page-number { position: absolute; bottom: 10mm; right: 20mm; }
+        .brand-text { color: var(--brand-color); }
+        .dark .brand-text { color: var(--brand-color-dark); }
+        .cover-title { font-family: 'Roboto Slab', serif; }
+        h2 { font-family: 'Roboto Slab', serif; border-bottom: 2px solid var(--brand-color); padding-bottom: 4px; margin-top: 1.5rem; margin-bottom: 1rem; }
+        .dark h2 { border-bottom-color: var(--brand-color-dark); }
+        .editable { border: 1px dashed #cbd5e1; padding: 2px 4px; border-radius: 4px; min-width: 50px; display: inline-block; }
+        .dark .editable { border-color: #475569; }
+        .editable:hover { border-style: solid; border-color: var(--brand-color); }
+        .hrhelp-logo-svg { height: 60px; width: auto; }
+        .dark .hrhelp-logo-svg .logo-text-dark { fill: white; }
+        .hrhelp-logo-svg .logo-accent { fill: var(--brand-color); }
+        .dark .hrhelp-logo-svg .logo-accent-dark { fill: var(--brand-color-dark); }
+        .back-cover-page { background-color: #0f172a; color: #e2e8f0; }
+        .dark .back-cover-page { background-color: #020617; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .form-field { display: flex; flex-direction: column; }
+        .form-field label { font-weight: bold; font-size: 0.9rem; margin-bottom: 0.25rem; }
+        @media print {
+            body { background-color: #fff; }
+            .document-toolbar, .no-print { display: none !important; }
+            .document-page { margin: 0; box-shadow: none; border: none; min-height: 297mm; }
+            .dark .document-page { background-color: #ffffff; color: #000000; border: none; }
+            .dark body, .dark h2, .dark .brand-text, .dark .page-header, .dark .page-footer { color: #000 !important; border-color: #000 !important; }
+            .editable { border: none !important; padding: 2px 0; }
+            .back-cover-page { background-color: #0f172a !important; color: #e2e8f0 !important; }
+            .back-cover-page h2 { color: var(--brand-color-dark) !important; }
+            .back-cover-page .logo-text-dark { fill: white !important; }
+            .back-cover-page .logo-accent-dark { fill: var(--brand-color-dark) !important; }
+        }
+    </style>
+</head>
+<body onload="updatePageNumbers()">
+    <!-- Toolbar -->
+    <div class="document-toolbar bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg p-4 flex items-center justify-center gap-4 border-b dark:border-slate-700 no-print">
+        <span class="font-bold text-sm uppercase tracking-wider hidden md:inline">Mentorship Agreement</span>
+        <div class="flex-grow"></div>
+        <button onclick="printDocument()" class="control-btn" title="Print Document"><i class="fas fa-print"></i></button>
+        <button onclick="downloadPDF()" class="control-btn" title="Download as PDF"><i class="fas fa-file-pdf"></i></button>
+        <button onclick="shareDocument()" class="control-btn" title="Share Document"><i class="fas fa-share-alt"></i></button>
+        <button id="theme-toggle" class="control-btn" title="Toggle Theme"><i class="fas fa-moon"></i></button>
+        <button id="restore-pages-btn" onclick="restoreDefaultPages()" class="control-btn bg-amber-500 hover:bg-amber-600 hidden" title="Restore hidden pages"><i class="fas fa-undo"></i></button>
+    </div>
+
+    <!-- Cover Page -->
+    <div id="cover-page" class="document-page">
+        <div class="text-center mb-8">
+            <div class="hrhelp-logo-svg inline-block">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 60" class="hrhelp-logo-svg">
+                    <g class="logo-accent"><path d="M54.4,22.4c-5.3-5.3-13.8-5.3-19.1,0L32,25.7l-3.3-3.3c-5.3-5.3-13.8-5.3-19.1,0c-5.3,5.3-5.3,13.8,0,19.1L22,54l2.2,2.2c1,1,2.6,1,3.5,0L32,52.1l4.2-4.2l-8.4-8.4l5.3-5.3l8.4,8.4L48,38.4l9.6-9.6C62.9,29.6,59.7,25.6,54.4,22.4z"/><circle cx="12.8" cy="12.8" r="8"/><circle cx="51.2" cy="12.8" r="8"/></g>
+                    <text x="70" y="45" font-family="Roboto Slab, serif" font-size="40" font-weight="700" class="logo-text-dark">HR</text>
+                    <text x="120" y="45" font-family="Roboto Slab, serif" font-size="40" font-weight="900" class="logo-accent-dark logo-accent">Help</text>
+                </svg>
+            </div>
+        </div>
+        <div class="flex-grow flex flex-col items-center justify-center text-center">
+            <h1 class="cover-title text-5xl font-black brand-text" contenteditable="true">Mentorship Agreement</h1>
+            <p class="text-2xl mt-4" contenteditable="true">A Partnership for Growth</p>
+        </div>
+        <div class="page-footer"><span>Mentorship Agreement</span><span class="page-number">Page <span class="page-num"></span> of <span class="total-pages"></span></span></div>
+        <button onclick="togglePageVisibility(this)" class="no-print absolute top-4 right-4 text-red-500 hover:text-red-700" title="Remove this page"><i class="fas fa-times-circle"></i></button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="document-page">
+        <div class="page-header"><span class="font-bold brand-text">Mentorship Agreement</span></div>
+        
+        <h2 class="!mt-0">1. Parties</h2>
+        <div class="form-grid">
+            <div class="form-field"><label>Mentor Name</label><span class="editable" contenteditable="true">[Mentor's Name]</span></div>
+            <div class="form-field"><label>Mentor Role</label><span class="editable" contenteditable="true">[Mentor's Job Title]</span></div>
+            <div class="form-field"><label>Mentee Name</label><span class="editable" contenteditable="true">[Mentee's Name]</span></div>
+            <div class="form-field"><label>Mentee Role</label><span class="editable" contenteditable="true">[Mentee's Job Title]</span></div>
+        </div>
+
+        <h2 class="text-2xl font-bold brand-text">2. Mentee's Development Goals</h2>
+        <ul class="list-disc list-inside editable" contenteditable="true">
+            <li>To gain a deeper understanding of strategic project management.</li>
+            <li>To improve negotiation and client communication skills.</li>
+            <li>To expand my professional network within the industry.</li>
+        </ul>
+
+        <h2 class="text-2xl font-bold brand-text">3. Agreement & Commitments</h2>
+        <div class="form-grid">
+             <div class="form-field"><label>Start Date</label><span class="editable" contenteditable="true">[Date]</span></div>
+             <div class="form-field"><label>Duration</label><span class="editable" contenteditable="true">6 Months</span></div>
+             <div class="form-field"><label>Meeting Frequency</label><span class="editable" contenteditable="true">1 hour, bi-weekly</span></div>
+             <div class="form-field"><label>Primary Communication</label><span class="editable" contenteditable="true">In-person meetings, email</span></div>
+        </div>
+
+        <h2 class="text-2xl font-bold brand-text">4. Confidentiality</h2>
+        <p class="editable" contenteditable="true">Both parties agree that all conversations and information shared within this mentorship will be held in strict confidence, unless required by law or company policy to disclose.</p>
+        
+        <div class="page-footer"><span>Mentorship Agreement</span><span class="page-number">Page <span class="page-num"></span> of <span class="total-pages"></span></span></div>
+    </div>
+    
+    <!-- Sign-off Page -->
+    <div class="document-page">
+        <h2 class="!mt-0">5. Signatures</h2>
+        <p class="mb-8">By signing below, both parties commit to this agreement and to fostering a productive and supportive mentorship relationship.</p>
+        <div class="grid grid-cols-2 gap-16 mt-auto">
+            <div class="border-t-2 border-gray-400 pt-2">
+                <p class="editable" contenteditable="true">[Mentor's Name]</p>
+                <p class="text-sm text-gray-500">Mentor Signature</p>
+            </div>
+            <div class="border-t-2 border-gray-400 pt-2">
+                <p class="editable" contenteditable="true">[Date]</p>
+                <p class="text-sm text-gray-500">Date</p>
+            </div>
+            <div class="border-t-2 border-gray-400 pt-2">
+                <p class="editable" contenteditable="true">[Mentee's Name]</p>
+                <p class="text-sm text-gray-500">Mentee Signature</p>
+            </div>
+            <div class="border-t-2 border-gray-400 pt-2">
+                <p class="editable" contenteditable="true">[Date]</p>
+                <p class="text-sm text-gray-500">Date</p>
+            </div>
+        </div>
+        <div class="page-footer"><span>Mentorship Agreement</span><span class="page-number">Page <span class="page-num"></span> of <span class="total-pages"></span></span></div>
+    </div>
+
+    <!-- Back Cover Page -->
+    <div class="document-page back-cover-page">
+        <div class="text-center mb-8"><div class="hrhelp-logo-svg inline-block"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 60" class="hrhelp-logo-svg"><g class="logo-accent-dark logo-accent" fill="#60a5fa"><path d="M54.4,22.4c-5.3-5.3-13.8-5.3-19.1,0L32,25.7l-3.3-3.3c-5.3-5.3-13.8-5.3-19.1,0c-5.3,5.3-5.3,13.8,0,19.1L22,54l2.2,2.2c1,1,2.6,1,3.5,0L32,52.1l4.2-4.2l-8.4-8.4l5.3-5.3l8.4,8.4L48,38.4l9.6-9.6C62.9,29.6,59.7,25.6,54.4,22.4z"/><circle cx="12.8" cy="12.8" r="8"/><circle cx="51.2" cy="12.8" r="8"/></g><text x="70" y="45" font-family="Roboto Slab, serif" font-size="40" font-weight="700" class="logo-text-dark" fill="white">HR</text><text x="120" y="45" font-family="Roboto Slab, serif" font-size="40" font-weight="900" class="logo-accent-dark logo-accent" fill="#60a5fa">Help</text></svg></div></div>
+        <div class="flex-grow flex flex-col justify-center items-center text-center">
+            <h2 class="text-blue-400 !border-none">Our Mission</h2>
+            <p class="max-w-xl text-slate-300">To provide accessible, intelligent, and comprehensive HR solutions that empower businesses to build fair, compliant, and productive workplaces.</p>
+            <h2 class="mt-8 text-blue-400 !border-none">The Builder's Ethos</h2>
+            <div class="text-center space-y-1 text-slate-300"><div><strong>STRUCTURE:</strong> 🛡️ We build organised, logical, and robust systems.</div><div><strong>ASSEMBLE:</strong> 🧩 We bring together disparate parts to create a cohesive whole.</div><div><strong>LEGACY:</strong> 🦅 We build upon the work of our predecessors.</div><div><strong>ARCHITECT:</strong> 🏛️ We design with vision and purpose for the future.</div><div><strong>TOOL-UP:</strong> 🛠️ We empower users with the right tools and knowledge.</div><div><strong>INNOVATE:</strong> 💡 We constantly seek better ways to solve problems.</div><div><strong>SUSTAIN:</strong> 🌱 We build things that are meant to last.</div><div><strong>OBSERVE:</strong> 👁️ We pay close attention to identify needs and find solutions.</div></div>
+        </div>
+        <div class="text-xs text-slate-500 mt-auto pt-4 text-center"><span>https://salatiso.com/hrhelp/</span> | <span>hrhelp@salatiso.com</span> | <span>&copy; <span class="current-year"></span> HRHelp</span></div>
+        <div class="page-footer"><span class="page-number">Page <span class="page-num"></span> of <span class="total-pages"></span></span></div>
+    </div>
+    <script src="https://salatiso.com/hrhelp/assets/js/core/main.js"></script>
+</body>
+</html>

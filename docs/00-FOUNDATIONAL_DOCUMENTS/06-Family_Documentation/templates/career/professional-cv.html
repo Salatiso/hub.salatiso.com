@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HRHelp - Professional CV Template</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700;900&family=Manrope:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root { --brand-color: #3b82f6; --brand-color-dark: #60a5fa; }
+        body { font-family: 'Manrope', sans-serif; background-color: #f1f5f9; color: #0f172a; line-height: 1.6; }
+        .dark body { background-color: #020617; color: #e2e8f0; }
+        .document-page { width: 210mm; min-height: 297mm; margin: 1.5rem auto; background-color: #ffffff; box-shadow: 0 0 15px rgba(0,0,0,0.1); position: relative; padding: 15mm; display: flex; flex-direction: column; }
+        .dark .document-page { background-color: #1e293b; border: 1px solid #334155; }
+        .document-toolbar { position: sticky; top: 0; z-index: 1000; }
+        .page-footer { position: absolute; bottom: 10mm; left: 15mm; right: 15mm; font-size: 0.75rem; color: #64748b; text-align: center; }
+        .dark .page-footer { color: #94a3b8; }
+        .brand-text { color: var(--brand-color); }
+        .dark .brand-text { color: var(--brand-color-dark); }
+        h1, h2, h3 { font-family: 'Roboto Slab', serif; }
+        h2 { border-bottom: 2px solid var(--brand-color); padding-bottom: 4px; margin-top: 1rem; margin-bottom: 0.75rem; font-size: 1.25rem; font-weight: 700; }
+        .dark h2 { border-bottom-color: var(--brand-color-dark); }
+        .editable { border: 1px dashed #cbd5e1; padding: 2px 4px; border-radius: 4px; min-width: 50px; display: inline-block; }
+        .dark .editable { border-color: #475569; }
+        .editable:hover { border-style: solid; border-color: var(--brand-color); }
+        .cv-header { text-align: center; border-bottom: 4px solid var(--brand-color); padding-bottom: 1rem; margin-bottom: 1rem; }
+        .cv-section ul { list-style: disc; padding-left: 1.5rem; }
+        @media print {
+            body { background-color: #fff; }
+            .document-toolbar, .no-print { display: none !important; }
+            .document-page { margin: 0; box-shadow: none; border: none; min-height: 297mm; }
+            .dark .document-page { background-color: #ffffff; color: #000000; border: none; }
+            .dark body, .dark h2, .dark .brand-text, .dark .page-header, .dark .page-footer { color: #000 !important; border-color: #000 !important; }
+            .editable { border: none !important; padding: 2px 0; }
+        }
+    </style>
+</head>
+<body onload="updatePageNumbers()">
+    <!-- Toolbar -->
+    <div class="document-toolbar bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg p-4 flex items-center justify-center gap-4 border-b dark:border-slate-700 no-print">
+        <span class="font-bold text-sm uppercase tracking-wider hidden md:inline">Professional CV</span>
+        <div class="flex-grow"></div>
+        <button onclick="printDocument()" class="control-btn" title="Print Document"><i class="fas fa-print"></i></button>
+        <button onclick="downloadPDF()" class="control-btn" title="Download as PDF"><i class="fas fa-file-pdf"></i></button>
+        <button onclick="shareDocument()" class="control-btn" title="Share Document"><i class="fas fa-share-alt"></i></button>
+        <button id="theme-toggle" class="control-btn" title="Toggle Theme"><i class="fas fa-moon"></i></button>
+    </div>
+
+    <!-- CV Page 1 -->
+    <div class="document-page">
+        <header class="cv-header">
+            <h1 class="text-4xl font-black brand-text" contenteditable="true">JANE DOE</h1>
+            <p class="text-lg" contenteditable="true">Marketing Manager</p>
+            <div class="text-sm mt-2 text-slate-600 dark:text-slate-400 flex justify-center gap-x-4">
+                <span class="editable" contenteditable="true"><i class="fas fa-phone mr-1"></i>082 123 4567</span>
+                <span class="editable" contenteditable="true"><i class="fas fa-envelope mr-1"></i>jane.doe@email.com</span>
+                <span class="editable" contenteditable="true"><i class="fab fa-linkedin mr-1"></i>linkedin.com/in/janedoe</span>
+                <span class="editable" contenteditable="true"><i class="fas fa-map-marker-alt mr-1"></i>Johannesburg, South Africa</span>
+            </div>
+        </header>
+
+        <section class="cv-section">
+            <h2 class="brand-text">PROFESSIONAL SUMMARY</h2>
+            <p class="text-sm editable" contenteditable="true">Dynamic and results-oriented Marketing Manager with over 8 years of experience in developing and executing successful marketing strategies. Proven ability to drive brand growth, increase market share, and lead high-performing teams. Adept at digital marketing, data analysis, and campaign management.</p>
+        </section>
+
+        <section class="cv-section">
+            <h2 class="brand-text">PROFESSIONAL EXPERIENCE</h2>
+            <div class="mb-4">
+                <h3 class="font-bold">Marketing Manager | <span class="editable" contenteditable="true">Innovate Corp</span></h3>
+                <p class="text-sm font-bold text-slate-500">2018 - Present</p>
+                <ul class="text-sm mt-1 editable" contenteditable="true">
+                    <li>Developed and implemented a multi-channel marketing strategy that increased lead generation by 40% year-over-year.</li>
+                    <li>Managed a marketing budget of R5M, optimizing spend to achieve a 15% reduction in cost-per-acquisition.</li>
+                    <li>Led a team of 5 marketing specialists, fostering a collaborative and high-performance culture.</li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="font-bold">Marketing Specialist | <span class="editable" contenteditable="true">Data Solutions Pty</span></h3>
+                <p class="text-sm font-bold text-slate-500">2015 - 2018</p>
+                <ul class="text-sm mt-1 editable" contenteditable="true">
+                    <li>Executed digital marketing campaigns across SEO, SEM, and social media, increasing website traffic by 150%.</li>
+                    <li>Analyzed campaign performance data to provide actionable insights and recommendations for optimization.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="cv-section">
+            <h2 class="brand-text">EDUCATION</h2>
+            <div class="editable" contenteditable="true">
+                <h3 class="font-bold">BCom in Marketing Management</h3>
+                <p class="text-sm text-slate-500">University of Cape Town | 2012 - 2014</p>
+            </div>
+        </section>
+        <div class="page-footer">Page <span class="page-num"></span> of <span class="total-pages"></span></div>
+    </div>
+    
+    <!-- CV Page 2 -->
+    <div class="document-page">
+         <header class="cv-header">
+            <h1 class="text-4xl font-black brand-text" contenteditable="true">JANE DOE</h1>
+        </header>
+
+        <section class="cv-section">
+            <h2 class="brand-text">SKILLS</h2>
+            <div class="grid grid-cols-2 gap-4 text-sm editable" contenteditable="true">
+                <div>
+                    <h3 class="font-bold">Technical Skills</h3>
+                    <ul>
+                        <li>Google Analytics & Ads</li>
+                        <li>HubSpot Certified</li>
+                        <li>SEO/SEM</li>
+                        <li>Adobe Creative Suite</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-bold">Soft Skills</h3>
+                    <ul>
+                        <li>Leadership & Team Management</li>
+                        <li>Strategic Planning</li>
+                        <li>Public Speaking</li>
+                        <li>Negotiation</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <section class="cv-section">
+            <h2 class="brand-text">CERTIFICATIONS</h2>
+            <ul class="text-sm editable" contenteditable="true">
+                <li>Google Ads Certified Professional (2022)</li>
+                <li>Certified Digital Marketing Professional (DMI, 2020)</li>
+            </ul>
+        </section>
+
+        <section class="cv-section">
+            <h2 class="brand-text">REFERENCES</h2>
+            <p class="text-sm editable" contenteditable="true">Available upon request.</p>
+        </section>
+        <div class="page-footer">Page <span class="page-num"></span> of <span class="total-pages"></span></div>
+    </div>
+    <script src="https://salatiso.com/hrhelp/assets/js/core/main.js"></script>
+    <script>
+        // Override the default page numbering to remove the "HRHelp" text from the footer for a CV
+        function updatePageNumbers() {
+            const pages = Array.from(document.querySelectorAll('.document-page:not(.hidden)'));
+            pages.forEach((page, index) => {
+                const pageNumEl = page.querySelector('.page-num');
+                const totalPagesEl = page.querySelector('.total-pages');
+                if(pageNumEl) pageNumEl.textContent = index + 1;
+                if(totalPagesEl) totalPagesEl.textContent = pages.length;
+            });
+        }
+    </script>
+</body>
+</html>

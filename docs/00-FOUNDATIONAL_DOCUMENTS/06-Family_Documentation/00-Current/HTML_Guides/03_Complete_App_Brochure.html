@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>16 Apps of the Salatiso Ecosystem - Complete Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #F5F5F5;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .brochure {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 50px rgba(0,0,0,0.1);
+        }
+        
+        .cover {
+            background: linear-gradient(135deg, #1B5E20, #2E7D32, #4CAF50);
+            color: white;
+            padding: 80px 60px;
+            text-align: center;
+        }
+        
+        .cover h1 {
+            font-size: 4em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .cover p {
+            font-size: 1.8em;
+            opacity: 0.95;
+        }
+        
+        .section {
+            padding: 60px;
+        }
+        
+        .section-title {
+            font-size: 2.5em;
+            color: #2E7D32;
+            margin-bottom: 40px;
+            text-align: center;
+            border-bottom: 4px solid #4CAF50;
+            padding-bottom: 20px;
+        }
+        
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .app-detail {
+            border: 2px solid #E0E0E0;
+            border-radius: 20px;
+            padding: 30px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .app-detail:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(76,175,80,0.2);
+            border-color: #4CAF50;
+        }
+        
+        .app-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #F5F5F5;
+        }
+        
+        .app-detail-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #4CAF50, #66BB6A);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5em;
+            margin-right: 20px;
+        }
+        
+        .app-detail h3 {
+            font-size: 1.8em;
+            color: #2E7D32;
+        }
+        
+        .app-tagline {
+            color: #666;
+            font-style: italic;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+        
+        .app-description {
+            margin-bottom: 20px;
+            font-size: 1.05em;
+            line-height: 1.8;
+        }
+        
+        .app-features {
+            background: #F5F5F5;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .app-features h4 {
+            color: #388E3C;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+        
+        .app-features ul {
+            list-style: none;
+            margin-left: 10px;
+        }
+        
+        .app-features li {
+            padding: 5px 0;
+            font-size: 1.05em;
+        }
+        
+        .app-features li:before {
+            content: "• ";
+            color: #4CAF50;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .target-users {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .user-badge {
+            background: #E8F5E9;
+            color: #2E7D32;
+            padding: 6px 15px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+        
+        .integration-note {
+            background: #FFF3E0;
+            border-left: 4px solid #FF6F00;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 5px;
+            font-size: 0.95em;
+        }
+        
+        .category-section {
+            margin-bottom: 60px;
+        }
+        
+        .category-header {
+            background: linear-gradient(135deg, #4CAF50, #66BB6A);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+        
+        .print-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #4CAF50, #66BB6A);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 50px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(76,175,80,0.4);
+            transition: all 0.3s ease;
+        }
+        
+        .print-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(76,175,80,0.5);
+        }
+        
+        @media print {
+            .print-btn {
+                display: none;
+            }
+            
+            body {
+                background: white;
+            }
+            
+            .app-detail {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="brochure">
+        <div class="cover">
+            <h1>🌍 The Salatiso Ecosystem</h1>
+            <p>16 Apps, One Vision: Empowering South African Communities</p>
+            <p style="font-size: 1.2em; margin-top: 30px; opacity: 0.9;">
+                From Individual → Family → Community → Professional
+            </p>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">Complete App Portfolio</h2>
+            
+            <!-- INDIVIDUAL EMPOWERMENT -->
+            <div class="category-section">
+                <div class="category-header">👤 Individual Empowerment Apps</div>
+                
+                <div class="apps-grid">
+                    <div class="app-detail">
+                        <div class="app-header">
+                            <div class="app-detail-icon">🆔</div>
+                            <div>
+                                <h3>LifeCV</h3>
+                                <div class="app-tagline">Your Digital Identity & Life Portfolio</div>
+                            </div>
+                        </div>
+                        <div class="app-description">
+                            LifeCV is your personal digital identity that grows with you. It tracks all your achievements, skills, contributions, and experiences across the entire ecosystem. Think of it as your life resume that automatically updates itself!
+                        </div>
+                        <div class="app-features">
+                            <h4>Key Features:</h4>
+                            <ul>
+                                <li>Automatic achievement tracking</li>
+                                <li>Skills and competencies database</li>
+                                <li>Trust score and reputation system</li>
+                                <li>Verified credentials and certificates</li>
+                                <li>Portfolio export for job applications</li>
+                                <li>Cross-app activity history</li>
+                            </ul>
+                        </div>
+                        <div class="target-users">
+                            <span class="user-badge">All Ages</span>
+                            <span class="user-badge">Core Identity</span>
+                        </div>
+                        <div class="integration-note">
+                            <strong>🔗 Integration:</strong> Connects to all 15 other apps, providing single sign-on and unified identity management.
+                        </div>
+                    </div>
+                    
+                    <div class="app-detail">
+                        <div class="app-header">
+                            <div class="app-detail-icon">📚</div>
+                            <div>
+                                <h3>Sazi.Life Academy</h3>
+                                <div class="app-tagline">Learn Anything, In Any Language</div>
+                            </div>
+                        </div>
+                        <div class="app-description">
+                            A comprehensive educational platform offering courses from basic literacy to advanced professional skills. Fully multilingual with IsiXhosa, English, Afrikaans, and more. Integrates AI tutor "Sonny" for personalized learning.
+                        </div>
+                        <div class="app-features">
+                            <h4>Key Features:</h4>
+                            <ul>
+                                <li>K-12 curriculum aligned with CAPS</li>
+                                <li>Professional skills training</li>
+                                <li>Language learning (9+ SA languages)</li>
+                                <li>AI tutor assistance</li>
+                                <li>Offline content access</li>
+                                <li>Gamified learning paths</li>
+                            </ul>
+                        </div>
+                        <div class="target-users">
+                            <span class="user-badge">Children</span>
+                            <span class="user-badge">Teenagers</span>
+                            <span class="user-badge">Adults</span>
+                        </div>
+                        <div class="integration-note">
+                            <strong>🤖 Powered by Sonny:</strong> AI personalization adapts to your learning style and pace.
+                        </div>
+                    </div>
+                    
+                    <div class="app-detail">
+                        <div class="app-header">
+                            <div class="app-detail-icon">💰</div>
+                            <div>
+                                <h3>FinHelp</h3>
+                                <div class="app-tagline">Financial Planning Made Simple</div>
+                            </div>
+                        </div>
+                        <div class="app-description">
+                            Personal and household financial management tool that helps you budget, save, invest, and plan for the future. Includes debt management, savings goals, and financial literacy education.
+                        </div>
+                        <div class="app-features">
+                            <h4>Key Features:</h4>
+                            <ul>
+                                <li>Budget tracking and forecasting</li>
+                                <li>Savings goals and plans</li>
+                                <li>Debt management strategies</li>
+                                <li>Investment portfolio tracking</li>
+                                <li>Bill reminders and alerts</li>
+                                <li>Financial literacy courses</li>
+                            </ul>
+                        </div>
+                        <div class="target-users">
+                            <span class="user-badge">Young Adults</span>
+                            <span class="user-badge">Adults</span>
+                            <span class="user-badge">Families</span>
+                        </div>
+                    </div>
+                    
+                    <div class="app-detail">
+                        <div class="app-header">
+                            <div class="app-detail-icon">🛡️</div>
+                            <div>
+                                <h3>SafetyHelp</h3>
+                                <div class="app-tagline">Community Safety Network</div>
+                            </div>
+                        </div>
+                        <div class="app-description">
+                            A comprehensive safety platform connecting individuals, families, and communities with emergency services and each other. Features panic buttons, location sharing, trusted circles, and community watch coordination.
+                        </div>
+                        <div class="app-features">
+                            <h4>Key Features:</h4>
+                            <ul>
+                                <li>Emergency panic button</li>
+                                <li>Real-time location sharing</li>
+                                <li>Trusted circle management</li>
+                                <li>Community watch coordination</li>
+                                <li>Incident reporting and alerts</li>
+                                <li>Safety resource directory</li>
+                            </ul>
+                        </div>
+                        <div class="target-users">
+                            <span class="user-badge">All Ages</span>
+                            <span class="user-badge">Critical Service</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- FAMILY & COMMUNITY -->
+            <div class="category-section">
+                <div class="category-header">👨‍👩‍👧‍👦 Family & Community Apps</div>
+                
+                <div class="apps-grid">
+                    <div class="app-detail">
+                        <div class="app-header">
+                            <div class="app-detail-icon">🔄</div>
+                            <div>
+                                <h3>LifeSync</h3>
+                                <div class="app-tagline">Family Coordination Hub</div>
+                            </div>
+                        </div>
+                        <div class="app-description">
+                            The central coordination platform for families and trusted circles. Manages schedules, shared tasks, family resources, and reciprocal exchanges between family members. Powers the trust system across all apps.
+                        </div>
+                        <div class="app-features">
+                            <h4>Key Features:</h4>
+                            <ul>
+                                <li>Shared family calendar</li>
+                                <li>Task and chore management</li>
+                                <li>Reciprocal exchange tracking</li>
+                                <li>Family resource sharing</li>
+                                <li>Trust score calculation</li>
+                                <li>Family messaging and coordination</li>
+                            </ul>
+                        </div>
+                        <div class="target-users">
+                            <span class="user-badge">Families</span>
+                            <span class="user-badge">Core Platform</span>
+                        </div>
+                        <div class="integration-note">
+                            <strong>🔗 Integration Hub:</strong> Coordinates data and trust relationships across all family-facing apps.
+                        </div>
+                    </div>
+                    
+                    <div class="app-detail">
+                        <div class="app-header">
+                            <div class="app-detail-icon">👨‍👩‍👧‍👦</div>
+                            <div>
+                                <h3>FamilyValue</h3>
+                                <div class="app-tagline">Building Strong Family Bonds</div>
+                            </div>
+                        </div>
+                        <div class="app-description">
+                            Helps families strengthen relationships, preserve heritage, teach values, and build multi-generational wealth. Includes family history, values education, conflict resolution, and legacy planning.
+                        </div>
+                        <div class="app-features">
+                            <h4>Key Features:</h4>
+                            <ul>
+                                <li>Family tree and history</li>
+                                <li>Values and culture education</li>
+                                <li>Conflict resolution tools</li>
+                                <li>Family meeting planner</li>
+                                <li>Legacy and estate planning</li>
+                                <li>Multi-generational wealth building</li>
+                            </ul>
+                        </div>
+                        <div class="target-users">
+                            <span class="user-badge">All Generations</span>
+                            <span class="user-badge">Ubuntu Values</span>
+                        </div>
+                    </div>
+                    
+                    <div class="app-detail">
+                        <div class="app-header">
+                            <div class="app-detail-icon">🏠</div>
+                            <div>
+                                <h3>eKhaya</h3>
+                                <div class="app-tagline">Home & Property Management</div>
+                            </div>
+                        </div>
+                        <div class="app-description">
+                            Comprehensive property management for homeowners, tenants, and landlords. Manage maintenance, track expenses, coordinate services, and build property portfolios.
+                        </div>
+                        <div class="app-features">
+                            <h4>Key Features:</h4>
+                            <ul>
+                                <li>Maintenance tracking and scheduling</li>
+                                <li>Service provider marketplace</li>
+                                <li>Rent and lease management</li>
+                                <li>Property expense tracking</li>
+                                <li>Document storage (deeds, leases)</li>
+                                <li>Home improvement planning</li>
+                            </ul>
+                        </div>
+                        <div class="target-users">
+                            <span class="user-badge">Homeowners</span>
+                            <span class="user-badge">Landlords</span>
+                            <span class="user-badge">Tenants</span>
+                        </div>
+                    </div>
+                    
+                    <div class="app-detail">
+                        <div class="app-header">
+                            <div class="app-detail-icon">🚗</div>
+                            <div>
+                                <h3>PigeeBack</h3>
+                                <div class="app-tagline">Trusted Ridesharing Network</div>
+                            </div>
+                        </div>
+                        <div class="app-description">
+                            Community-based ridesharing platform emphasizing safety and trust. Connects drivers and passengers within trusted networks, perfect for school runs, work commutes, and community transport.
+                        </div>
+                        <div class="app-features">
+                            <h4>Key Features:</h4>
+                            <ul>
+                                <li>Trust-based matching system</li>
+                                <li>Scheduled and recurring rides</li>
+                                <li>Real-time tracking and safety</li>
+                                <li>Cost sharing and payments</li>
+                                <li>Community route planning</li>
+                                <li>Driver and passenger ratings</li>
+                            </ul>
+                        </div>
+                        <div class="target-users">
+                            <span class="user-badge">Commuters</span>
+                            <span class="user-badge">Parents</span>
+                            <span class="user-badge">Communities</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- BUSINESS & PROFESSIONAL -->
+            <div class="category-section">
+                <div class="category-header">💼 Business & Professional Apps</div>
+                
+                <div class="apps-grid">
+                    <div class="app-detail">
+                        <div class="app-header">
+                            <div class="app-detail-icon">💼</div>
+                            <div>
+                                <h3>BizHelp</h3>
+                                <div class="app-tagline">Complete Business Management</div>
+                            </div>
+                        </div>
+                        <div class="app-description">
+                            All-in-one business management platform for SMEs and entrepreneurs. Handles everything from client management and invoicing to inventory, projects, and team coordination. Includes AI assistant Sonny for business advice.
+                        </div>
+                        <div class="app-features">
+                            <h4>Key Features:</h4>
+                            <ul>
+                                <li>Client and contact management (CRM)</li>
+                                <li>Invoicing and payment tracking</li>
+                                <li>Inventory and stock management</li>
+                                <li>Project and task management</li>
+                                <li>Financial reports and analytics</li>
+                                <li>AI business advisor (Sonny)</li>
+                            </ul>
+                        </div>
+                        <div class="target-users">
+                            <span class="user-badge">Entrepreneurs</span>
+                            <span class="user-badge">SMEs</span>
+                            <span class="user-badge">Freelancers</span>
+                        </div>
+                        <div class="integration-note">
+                            <strong>🤖 Powered by Sonny:</strong> AI provides business insights, recommendations, and automation.
+                        </div>
+                    </div>
+                    
+                    <div class="app-detail">
+                        <div class="app-header">
+                            <div class="app-detail-icon">👔</div>
+                            <div>
+                                <h3>HRHelp</h3>
+                                <div class="app-tagline">Human Resources Made Easy</div>
+                            </div>
+                        </div>
+                        <div class="app-description">
+                            HR management platform for small to medium businesses. Handles recruitment, onboarding, leave management, performance reviews, payroll preparation, and compliance with SA labor laws.
+                        </div>
+                        <div class="app-features">
+                            <h4>Key Features:</h4>
+                            <ul>
+                                <li>Recruitment and applicant tracking</li>
+                                <li>Employee onboarding workflows</li>
+                                <li>Leave and attendance management</li>
+                                <li>Performance review system</li>
+                                <li>Payroll preparation tools</li>
+                                <li>Labor law compliance guides</li>
+                            </ul>
+                        </div>
+                        <div class="target-users">
+                            <span class="user-badge">Business Owners</span>
+                            <span class="user-badge">HR Managers</span>
+                        </div>
+                    </div>
+                    
+                    <div class="app-detail">
+                        <div class="app-header">
+                            <div class="app-detail-icon">📄</div>
+                            <div>
+                                <h3>DocHelp</h3>
+                                <div class="app-tagline">Smart Document Creation</div>
+                            </div>
+                        </div>
+                        <div class="app-description">
+                            AI-powered document generation platform with templates for business, legal, and personal documents. Create contracts, letters, reports, proposals, and more with intelligent assistance from Sonny.
+                        </div>
+                        <div class="app-features">
+                            <h4>Key Features:</h4>
+                            <ul>
+                                <li>500+ professional templates</li>
+                                <li>AI writing assistant (Sonny)</li>
+                                <li>Multi-language support</li>
+                                <li>Version control and collaboration</li>
+                                <li>Digital signatures</li>
+                                <li>Cloud storage and sharing</li>
+                            </ul>
+                        </div>
+                        <div class="target-users">
+                            <span class="user-badge">Professionals</span>
+                            <span class="user-badge">Businesses</span>
+                            <span class="user-badge">Individuals</span>
+                        </div>
+                    </div>
+                    
+                    <div class="app-detail">
+                        <div class="app-header">
+                            <div class="app-detail-icon">⚖️</div>
+                            <div>
+                                <h3>LegalHelp</h3>
+                                <div class="app-tagline">Legal Services Access</div>
+                            </div>
+                        </div>
+                        <div class="app-description">
+                            Connects users with legal information, services, and professionals. Includes legal document templates, lawyer directory, legal advice chatbot, and case management tools.
+                        </div>
+                        <div class="app-features">
+                            <h4>Key Features:</h4>
+                            <ul>
+                                <li>Legal information database</li>
+                                <li>Lawyer and firm directory</li>
+                                <li>Legal document templates</li>
+                                <li>AI legal advisor (basic queries)</li>
+                                <li>Case tracking and reminders</li>
+                                <li>Legal aid referrals</li>
+                            </ul>
+                        </div>
+                        <div class="target-users">
+                            <span class="user-badge">Individuals</span>
+                            <span class="user-badge">Businesses</span>
+                            <span class="user-badge">Legal Professionals</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- CIVIC & SOCIAL -->
+            <div class="category-section">
+                <div class="category-header">🔥 Civic Engagement & Social Apps</div>
+                
+                <div class="apps-grid">
+                    <div class="app-detail">
+                        <div class="app-header">
+                            <div class="app-detail-icon">🔥</div>
+                            <div>
+                                <h3>Flamea</h3>
+                                <div class="app-tagline">Social Justice Advocacy Platform</div>
+                            </div>
+                        </div>
+                        <div class="app-description">
+                            Empower communities to advocate for social justice, organize campaigns, report injustices, and hold institutions accountable. Built on principles of Ubuntu and collective action.
+                        </div>
+                        <div class="app-features">
+                            <h4>Key Features:</h4>
+                            <ul>
+                                <li>Incident reporting and documentation</li>
+                                <li>Campaign organization tools</li>
+                                <li>Petition creation and signatures</li>
+                                <li>Community mobilization</li>
+                                <li>Transparency and accountability tracking</li>
+                                <li>Resource and rights education</li>
+                            </ul>
+                        </div>
+                        <div class="target-users">
+                            <span class="user-badge">Activists</span>
+                            <span class="user-badge">Communities</span>
+                            <span class="user-badge">Advocates</span>
+                        </div>
+                    </div>
+                    
+                    <div class="app-detail">
+                        <div class="app-header">
+                            <div class="app-detail-icon">📰</div>
+                            <div>
+                                <h3>PubHelp</h3>
+                                <div class="app-tagline">Community Publishing Platform</div>
+                            </div>
+                        </div>
+                        <div class="app-description">
+                            Enables community journalism, local news, storytelling, and content publishing. Democratizes media creation with tools for writers, photographers, and citizen journalists.
+                        </div>
+                        <div class="app-features">
+                            <h4>Key Features:</h4>
+                            <ul>
+                                <li>Content creation and editing</li>
+                                <li>Multi-media support (text, photo, video)</li>
+                                <li>Community news feeds</li>
+                                <li>Fact-checking and verification</li>
+                                <li>Monetization for creators</li>
+                                <li>Distribution and analytics</li>
+                            </ul>
+                        </div>
+                        <div class="target-users">
+                            <span class="user-badge">Journalists</span>
+                            <span class="user-badge">Writers</span>
+                            <span class="user-badge">Communities</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- PLATFORM APPS -->
+            <div class="category-section">
+                <div class="category-header">🎯 Platform & Integration Apps</div>
+                
+                <div class="apps-grid">
+                    <div class="app-detail">
+                        <div class="app-header">
+                            <div class="app-detail-icon">🌍</div>
+                            <div>
+                                <h3>Salatiso.com</h3>
+                                <div class="app-tagline">Main Launchpad & Gateway</div>
+                            </div>
+                        </div>
+                        <div class="app-description">
+                            The primary web portal and entry point to the entire ecosystem. Provides unified access, cross-app navigation, ecosystem news, resources, and community features.
+                        </div>
+                        <div class="app-features">
+                            <h4>Key Features:</h4>
+                            <ul>
+                                <li>Single sign-on for all apps</li>
+                                <li>Unified dashboard</li>
+                                <li>Cross-app search and navigation</li>
+                                <li>Ecosystem news and updates</li>
+                                <li>Help and support center</li>
+                                <li>Community forum and feedback</li>
+                            </ul>
+                        </div>
+                        <div class="target-users">
+                            <span class="user-badge">All Users</span>
+                            <span class="user-badge">Entry Point</span>
+                        </div>
+                    </div>
+                    
+                    <div class="app-detail">
+                        <div class="app-header">
+                            <div class="app-detail-icon">🎯</div>
+                            <div>
+                                <h3>The Hub</h3>
+                                <div class="app-tagline">Command & Control Center</div>
+                            </div>
+                        </div>
+                        <div class="app-description">
+                            Administrative and power-user interface for managing multiple apps, advanced integrations, analytics, and ecosystem-wide operations. For business users and family coordinators.
+                        </div>
+                        <div class="app-features">
+                            <h4>Key Features:</h4>
+                            <ul>
+                                <li>Multi-app management dashboard</li>
+                                <li>Advanced analytics and reporting</li>
+                                <li>Integration configuration</li>
+                                <li>User and permission management</li>
+                                <li>Automation and workflows</li>
+                                <li>System administration tools</li>
+                            </ul>
+                        </div>
+                        <div class="target-users">
+                            <span class="user-badge">Power Users</span>
+                            <span class="user-badge">Admins</span>
+                            <span class="user-badge">Coordinators</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- HOW THEY WORK TOGETHER -->
+            <div style="background: linear-gradient(135deg, #E8F5E9, #C8E6C9); padding: 60px; border-radius: 20px; margin: 60px 0;">
+                <h2 style="color: #1B5E20; text-align: center; font-size: 2.5em; margin-bottom: 30px;">
+                    How All 16 Apps Work Together
+                </h2>
+                
+                <div style="background: white; padding: 40px; border-radius: 15px; margin-bottom: 30px;">
+                    <h3 style="color: #2E7D32; margin-bottom: 20px;">🔗 Seamless Integration</h3>
+                    <p style="font-size: 1.2em; line-height: 1.8;">
+                        All apps share your LifeCV identity and trust score. When you accomplish something in one app, it automatically updates your profile across the ecosystem. Your SafetyHelp emergency contacts work in PigeeBack rides. Your BizHelp clients can receive DocHelp documents. Everything connects!
+                    </p>
+                </div>
+                
+                <div style="background: white; padding: 40px; border-radius: 15px; margin-bottom: 30px;">
+                    <h3 style="color: #2E7D32; margin-bottom: 20px;">🤖 Powered by Sonny AI</h3>
+                    <p style="font-size: 1.2em; line-height: 1.8;">
+                        Sonny, your AI assistant, learns from your usage across all apps to provide personalized help. It can tutor you in Sazi.Life Academy, advise on business decisions in BizHelp, help draft documents in DocHelp, and answer questions anywhere in the ecosystem.
+                    </p>
+                </div>
+                
+                <div style="background: white; padding: 40px; border-radius: 15px;">
+                    <h3 style="color: #2E7D32; margin-bottom: 20px;">📊 Unified Analytics</h3>
+                    <p style="font-size: 1.2em; line-height: 1.8;">
+                        Through The Hub, you can see analytics across all your apps in one place. Track your learning progress, business growth, family coordination, community impact, and personal development holistically.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- GETTING STARTED -->
+            <div style="text-align: center; padding: 60px; background: #F5F5F5; border-radius: 20px;">
+                <h2 style="color: #2E7D32; font-size: 2.5em; margin-bottom: 30px;">Ready to Join the Ecosystem?</h2>
+                <p style="font-size: 1.3em; margin-bottom: 40px; max-width: 800px; margin-left: auto; margin-right: auto;">
+                    Start with LifeCV to create your identity, then add apps based on your needs and role. Children start with Sazi.Life Academy and SafetyHelp. Adults might begin with BizHelp and FinHelp. The ecosystem grows with you!
+                </p>
+                
+                <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 40px;">
+                    <button style="padding: 20px 50px; background: linear-gradient(135deg, #4CAF50, #66BB6A); color: white; border: none; border-radius: 30px; font-size: 1.3em; font-weight: bold; cursor: pointer;">
+                        Download Apps
+                    </button>
+                    <button style="padding: 20px 50px; background: linear-gradient(135deg, #FF6F00, #FF8F00); color: white; border: none; border-radius: 30px; font-size: 1.3em; font-weight: bold; cursor: pointer;">
+                        Learn More
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div style="background: #2E7D32; color: white; padding: 60px; text-align: center;">
+            <p style="font-size: 1.5em; font-style: italic; margin-bottom: 20px;">
+                "Umuntu ngumuntu ngabantu"
+            </p>
+            <p style="font-size: 1.2em; opacity: 0.9; margin-bottom: 40px;">
+                A person is a person through other people
+            </p>
+            <hr style="border: none; border-top: 2px solid rgba(255,255,255,0.3); margin: 40px auto; max-width: 600px;">
+            <p style="font-size: 1.3em; margin-bottom: 10px;">
+                <strong>Mlandeli Notemba Investments (Pty) Ltd</strong>
+            </p>
+            <p style="opacity: 0.8;">
+                Building South Africa's Digital Future, One App at a Time
+            </p>
+            <p style="margin-top: 30px; opacity: 0.7; font-size: 0.9em;">
+                © 2025 Salatiso Ecosystem | All Rights Reserved
+            </p>
+        </div>
+    </div>
+    
+    <button class="print-btn" onclick="window.print()">
+        📄 Print or Save PDF
+    </button>
+</body>
+</html>

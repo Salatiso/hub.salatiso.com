@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeSync Onboarding Guide - Your Complete Safety Journey</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            padding: 60px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            margin-bottom: 40px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .guide-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .guide-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .guide-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.2);
+        }
+
+        .guide-card h3 {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .guide-card .icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .guide-card p {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+
+        .steps {
+            list-style: none;
+            counter-reset: step-counter;
+        }
+
+        .steps li {
+            counter-increment: step-counter;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            position: relative;
+        }
+
+        .steps li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: -15px;
+            top: 15px;
+            background: #667eea;
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .cta-section {
+            text-align: center;
+            background: white;
+            padding: 60px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .cta-section h2 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .cta-section p {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 40px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .feature-item {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .feature-item .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .feature-item h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .feature-item p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+
+            .guide-card {
+                padding: 30px;
+            }
+
+            .guide-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Latest Updates: 2025-09-17 -->
+    <div style="background:#0ea5e9;color:#fff;padding:10px 16px;font-family:Inter,system-ui,Arial,sans-serif;text-align:center">
+        <strong>Latest Update:</strong> Onboarding save fixed with offline persistence, SA coverage redesign (Province → Town, GPS optional), and server-side reciprocity now live. Dev builds include Firebase emulators for Functions and Firestore.
+    </div>
+    <div class="container">
+        <div class="header">
+            <h1>Welcome to LifeSync</h1>
+            <p>Your comprehensive safety and trust platform. Let's get you started on your journey to safer connections and communities.</p>
+        </div>
+
+        <div class="guide-grid">
+            <div class="guide-card">
+                <h3>
+                    <div class="icon">1</div>
+                    Create Your Profile
+                </h3>
+                <p>Build your trust foundation with a comprehensive profile that establishes your identity and safety preferences.</p>
+                <ul class="steps">
+                    <li>Complete basic information (name, contact details)</li>
+                    <li>Add emergency contacts and medical information</li>
+                    <li>Set privacy preferences and trust levels</li>
+                    <li>Upload verification documents if needed</li>
+                    <li>Configure notification preferences</li>
+                </ul>
+            </div>
+
+            <div class="guide-card">
+                <h3>
+                    <div class="icon">2</div>
+                    Set Up Safety Features
+                </h3>
+                <p>Configure SafetyHelp QR codes and emergency protocols to ensure your safety in various situations.</p>
+                <ul class="steps">
+                    <li>Generate personal safety seals</li>
+                    <li>Set up emergency contact cascades</li>
+                    <li>Configure GPS tracking preferences</li>
+                    <li>Enable Bluetooth mesh networking</li>
+                    <li>Test emergency response features</li>
+                </ul>
+            </div>
+
+            <div class="guide-card">
+                <h3>
+                    <div class="icon">3</div>
+                    Build Your Network
+                </h3>
+                <p>Connect with trusted individuals and service providers while maintaining your privacy and safety.</p>
+                <ul class="steps">
+                    <li>Send and accept trust invitations</li>
+                    <li>Join community safety groups</li>
+                    <li>Verify service providers</li>
+                    <li>Set up household management</li>
+                    <li>Configure relationship contexts</li>
+                </ul>
+            </div>
+
+            <div class="guide-card">
+                <h3>
+                    <div class="icon">4</div>
+                    Explore Services
+                </h3>
+                <p>Discover and safely engage with trusted service providers in your community.</p>
+                <ul class="steps">
+                    <li>Browse verified service providers</li>
+                    <li>Check trust scores and reviews</li>
+                    <li>Book services with safety protocols</li>
+                    <li>Use SafetyHelp for service verification</li>
+                    <li>Track service delivery safely</li>
+                </ul>
+            </div>
+
+            <div class="guide-card">
+                <h3>
+                    <div class="icon">5</div>
+                    Master Advanced Features
+                </h3>
+                <p>Unlock the full potential of LifeSync with advanced safety and community features.</p>
+                <ul class="steps">
+                    <li>Set up Follow Me Home GPS tracking</li>
+                    <li>Participate in community governance</li>
+                    <li>Use multi-language safety features</li>
+                    <li>Configure custom safety protocols</li>
+                    <li>Monitor safety analytics</li>
+                </ul>
+            </div>
+
+            <div class="guide-card">
+                <h3>
+                    <div class="icon">6</div>
+                    Stay Safe & Connected
+                </h3>
+                <p>Maintain ongoing safety and build lasting trust relationships in your community.</p>
+                <ul class="steps">
+                    <li>Regular safety check-ins</li>
+                    <li>Update emergency contacts</li>
+                    <li>Review trust relationships</li>
+                    <li>Participate in community safety</li>
+                    <li>Stay updated with platform features</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="cta-section">
+            <h2>Ready to Begin Your Safety Journey?</h2>
+            <p>Join thousands of users who are already building safer communities and more trustworthy relationships through LifeSync.</p>
+
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">🛡️</div>
+                    <h4>Comprehensive Safety</h4>
+                    <p>Multi-layered safety protocols protect you in every situation</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🤝</div>
+                    <h4>Trust Building</h4>
+                    <p>Progressive trust verification for genuine relationships</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🌍</div>
+                    <h4>Community Focus</h4>
+                    <p>Local community safety and service networks</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">📱</div>
+                    <h4>Always Connected</h4>
+                    <p>Offline-capable safety features keep you protected</p>
+                </div>
+            </div>
+
+            <a href="https://lifesync-lifecv.web.app" class="btn" style="margin-top: 40px;">Start Your LifeSync Journey</a>
+        </div>
+    </div>
+
+    <script>
+        // Add smooth scrolling and interactive features
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add click tracking for analytics
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Track button clicks (would integrate with analytics service)
+                    console.log('CTA button clicked');
+                });
+            });
+
+            // Add scroll animations
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            // Initially hide cards and animate them in
+            const cards = document.querySelectorAll('.guide-card');
+            cards.forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(card);
+            });
+        });
+    </script>
+</body>
+</html>

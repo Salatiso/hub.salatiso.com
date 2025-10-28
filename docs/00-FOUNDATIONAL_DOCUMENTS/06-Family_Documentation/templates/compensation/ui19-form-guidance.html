@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HRHelp - UI-19 Form Guidance</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700;900&family=Manrope:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand-color: #3b82f6; /* blue-500 */
+            --brand-color-dark: #60a5fa; /* blue-400 */
+        }
+        body { 
+            font-family: 'Manrope', sans-serif; 
+            background-color: #f1f5f9; /* slate-100 */
+            color: #0f172a; /* slate-900 */
+            line-height: 1.6; 
+        }
+        .dark body {
+            background-color: #020617; /* slate-950 */
+            color: #e2e8f0; /* slate-200 */
+        }
+        .document-page { 
+            width: 210mm; 
+            min-height: 297mm; 
+            background-color: #ffffff; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+            margin: 2rem auto; 
+            border-radius: 0.5rem; 
+            border: 1px solid #e2e8f0; /* slate-200 */
+            display: flex; 
+            flex-direction: column; 
+            position: relative; 
+        }
+        .dark .document-page {
+            background-color: #1e293b; /* slate-800 */
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            border-color: #334155; /* slate-700 */
+        }
+        .hrhelp-logo-svg { 
+            height: 80px; 
+            width: auto; 
+        }
+        .dark .hrhelp-logo-svg .logo-text-dark { fill: white; }
+        .hrhelp-logo-svg .logo-accent { fill: var(--brand-color); }
+        .dark .hrhelp-logo-svg .logo-accent-dark { fill: var(--brand-color-dark); }
+        .page-footer { position: absolute; bottom: 1cm; left: 2cm; right: 2cm; display: flex; justify-content: space-between; font-size: 10pt; color: #64748b; }
+        .content-page { padding: 2.5cm 2cm; flex-grow: 1; position: relative; }
+        h1, h2, h3 { font-family: 'Roboto Slab', serif; color: var(--brand-color); }
+        .dark h1, .dark h2, .dark h3 { color: var(--brand-color-dark); }
+        h1 { font-size: 2.25rem; font-weight: 900; margin-bottom: 0.5rem; text-align: center; }
+        h2 { font-size: 1.75rem; margin-top: 2rem; margin-bottom: 1rem; border-bottom: 1px solid #cbd5e1; padding-bottom: 0.5rem; }
+        .dark h2 { border-color: #475569; }
+        [contenteditable="true"] { outline: 2px dashed transparent; transition: all 0.3s; padding: 0.25rem; border-radius: 0.25rem; }
+        [contenteditable="true"]:focus, [contenteditable="true"]:hover { outline-color: var(--brand-color); background-color: rgba(59, 130, 246, 0.05); }
+        .dark [contenteditable="true"]:focus, .dark [contenteditable="true"]:hover { outline-color: var(--brand-color-dark); background-color: rgba(96, 165, 250, 0.1); }
+        .action-buttons { position: fixed; top: 1rem; right: 1rem; display: flex; flex-direction: column; gap: 0.75rem; z-index: 1001; background-color: rgba(30, 41, 59, 0.8); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); padding: 1rem; border-radius: 0.75rem; border: 1px solid #334155; }
+        .action-buttons button { background-color: #334155; color: #f1f5f9; border: 1px solid #475569; border-radius: 0.5rem; padding: 0.5rem 1rem; cursor: pointer; transition: all 0.2s ease; text-align: left; display: flex; align-items: center; gap: 0.5rem; }
+        .action-buttons button:hover { background-color: var(--brand-color); border-color: var(--brand-color-dark); }
+        @media print {
+            body { background-color: white; color: black; }
+            .document-page { box-shadow: none; margin: 0; border: none; page-break-after: always; color: black; background-color: white; }
+            .action-buttons { display: none; }
+            .dark .document-page, .dark body { background-color: white !important; color: black !important; }
+            .dark h1, .dark h2, .dark h3 { color: var(--brand-color) !important; }
+            .dark .hrhelp-logo-svg .logo-text-dark { fill: black; }
+            .dark .hrhelp-logo-svg .logo-accent-dark, .hrhelp-logo-svg .logo-accent { fill: var(--brand-color) !important; }
+            [contenteditable="true"] { outline: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="action-buttons">
+        <button onclick="window.print()"><i class="fas fa-print fa-fw"></i><span>Print / Save PDF</span></button>
+        <button onclick="shareDocument()"><i class="fas fa-share-alt fa-fw"></i><span>Share Document</span></button>
+    </div>
+
+    <div class="document-page content-page">
+        <header class="mb-8 text-center">
+            <div class="hrhelp-logo-svg inline-block">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 60" class="hrhelp-logo-svg">
+                    <g class="logo-accent" fill="#3b82f6">
+                        <path d="M54.4,22.4c-5.3-5.3-13.8-5.3-19.1,0L32,25.7l-3.3-3.3c-5.3-5.3-13.8-5.3-19.1,0c-5.3,5.3-5.3,13.8,0,19.1L22,54l2.2,2.2c1,1,2.6,1,3.5,0L32,52.1l4.2-4.2l-8.4-8.4l5.3-5.3l8.4,8.4L48,38.4l9.6-9.6C62.9,29.6,59.7,25.6,54.4,22.4z"/>
+                        <circle cx="12.8" cy="12.8" r="8"/>
+                        <circle cx="51.2" cy="12.8" r="8"/>
+                    </g>
+                    <text x="70" y="45" font-family="Roboto Slab, serif" font-size="40" font-weight="700" class="logo-text-dark" fill="black">HR</text>
+                    <text x="120" y="45" font-family="Roboto Slab, serif" font-size="40" font-weight="900" class="logo-accent-dark logo-accent" fill="#3b82f6">Help</text>
+                </svg>
+            </div>
+             <h1 contenteditable="true">UI-19 Form Guidance</h1>
+        </header>
+        <main id="main-content">
+            <h2 class="!mt-0">Purpose of the UI-19 Form</h2>
+            <p contenteditable="true">The UI-19 form is a mandatory document from the Department of Labour that employers must complete for every employee upon termination of their service. This form is essential for the employee to be able to claim unemployment benefits from the Unemployment Insurance Fund (UIF).</p>
+
+            <h2 contenteditable="true">Employer's Responsibility</h2>
+            <p contenteditable="true">It is the employer's legal obligation to accurately complete and provide this form to the departing employee. Failure to do so can result in penalties and prevents the employee from accessing their benefits.</p>
+            
+            <h2 contenteditable="true">Key Sections to Complete</h2>
+            <ul class="list-disc list-inside space-y-2">
+                <li contenteditable="true"><strong>Employer Details:</strong> Ensure your company's name, address, and UIF reference number are correct.</li>
+                <li contenteditable="true"><strong>Employee Details:</strong> Fill in the employee's full name, ID number, and occupation.</li>
+                <li contenteditable="true"><strong>Employment Details:</strong> Accurately state the start date and termination date of employment.</li>
+                <li contenteditable="true"><strong>Reason for Termination:</strong> This is a critical section. Select the correct code that reflects the reason for termination (e.g., Retrenchment, Resignation, Dismissal, Contract Expired).</li>
+                <li contenteditable="true"><strong>Remuneration Information:</strong> Provide the employee's salary details for the last months of employment as required by the form.</li>
+            </ul>
+
+            <h2 contenteditable="true">Download the Official Form</h2>
+            <p>The UI-19 is an official government document and cannot be replicated. You must use the latest version provided by the Department of Labour.</p>
+            <div class="text-center my-8">
+                <a href="https://www.labour.gov.za/DocumentCenter/Forms/Unemployment%20Insurance%20Fund/UI-19-employer-declaration.pdf" target="_blank" class="inline-block bg-blue-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-600 transition-colors">
+                    <i class="fas fa-download mr-2"></i>Download Official UI-19 Form
+                </a>
+            </div>
+
+            <p class="text-sm italic text-center" contenteditable="true">Disclaimer: This page provides guidance only. Always refer to the official Department of Labour website for the latest forms and regulations.</p>
+        </main>
+        <div class="page-footer"><span>&copy; <span class="current-year"></span> HRHelp</span><span data-bind="companyName">[Company Name]</span> - Confidential<span>Page <span class="page-number">1</span> of <span class="total-pages">1</span></span></div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+             document.querySelector('.current-year').textContent = new Date().getFullYear();
+        });
+        
+        async function shareDocument() { 
+            const title = document.querySelector('h1').textContent;
+            const text = `Please review this HR document: ${title}`;
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: title,
+                        text: text,
+                        url: window.location.href
+                    });
+                } catch (err) {
+                    console.error('Error sharing:', err);
+                }
+            } else {
+                navigator.clipboard.writeText(`${text}\n${window.location.href}`).then(() => alert('Share link copied to clipboard!')).catch(err => console.error(err));
+            }
+         }
+    </script>
+</body>
+</html>

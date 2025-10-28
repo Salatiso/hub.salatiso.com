@@ -72,6 +72,7 @@ const Projects = lazy(() => import('./pages/Projects'));
 const CareerPaths = lazy(() => import('./pages/CareerPaths'));
 const Family = lazy(() => import('./pages/Family'));
 const FamilyTimeline = lazy(() => import('./pages/FamilyTimeline'));
+const GuestLogin = lazy(() => import('./pages/GuestLogin'));
 import { auth } from './config/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { getLifeCVProfile } from './utils/firebaseProfile';
@@ -198,6 +199,7 @@ function App() {
                   <Route path="/" element={<Welcome />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/auth" element={<Auth />} />
+                  <Route path="/guest-login" element={<GuestLogin />} />
                   <Route path="/onboarding" element={<Onboarding />} />
                   <Route path="/terms/reciprocity" element={<TermsOfReciprocity />} />
                   <Route path="/safety-exchange" element={<RequireAuth allowGuest feature="Safety Exchange"><SafetyExchange /></RequireAuth>} />

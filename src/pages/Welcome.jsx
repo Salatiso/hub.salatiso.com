@@ -88,7 +88,7 @@ const Welcome = () => {
           </div>
           <div className="rounded-2xl bg-white/70 dark:bg-gray-800/60 border p-6">
             <div className="text-sm text-gray-500 mb-2">
-              Part of the Salatiso Ecosystem | Powered by{' '}
+              The Heart powering the Salatiso Ecosystem | Powered by{' '}
               <a href="https://the-hub-lifecv.web.app/" target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">The Hub</a>
             </div>
             <div className="grid sm:grid-cols-2 gap-4">

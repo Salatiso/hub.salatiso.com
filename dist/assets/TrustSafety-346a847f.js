@@ -1,0 +1,1 @@
+import{j as i}from"./index-cd94da5a.js";import"./vendor-d6555781.js";import"./firebase-fb364782.js";import"./i18n-8b62e3c8.js";import"./ui-eef567c7.js";const TrustSafety=()=>i.jsx("div",{children:"Trust & Safety Page"});export{TrustSafety as default};

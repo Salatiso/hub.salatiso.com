@@ -7,10 +7,14 @@ import { useState } from 'react';
 import { WidgetsLayout } from '../components/widgets';
 import SearchBar from '../components/SearchBar';
 import { getResponsivePageWrapper, getPageContainerClasses } from '../utils/layoutHelpers';
+import { guestAccountService } from '../services/guestAccountService';
+import { GuestStatusBadge } from '../components/GuestAuthStatus';
+import { GuestUpgradePrompt } from '../components/GuestBenefitsPromo';
 
 const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const isGuest = guestAccountService.isGuestUser();
 
   const handleSearch = (query) => {
     setSearchQuery(query);
@@ -29,12 +33,17 @@ const Dashboard = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
           {/* Title and Description */}
           <div className="mb-4 sm:mb-5">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-              Dashboard
-            </h1>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-              Welcome back! Here's an overview of your LifeSync
-            </p>
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+                  Dashboard
+                </h1>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                  Welcome back! Here's an overview of your LifeSync
+                </p>
+              </div>
+              {isGuest && <GuestStatusBadge compact={true} />}
+            </div>
           </div>
 
           {/* Header Controls */}
@@ -80,6 +89,11 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <main className={getPageContainerClasses()}>
+        {isGuest && (
+          <div className="mb-6">
+            <GuestUpgradePrompt variant="banner" />
+          </div>
+        )}
         <WidgetsLayout />
       </main>
 

@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getAuth, GoogleAuthProvider, signInWithPopup, connectAuthEmulator } from 'firebase/auth';
+import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
 
@@ -22,6 +22,21 @@ export const auth = getAuth(app);
 // Initialize Firebase services
 export const db = getFirestore(app);
 export const storage = getStorage(app);
+
+// Connect to emulators in development if configured
+if (import.meta.env.DEV && import.meta.env.VITE_USE_EMULATOR === 'true') {
+  try {
+    // Connect Auth to emulator
+    connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
+    console.info('[Firebase] Connected Auth to emulator at 127.0.0.1:9099');
+
+    // Connect Firestore to emulator
+    connectFirestoreEmulator(db, '127.0.0.1', 8080);
+    console.info('[Firebase] Connected Firestore to emulator at 127.0.0.1:8080');
+  } catch (error) {
+    console.warn('[Firebase] Failed to connect to emulators:', error);
+  }
+}
 // Lazily get Functions instance to avoid initialization issues during startup
 let functionsEmulatorConnected = false;
 export const getFunctionsClient = () => {
@@ -29,14 +44,11 @@ export const getFunctionsClient = () => {
   const inst = getFunctions(app, region);
   // Connect to emulator if configured and not already connected
   try {
-    const useEmu = import.meta.env.DEV && import.meta.env.VITE_USE_FUNCTIONS_EMULATOR === '1';
+    const useEmu = import.meta.env.DEV && import.meta.env.VITE_USE_EMULATOR === 'true';
     if (useEmu && !functionsEmulatorConnected) {
-      const host = import.meta.env.VITE_FUNCTIONS_EMULATOR_HOST || 'localhost';
-      const port = Number(import.meta.env.VITE_FUNCTIONS_EMULATOR_PORT || 5001);
-      connectFunctionsEmulator(inst, host, port);
+      connectFunctionsEmulator(inst, '127.0.0.1', 5001);
       functionsEmulatorConnected = true;
-      // eslint-disable-next-line no-console
-      console.info(`[Firebase] Connected Functions to emulator at ${host}:${port}`);
+      console.info('[Firebase] Connected Functions to emulator at 127.0.0.1:5001');
     }
   } catch {}
   return inst;

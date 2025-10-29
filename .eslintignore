@@ -1,3 +1,9 @@
 dist
 node_modules
 The-Hub-React-App/**
+src/tests/**
+**/*.test.js
+**/*.test.ts
+**/*.spec.js
+firebase/
+LifeSync-legacy-app/

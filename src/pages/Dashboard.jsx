@@ -10,6 +10,7 @@ import { getResponsivePageWrapper, getPageContainerClasses } from '../utils/layo
 import { guestAccountService } from '../services/guestAccountService';
 import { GuestStatusBadge } from '../components/GuestAuthStatus';
 import { GuestUpgradePrompt } from '../components/GuestBenefitsPromo';
+import { DashboardTasks } from '../components/DashboardTasks';
 
 const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -94,6 +95,7 @@ const Dashboard = () => {
             <GuestUpgradePrompt variant="banner" />
           </div>
         )}
+        <DashboardTasks />
         <WidgetsLayout />
       </main>
 

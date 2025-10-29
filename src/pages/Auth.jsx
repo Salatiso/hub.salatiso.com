@@ -5,7 +5,8 @@ import { auth } from '../config/firebase';
 import { getLifeCVProfile } from '../utils/firebaseProfile';
 import { fromLifeCV } from '../utils/lifecvAdapter';
 import GuestContext from '../contexts/GuestContext';
-import { Mail, Lock, User, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Mail, Lock, User, ArrowLeft, CheckCircle, Users } from 'lucide-react';
+import { guestAccountService } from '../services/guestAccountService';
 
 const Auth = () => {
   const { guestData, setGuestData } = useContext(GuestContext);
@@ -298,15 +299,34 @@ const Auth = () => {
         </form>
 
         {/* Mode Toggle */}
-        <div className="mt-6 text-center">
+        <div className="mt-6 text-center space-y-3">
           <button
             onClick={() => {
               setMode(mode === 'signin' ? 'register' : 'signin');
               setError('');
             }}
-            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm"
+            className="w-full text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm"
           >
             {mode === 'signin' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+          </button>
+
+          {/* Divider */}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="px-2 bg-white dark:bg-gray-800 text-gray-500">Or</span>
+            </div>
+          </div>
+
+          {/* Local Account Button */}
+          <button
+            onClick={() => navigate('/guest-login')}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white rounded-lg transition-all font-medium"
+          >
+            <Users className="w-5 h-5" />
+            Create a Local Account
           </button>
         </div>
 

@@ -144,8 +144,11 @@ class GuestAccountService {
   /**
    * Create a new guest account
    */
-  createGuestAccount(displayName: string, email?: string): GuestAccount {
+  createGuestAccount(displayName: string, email?: string, securityOptions?: { pin?: string; usePassword?: boolean }): GuestAccount {
     const now = Date.now();
+    
+    // Import PIN encryption at top of this method to use in Phase 2
+    // PIN will be hashed using PBKDF2-SHA256 when migrating to Dexie
     const guestAccount: GuestAccount = {
       id: this.generateGuestId(),
       displayName,
@@ -153,7 +156,13 @@ class GuestAccountService {
       createdAt: now,
       expiresAt: now + GUEST_VALIDITY_MS,
       renewalCount: 0,
-      profileData: {},
+      profileData: {
+        // Store security options if provided
+        // Phase 2: These will be hashed during migration to Dexie
+        securityPin: securityOptions?.pin || null,
+        usePassword: securityOptions?.usePassword || false,
+        migrationType: 'local_account', // Mark for migration
+      },
     };
 
     // Store in localStorage

@@ -342,10 +342,12 @@ const OnboardingContent = () => {
   };
 
   const canContinue = () => {
-      // Minimal check aligned with RequireProfile: name + (email or phone) + consentGPS
+      // Minimal check aligned with RequireProfile: name + (email or phone)
+      // GPS consent is optional but required for safety features
       const fullName = (profile.firstName && profile.lastName) || (profile.providerRegistration.fullName && profile.providerRegistration.fullName.trim());
       const hasContact = (profile.emails?.some(e => (e.address || '').trim())) || (profile.phones?.some(pn => (pn.number || '').trim())) || (!!(profile.providerRegistration.email || '').trim()) || (!!(profile.providerRegistration.contactNumber || '').trim());
-      return !!fullName && !!hasContact && !!profile.consentGPS;
+      // Allow continuing even without GPS consent - just show warning
+      return !!fullName && !!hasContact;
   }
 
   if (showProfileVerification) {

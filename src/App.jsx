@@ -1,5 +1,5 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import SkipLink from './components/common/SkipLink';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicLayout from './components/layouts/PublicLayout';
@@ -39,6 +39,7 @@ const Join = lazy(() => import('./pages/Join'));
 const Smoke = lazy(() => import('./pages/Smoke'));
 const Welcome = lazy(() => import('./pages/Welcome'));
 const Auth = lazy(() => import('./pages/Auth'));
+const PinVerificationTest = lazy(() => import('./pages/PinVerificationTest'));
 import GuestContext, { useGuestData } from './contexts/GuestContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { KeyboardProvider } from './contexts/KeyboardContext';
@@ -48,6 +49,9 @@ import LocationWatcher from './components/LocationWatcher';
 import { idbGet, idbSet } from './utils/storage';
 import LoadingSpinner from './components/LoadingSpinner';
 import RequireAuth from './components/RequireAuth';
+import MigrationComponent from './components/MigrationComponent';
+import MigrationChecker from './components/MigrationChecker';
+import TestMigrationData from './components/TestMigrationData';
 
 // Stub implementation for processOutbox
 const processOutbox = async () => {
@@ -194,7 +198,15 @@ function App() {
                 <Router>
               <SkipLink />
               <RouteAwareLayout>
+                <MigrationChecker>
                 <Routes>
+                  {/* Migration route - check for Phase 1 data */}
+                  <Route path="/migrate" element={<MigrationComponent />} />
+                  <Route path="/test-migration-data" element={<TestMigrationData />} />
+
+                  {/* PIN Verification Test - Phase 2 Day 3 */}
+                  <Route path="/pin-verification-test" element={<Suspense fallback={<LoadingSpinner />}><PinVerificationTest /></Suspense>} />
+
                   {/* Public routes */}
                   <Route path="/" element={<Welcome />} />
                   <Route path="/contact" element={<Contact />} />
@@ -259,9 +271,10 @@ function App() {
                   <Route path="/family" element={<ProtectedRoute><Suspense fallback={<LoadingSpinner />}><Family /></Suspense></ProtectedRoute>} />
                   <Route path="/family-timeline" element={<ProtectedRoute><Suspense fallback={<LoadingSpinner />}><FamilyTimeline /></Suspense></ProtectedRoute>} />
                   
-                  {/* 404 Catch-all Route */}
-                  <Route path="*" element={<RequireAuth allowGuest feature="Not Found"><div className="min-h-screen flex items-center justify-center"><div className="text-center"><h1 className="text-4xl font-bold mb-4">404 - Page Not Found</h1><p className="text-gray-600 mb-6">The page you're looking for doesn't exist.</p><a href="/dashboard" className="text-blue-600 hover:underline">Return to Dashboard</a></div></div></RequireAuth>} />
+                  {/* 404 Catch-all Route - Redirect to guest-login (home) */}
+                  <Route path="*" element={<Navigate to="/guest-login" replace />} />
                 </Routes>
+                </MigrationChecker>
                 <LocationWatcher />
               </RouteAwareLayout>
             </Router>

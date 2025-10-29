@@ -1,0 +1,1 @@
+import{h as r}from"./index-286a0f84.js";import{b as i}from"./firebase-253e4471.js";async function fetchPartnerVisibility(t){if(!t)throw new Error("partnerUid is required");const e=r(i(),"computeReciprocity");return(await e({partnerUid:t})).data}export{fetchPartnerVisibility as f};

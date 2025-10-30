@@ -234,6 +234,37 @@ export function verifyPassword(
 }
 
 /**
+ * Hash a PIN and return in storage format (salt$hash)
+ * 
+ * @param pin - The PIN to hash
+ * @returns Storage format string "salt$hash"
+ */
+export function hashPinWithStorage(pin: string): string {
+  const { hash, salt } = hashPin(pin);
+  return `${salt}$${hash}`;
+}
+
+/**
+ * Verify a PIN from storage format (salt$hash)
+ * 
+ * @param pin - The PIN to verify
+ * @param stored - Storage format string "salt$hash"
+ * @returns Whether the PIN matches
+ */
+export function verifyPinFromStorage(pin: string, stored: string): boolean {
+  try {
+    const [salt, hash] = stored.split('$');
+    if (!salt || !hash) {
+      return false;
+    }
+    return verifyPin(pin, hash, salt);
+  } catch (error) {
+    console.error('PIN verification from storage failed:', error);
+    return false;
+  }
+}
+
+/**
  * Export PIN encryption utilities
  */
 export const PinEncryption = {

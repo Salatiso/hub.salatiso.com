@@ -15,7 +15,8 @@
  */
 
 import Dexie from 'dexie';
-import { encryptData, decryptData, deriveKey, encryptProfileData, decryptProfileData } from '../utils/encryption';
+import { encryptProfileData, decryptProfileData } from '../utils/encryption';
+import { hashPinWithStorage, verifyPinFromStorage } from '../security/pinEncryption';
 
 // Types & Interfaces
 export interface GuestAccount {
@@ -273,9 +274,8 @@ class GuestAccountService {
     const firstName = securityOptions?.firstName || nameParts[0] || '';
     const lastName = securityOptions?.lastName || nameParts.slice(1).join(' ') || '';
     
-    // Encrypt the PIN/password for storage
-    const encryptionKey = deriveKey(securityOptions?.pin || 'default');
-    const encryptedPin = securityOptions?.pin ? encryptData(securityOptions.pin, encryptionKey) : undefined;
+    // Hash the PIN/password for storage using PBKDF2 (Phase 2 security upgrade)
+    const hashedPin = securityOptions?.pin ? hashPinWithStorage(securityOptions.pin) : undefined;
     
     const profile: GuestAccount = {
       id: this.generateGuestId(),
@@ -286,7 +286,7 @@ class GuestAccountService {
       createdAt: now,
       expiresAt: now + (365 * 24 * 60 * 60 * 1000), // 1 year for local accounts
       renewalCount: 0,
-      securityPin: encryptedPin,
+      securityPin: hashedPin,
       usePassword: securityOptions?.usePassword || false,
       owner: { source: 'local' },
       profileData: {
@@ -327,13 +327,11 @@ class GuestAccountService {
         return false;
       }
 
-      // Decrypt and verify PIN
-      if (!profile.securityPin) return false;
+      // Verify PIN using PBKDF2 hash comparison (Phase 2 security upgrade)
+      if (!profile.securityPin || !securityOptions.pin) return false;
       
-      const encryptionKey = deriveKey(securityOptions.pin || 'default');
-      const decryptedPin = decryptData(profile.securityPin, encryptionKey);
-      
-      return decryptedPin === securityOptions.pin && profile.usePassword === securityOptions.usePassword;
+      const pinMatches = verifyPinFromStorage(securityOptions.pin, profile.securityPin);
+      return pinMatches && profile.usePassword === securityOptions.usePassword;
     } catch (error) {
       console.error('Failed to authenticate local profile:', error);
       return false;

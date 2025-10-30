@@ -1,0 +1,70 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Users collection - user data isolation
+    match /users/{userId} {
+      allow read, write: if request.auth.uid == userId;
+
+      // Verifications sub-collection
+      match /verifications/{verificationId} {
+        allow read, write: if request.auth.uid == userId;
+      }
+    }
+
+    // Profiles collection - user can read public or own
+    match /profiles/{profileId} {
+      allow read: if resource.data.isPublic == true || request.auth.uid == resource.data.userId;
+      allow write: if request.auth.uid == resource.data.userId;
+
+      // Activities sub-collection
+      match /activities/{activityId} {
+        allow read, write: if request.auth.uid == get(/databases/$(database)/documents/profiles/$(profileId)).data.userId;
+      }
+    }
+
+    // Verifications - user can read/write own
+    match /verifications/{verificationId} {
+      allow read, write: if request.auth.uid == resource.data.userId;
+
+      // History sub-collection
+      match /history/{historyId} {
+        allow read, write: if request.auth.uid == get(/databases/$(database)/documents/verifications/$(verificationId)).data.userId;
+      }
+    }
+
+    // Trust Scores - user can read own
+    match /trust_scores/{userId} {
+      allow read: if request.auth.uid == userId;
+      allow write: if false; // Calculated by Cloud Functions only
+
+      // Details sub-collection
+      match /details/{detailId} {
+        allow read: if request.auth.uid == userId;
+        allow write: if false;
+      }
+    }
+
+    // Notifications - user can read own
+    match /notifications/{notificationId} {
+      allow read, write: if request.auth.uid == resource.data.userId;
+    }
+
+    // Search History - user can read/write own
+    match /search_history/{userId} {
+      allow read, write: if request.auth.uid == userId;
+    }
+
+    // Activity Logs - user can read own
+    match /activity_logs/{userId} {
+      allow read: if request.auth.uid == userId;
+      allow write: if false; // Written by Cloud Functions only
+    }
+
+    // Analytics - user can read own
+    match /analytics/{userId} {
+      allow read: if request.auth.uid == userId;
+      allow write: if false; // Calculated by Cloud Functions only
+    }
+  }
+}

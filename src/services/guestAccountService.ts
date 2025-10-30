@@ -1,11 +1,11 @@
 /**
  * Enhanced Guest & Offline Account Service
  * Manages local guest accounts AND offline functionality for authenticated users
+ * Now supports multiple local profiles with IndexedDB storage
  *
  * Features:
- * - Create guest accounts valid for 7 days
- * - Renew guest accounts perpetually
- * - Store all user data locally
+ * - Create multiple local accounts per device
+ * - Store all user data locally in IndexedDB
  * - Migrate guest data to Firebase on upgrade
  * - Track expiration and send notifications
  * - Offline mode for authenticated users
@@ -14,13 +14,18 @@
  * @module services/guestAccountService
  */
 
+import Dexie from 'dexie';
+import { encryptData, decryptData, deriveKey, encryptProfileData, decryptProfileData } from '../utils/encryption';
+
 // Types & Interfaces
 export interface GuestAccount {
   id: string;                           // Unique guest ID (UUID)
-  displayName: string;                  // User's display name
+  displayName: string;                  // User's display name (First + Last)
+  firstName: string;                    // User's first name
+  lastName: string;                     // User's last name
   email?: string;                       // Optional email
   createdAt: number;                    // Creation timestamp (ms)
-  expiresAt: number;                    // Expiration timestamp (ms)
+  expiresAt: number;                    // Expiration timestamp (ms) - set to never for local accounts
   renewalCount: number;                 // How many times renewed
   lastRenewalAt?: number;               // Last renewal timestamp
   profileData?: {                       // User profile data
@@ -29,6 +34,12 @@ export interface GuestAccount {
     achievements?: string[];
     progress?: Record<string, any>;
     [key: string]: any;
+  };
+  securityPin?: string;                 // Hashed PIN for authentication
+  usePassword?: boolean;                // Whether using password instead of PIN
+  owner?: {                             // Owner information
+    source: 'local' | 'firebase';       // Data source
+    uid?: string;                       // Firebase UID if linked
   };
 }
 
@@ -101,11 +112,28 @@ const SYNC_RETRY_INTERVAL_MS = 30 * 1000; // Retry sync every 30 seconds
 const MAX_SYNC_RETRIES = 5; // Maximum retry attempts
 
 /**
+ * IndexedDB Database for Local Accounts
+ */
+class LocalAccountsDB extends Dexie {
+  profiles!: Dexie.Table<GuestAccount, string>;
+  profileData!: Dexie.Table<{ profileId: string; data: any }, string>;
+
+  constructor() {
+    super('LifeSyncLocalAccounts');
+    this.version(1).stores({
+      profiles: 'id, displayName, firstName, lastName, email, createdAt',
+      profileData: 'profileId, data'
+    });
+  }
+}
+
+/**
  * Enhanced Guest & Offline Account Service
  * Singleton pattern - use GuestAccountService.getInstance()
  */
 class GuestAccountService {
   private static instance: GuestAccountService;
+  private db: LocalAccountsDB;
   private statusListeners: Set<GuestStatusListener> = new Set();
   private offlineStatusListeners: Set<OfflineStatusListener> = new Set();
   private statusCheckInterval: NodeJS.Timeout | null = null;
@@ -115,6 +143,8 @@ class GuestAccountService {
   private isOnline: boolean = navigator.onLine;
 
   private constructor() {
+    this.db = new LocalAccountsDB();
+    
     // Start periodic status checks
     this.startStatusChecks();
     // Start offline/online monitoring
@@ -144,28 +174,35 @@ class GuestAccountService {
   /**
    * Create a new guest account
    */
-  createGuestAccount(displayName: string, email?: string, securityOptions?: { pin?: string; usePassword?: boolean }): GuestAccount {
+  createGuestAccount(displayName: string, email?: string, securityOptions?: { pin?: string; usePassword?: boolean; firstName?: string; lastName?: string }): GuestAccount {
     const now = Date.now();
+    
+    // Parse names from displayName if not provided separately
+    const nameParts = displayName.split(' ');
+    const firstName = securityOptions?.firstName || nameParts[0] || '';
+    const lastName = securityOptions?.lastName || nameParts.slice(1).join(' ') || '';
     
     // Import PIN encryption at top of this method to use in Phase 2
     // PIN will be hashed using PBKDF2-SHA256 when migrating to Dexie
     const guestAccount: GuestAccount = {
       id: this.generateGuestId(),
       displayName,
+      firstName,
+      lastName,
       email,
       createdAt: now,
-      expiresAt: now + GUEST_VALIDITY_MS,
+      expiresAt: now + GUEST_VALIDITY_MS, // For now, keep expiration for backwards compatibility
       renewalCount: 0,
+      securityPin: securityOptions?.pin || undefined,
+      usePassword: securityOptions?.usePassword || false,
+      owner: { source: 'local' },
       profileData: {
-        // Store security options if provided
-        // Phase 2: These will be hashed during migration to Dexie
-        securityPin: securityOptions?.pin || null,
-        usePassword: securityOptions?.usePassword || false,
-        migrationType: 'local_account', // Mark for migration
+        migrationType: 'local_account_v2', // Updated migration type
       },
     };
 
-    // Store in localStorage
+    // For now, still store in localStorage for backwards compatibility
+    // TODO: Migrate to IndexedDB
     localStorage.setItem(GUEST_ACCOUNT_KEY, JSON.stringify(guestAccount));
     localStorage.setItem(GUEST_DATA_KEY, JSON.stringify({}));
 
@@ -193,10 +230,151 @@ class GuestAccountService {
   }
 
   /**
+   * Get current profile (for GuestContext compatibility)
+   */
+  getCurrentProfile(): GuestAccount | null {
+    return this.getGuestAccount();
+  }
+
+  /**
    * Check if current user is a guest
    */
   isGuestUser(): boolean {
     return this.getGuestAccount() !== null;
+  }
+
+  /**
+   * MULTI-USER SUPPORT METHODS
+   */
+
+  /**
+   * List all local profiles
+   */
+  async listLocalProfiles(): Promise<GuestAccount[]> {
+    try {
+      const profiles = await this.db.profiles.toArray();
+      return profiles;
+    } catch (error) {
+      console.error('Failed to list local profiles:', error);
+      // Fallback to localStorage for backwards compatibility
+      const stored = localStorage.getItem(GUEST_ACCOUNT_KEY);
+      return stored ? [JSON.parse(stored)] : [];
+    }
+  }
+
+  /**
+   * Create a new local profile
+   */
+  async createLocalProfile(displayName: string, email?: string, securityOptions?: { pin?: string; usePassword?: boolean; firstName?: string; lastName?: string }): Promise<GuestAccount> {
+    const now = Date.now();
+    
+    // Parse names from displayName if not provided separately
+    const nameParts = displayName.split(' ');
+    const firstName = securityOptions?.firstName || nameParts[0] || '';
+    const lastName = securityOptions?.lastName || nameParts.slice(1).join(' ') || '';
+    
+    // Encrypt the PIN/password for storage
+    const encryptionKey = deriveKey(securityOptions?.pin || 'default');
+    const encryptedPin = securityOptions?.pin ? encryptData(securityOptions.pin, encryptionKey) : undefined;
+    
+    const profile: GuestAccount = {
+      id: this.generateGuestId(),
+      displayName,
+      firstName,
+      lastName,
+      email,
+      createdAt: now,
+      expiresAt: now + (365 * 24 * 60 * 60 * 1000), // 1 year for local accounts
+      renewalCount: 0,
+      securityPin: encryptedPin,
+      usePassword: securityOptions?.usePassword || false,
+      owner: { source: 'local' },
+      profileData: {
+        migrationType: 'local_account_v2',
+      },
+    };
+
+    try {
+      await this.db.profiles.add(profile);
+      await this.db.profileData.add({ profileId: profile.id, data: {} });
+    } catch (error) {
+      console.error('Failed to create local profile in IndexedDB, falling back to localStorage:', error);
+      // Fallback to localStorage
+      localStorage.setItem(GUEST_ACCOUNT_KEY, JSON.stringify(profile));
+      localStorage.setItem(GUEST_DATA_KEY, JSON.stringify({}));
+    }
+
+    return profile;
+  }
+
+  /**
+   * Authenticate a local profile
+   */
+  async authenticateLocalProfile(displayName: string, securityOptions: { pin?: string; usePassword?: boolean }): Promise<boolean> {
+    try {
+      const profile = await this.db.profiles.where('displayName').equals(displayName).first();
+      if (!profile) {
+        // Fallback to localStorage
+        const stored = localStorage.getItem(GUEST_ACCOUNT_KEY);
+        if (stored) {
+          const fallbackProfile = JSON.parse(stored);
+          if (fallbackProfile.displayName === displayName) {
+            const storedPin = fallbackProfile.securityPin || fallbackProfile.profileData?.securityPin;
+            const enteredPin = securityOptions.pin;
+            return storedPin === enteredPin && fallbackProfile.usePassword === securityOptions.usePassword;
+          }
+        }
+        return false;
+      }
+
+      // Decrypt and verify PIN
+      if (!profile.securityPin) return false;
+      
+      const encryptionKey = deriveKey(securityOptions.pin || 'default');
+      const decryptedPin = decryptData(profile.securityPin, encryptionKey);
+      
+      return decryptedPin === securityOptions.pin && profile.usePassword === securityOptions.usePassword;
+    } catch (error) {
+      console.error('Failed to authenticate local profile:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Get profile data for a specific profile
+   */
+  async getLocalProfileData(profileId: string): Promise<any> {
+    try {
+      const profileData = await this.db.profileData.where('profileId').equals(profileId).first();
+      return profileData?.data || {};
+    } catch (error) {
+      console.error('Failed to get local profile data:', error);
+      // Fallback to localStorage
+      const stored = localStorage.getItem(GUEST_DATA_KEY);
+      return stored ? JSON.parse(stored) : {};
+    }
+  }
+
+  /**
+   * Update profile data for a specific profile
+   */
+  async updateLocalProfileData(profileId: string, data: any): Promise<void> {
+    try {
+      await this.db.profileData.where('profileId').equals(profileId).modify({ data });
+
+      // Increment pending changes counter for sync tracking (optional)
+      try {
+        const { syncManager } = await import('./syncManager');
+        await syncManager.incrementPendingChanges(profileId);
+      } catch (syncError) {
+        // syncManager not available, skip sync tracking
+        console.warn('Sync manager not available, skipping sync tracking');
+      }
+    } catch (error) {
+      console.error('Failed to update local profile data:', error);
+      // Fallback to localStorage
+      localStorage.setItem(GUEST_DATA_KEY, JSON.stringify(data));
+    }
   }
 
   /**

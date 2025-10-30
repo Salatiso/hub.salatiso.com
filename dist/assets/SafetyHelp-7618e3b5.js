@@ -1,1 +1,0 @@
-import{j as i}from"./index-286a0f84.js";import"./vendor-c40a6ff5.js";import"./firebase-fb364782.js";import"./i18n-53393985.js";import"./ui-ac866f5b.js";const SafetyHelp=()=>i.jsx("div",{children:"SafetyHelp Page"});export{SafetyHelp as default};

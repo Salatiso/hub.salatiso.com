@@ -3,23 +3,69 @@
  * Used on all public pages (/, /auth, /contact, /onboarding, /terms/reciprocity)
  * Features:
  * - No Sidebar toggle
- * - No User menu
+ * - User authentication status
+ * - Dashboard shortcut when logged in
  * - Clean navigation to Home/Auth
  * - Theme toggle
  * - Language selector
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import { Heart, Moon, Sun } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Heart, Moon, Sun, LayoutDashboard, LogOut } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
+import { useGuestData } from '../contexts/GuestContext';
+import { auth } from '../config/firebase';
+import { signOut } from 'firebase/auth';
 import LanguageSelector from './LanguageSelector';
 
 const PublicHeader = () => {
   const { theme, toggleTheme } = useTheme();
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+  
+  // Get auth state
+  const { user: authUser } = useAuth();
+  const { guestData } = useGuestData();
+  
+  // Determine if user is logged in
+  const isLoggedIn = !!authUser || (guestData?.profileId && guestData?.profile?.firstName);
+  
+  // Get display name
+  let displayName = '';
+  if (authUser) {
+    displayName = authUser.displayName || authUser.email?.split('@')[0] || 'User';
+  } else if (guestData?.profile?.firstName) {
+    displayName = `${guestData.profile.firstName} ${guestData.profile.lastName || ''}`.trim();
+  }
+
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setUserMenuOpen(false);
+      navigate('/');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
+  // Handle click outside user menu
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setUserMenuOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
@@ -78,21 +124,60 @@ const PublicHeader = () => {
             {/* Language Selector */}
             <LanguageSelector />
 
-            {/* Login/Signup Buttons */}
-            <div className="flex items-center space-x-2">
-              <Link
-                to="/auth?mode=signin"
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-              >
-                {t('login')}
-              </Link>
-              <Link
-                to="/auth?mode=signup"
-                className="px-4 py-2 text-sm font-medium bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
-              >
-                {t('signup')}
-              </Link>
-            </div>
+            {/* Auth Controls */}
+            {isLoggedIn ? (
+              <div className="relative" ref={menuRef}>
+                <button
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
+                >
+                  <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                    Signed in as
+                  </span>
+                  <span className="text-sm font-bold text-blue-600 dark:text-blue-300 truncate max-w-xs">
+                    {displayName}
+                  </span>
+                </button>
+
+                {/* User Menu Dropdown */}
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden z-10">
+                    <button
+                      onClick={() => {
+                        navigate('/dashboard');
+                        setUserMenuOpen(false);
+                      }}
+                      className="w-full px-4 py-3 flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left border-b border-gray-200 dark:border-gray-700"
+                    >
+                      <LayoutDashboard className="w-4 h-4" />
+                      Dashboard
+                    </button>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full px-4 py-3 flex items-center gap-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Link
+                  to="/guest-login"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                >
+                  {t('login')}
+                </Link>
+                <Link
+                  to="/guest-login?mode=signup"
+                  className="px-4 py-2 text-sm font-medium bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+                >
+                  {t('signup')}
+                </Link>
+              </div>
+            )}
 
             {/* Mobile menu toggle */}
             <button

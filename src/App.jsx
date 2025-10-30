@@ -40,18 +40,19 @@ const Smoke = lazy(() => import('./pages/Smoke'));
 const Welcome = lazy(() => import('./pages/Welcome'));
 const Auth = lazy(() => import('./pages/Auth'));
 const PinVerificationTest = lazy(() => import('./pages/PinVerificationTest'));
+const GuestLogin = lazy(() => import('./pages/GuestLogin'));
 import GuestContext, { useGuestData } from './contexts/GuestContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { KeyboardProvider } from './contexts/KeyboardContext';
 import FloatingToolbar from './components/FloatingToolbar';
 const ControlCentre = lazy(() => import('./pages/ControlCentre'));
 import LocationWatcher from './components/LocationWatcher';
-import { idbGet, idbSet } from './utils/storage';
 import LoadingSpinner from './components/LoadingSpinner';
 import RequireAuth from './components/RequireAuth';
 import MigrationComponent from './components/MigrationComponent';
 import MigrationChecker from './components/MigrationChecker';
 import TestMigrationData from './components/TestMigrationData';
+import FirestoreTest from './components/FirestoreTest';
 
 // Stub implementation for processOutbox
 const processOutbox = async () => {
@@ -76,7 +77,7 @@ const Projects = lazy(() => import('./pages/Projects'));
 const CareerPaths = lazy(() => import('./pages/CareerPaths'));
 const Family = lazy(() => import('./pages/Family'));
 const FamilyTimeline = lazy(() => import('./pages/FamilyTimeline'));
-const GuestLogin = lazy(() => import('./pages/GuestLogin'));
+const Settings = lazy(() => import('./pages/Settings'));
 import { auth } from './config/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { getLifeCVProfile } from './utils/firebaseProfile';
@@ -98,37 +99,6 @@ function RouteAwareLayout({ children }) {
 
 function App() {
   const { guestData, updateGuestData, exportProfile, importProfile, queueOfflineAction, processOfflineQueue, setGuestData } = useGuestData();
-
-  // Hydrate slices from IDB on first mount
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      const [sealEvents, geofences, checkIns, geofenceLogs, checkInLogs, contacts, relationships] = await Promise.all([
-        idbGet('sealEvents'),
-        idbGet('geofences'),
-        idbGet('checkIns'),
-        idbGet('geofenceLogs'),
-        idbGet('checkInLogs'),
-        idbGet('contacts'),
-        idbGet('relationships')
-      ]);
-      if (!mounted) return;
-      updateGuestData(prev => ({
-        ...prev,
-        sealEvents: sealEvents || prev.sealEvents,
-        geofences: geofences || prev.geofences,
-        checkIns: checkIns || prev.checkIns,
-        geofenceLogs: geofenceLogs || prev.geofenceLogs,
-        checkInLogs: checkInLogs || prev.checkInLogs,
-        contacts: contacts || prev.contacts || [],
-        relationships: relationships || prev.relationships || [],
-        deviceType: prev.deviceType,
-        trustScore: prev.trustScore || 0,
-        verifications: prev.verifications || []
-      }));
-    })();
-    return () => { mounted = false; };
-  }, [updateGuestData]);
 
   // Hydrate from Firestore when authenticated
   useEffect(() => {
@@ -195,7 +165,7 @@ function App() {
           <ThemeProvider>
             <GuestContext.Provider value={{ guestData, updateGuestData, exportProfile, importProfile, queueOfflineAction, processOfflineQueue, setGuestData }}>
               <KeyboardProvider>
-                <Router>
+                <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
               <SkipLink />
               <RouteAwareLayout>
                 <MigrationChecker>
@@ -204,14 +174,18 @@ function App() {
                   <Route path="/migrate" element={<MigrationComponent />} />
                   <Route path="/test-migration-data" element={<TestMigrationData />} />
 
+                  {/* Firestore Test - Phase 3 Day 3 */}
+                  <Route path="/test-firestore" element={<FirestoreTest />} />
+
                   {/* PIN Verification Test - Phase 2 Day 3 */}
                   <Route path="/pin-verification-test" element={<Suspense fallback={<LoadingSpinner />}><PinVerificationTest /></Suspense>} />
 
                   {/* Public routes */}
                   <Route path="/" element={<Welcome />} />
                   <Route path="/contact" element={<Contact />} />
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/guest-login" element={<GuestLogin />} />
+                  <Route path="/auth" element={<Navigate to="/guest-login" replace />} />
+                  <Route path="/auth/:mode" element={<Navigate to="/guest-login" replace />} />
+                  <Route path="/guest-login" element={<Suspense fallback={<LoadingSpinner />}><GuestLogin /></Suspense>} />
                   <Route path="/onboarding" element={<Onboarding />} />
                   <Route path="/terms/reciprocity" element={<TermsOfReciprocity />} />
                   <Route path="/safety-exchange" element={<RequireAuth allowGuest feature="Safety Exchange"><SafetyExchange /></RequireAuth>} />
@@ -269,7 +243,7 @@ function App() {
                   <Route path="/projects" element={<ProtectedRoute><Suspense fallback={<LoadingSpinner />}><Projects /></Suspense></ProtectedRoute>} />
                   <Route path="/career-paths" element={<ProtectedRoute><Suspense fallback={<LoadingSpinner />}><CareerPaths /></Suspense></ProtectedRoute>} />
                   <Route path="/family" element={<ProtectedRoute><Suspense fallback={<LoadingSpinner />}><Family /></Suspense></ProtectedRoute>} />
-                  <Route path="/family-timeline" element={<ProtectedRoute><Suspense fallback={<LoadingSpinner />}><FamilyTimeline /></Suspense></ProtectedRoute>} />
+                  <Route path="/settings" element={<ProtectedRoute><Suspense fallback={<LoadingSpinner />}><Settings /></Suspense></ProtectedRoute>} />
                   
                   {/* 404 Catch-all Route - Redirect to guest-login (home) */}
                   <Route path="*" element={<Navigate to="/guest-login" replace />} />

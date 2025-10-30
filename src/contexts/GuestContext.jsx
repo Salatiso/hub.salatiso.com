@@ -1,22 +1,21 @@
 import { createContext, useState, useEffect, useCallback } from 'react';
-import { idbGet, idbSet } from '../utils/storage';
+import { guestAccountService } from '../services/guestAccountService';
 
 const GuestContext = createContext();
 
-// Enhanced Guest Context with offline capabilities
+// Enhanced Guest Context with offline capabilities and profile isolation
 export const useGuestData = () => {
   const [guestData, setGuestData] = useState(() => {
-    const saved = localStorage.getItem('lifesync_guest');
-    const base = saved ? JSON.parse(saved) : {};
+    // Start with empty state - data will be loaded based on profileId
     return {
-      profile: base.profile || {},
-      questionnaires: base.questionnaires || {},
-      syncs: base.syncs || [],
-      createdAt: base.createdAt || Date.now(),
-      renewals: base.renewals || 0,
-      lastReminder: base.lastReminder || null,
-      expired: base.expired || false,
-      offlineSettings: base.offlineSettings || {
+      profile: {},
+      questionnaires: {},
+      syncs: [],
+      createdAt: Date.now(),
+      renewals: 0,
+      lastReminder: null,
+      expired: false,
+      offlineSettings: {
         bluetoothPeerSync: true,
         bluetoothRange: 'medium',
         wifiDirect: false,
@@ -28,203 +27,158 @@ export const useGuestData = () => {
         dataRetention: '30days'
       },
       // Enhanced offline data slices
-      sealEvents: base.sealEvents || [],
-      geofences: base.geofences || [],
-      checkIns: base.checkIns || [],
-      geofenceLogs: base.geofenceLogs || [],
-      checkInLogs: base.checkInLogs || [],
-      settings: { enableHubSync: base.settings?.enableHubSync ?? false },
+      sealEvents: [],
+      geofences: [],
+      checkIns: [],
+      geofenceLogs: [],
+      checkInLogs: [],
+      settings: { enableHubSync: false },
       // Enhanced profile fields
-      deviceType: base.deviceType || null,
-      trustScore: base.trustScore || 0,
-      verifications: base.verifications || [],
+      deviceType: null,
+      trustScore: 0,
+      verifications: [],
       // Contacts and relationships
-      contacts: base.contacts || [],
-      relationships: base.relationships || [],
+      contacts: [],
+      relationships: [],
       // Offline queue for pending operations
-      offlineQueue: base.offlineQueue || [],
+      offlineQueue: [],
       // Sync status
-      lastSync: base.lastSync || null,
-      syncStatus: base.syncStatus || 'idle' // 'idle', 'syncing', 'error'
+      lastSync: null,
+      syncStatus: 'idle', // 'idle', 'syncing', 'error'
+      // Profile isolation
+      profileId: null,
+      // Loading state
+      isLoading: true
     };
   });
 
-  // Enhanced setter with offline persistence
-  const updateGuestData = useCallback((updates) => {
+  // Load profile data when profileId changes
+  const loadProfileData = useCallback(async (profileId) => {
+    if (!profileId) {
+      setGuestData(prev => ({ ...prev, isLoading: false }));
+      return;
+    }
+
+    try {
+      const profileData = await guestAccountService.getLocalProfileData(profileId);
+      setGuestData(prev => ({
+        ...prev,
+        ...profileData,
+        profileId,
+        isLoading: false
+      }));
+    } catch (error) {
+      console.error('Failed to load profile data:', error);
+      setGuestData(prev => ({ ...prev, profileId, isLoading: false }));
+    }
+  }, []);
+
+  // Effect to load data when profileId changes
+  useEffect(() => {
+    if (guestData.profileId) {
+      loadProfileData(guestData.profileId);
+    } else {
+      // Check if there's a current profile from guestAccountService
+      const currentProfile = guestAccountService.getCurrentProfile();
+      if (currentProfile) {
+        loadProfileData(currentProfile.id);
+      } else {
+        setGuestData(prev => ({ ...prev, isLoading: false }));
+      }
+    }
+  }, [guestData.profileId, loadProfileData]);
+
+  // Enhanced updateGuestData with profile isolation
+  const updateGuestData = useCallback(async (updates) => {
     setGuestData(prev => {
-      const newData = typeof updates === 'function' ? updates(prev) : { ...prev, ...updates };
+      const newData = { ...prev, ...updates };
 
-      // Persist to localStorage
-      localStorage.setItem('lifesync_guest', JSON.stringify(newData));
-
-      // Persist heavy slices to IndexedDB
-      if (newData.sealEvents) idbSet('sealEvents', newData.sealEvents);
-      if (newData.geofences) idbSet('geofences', newData.geofences);
-      if (newData.checkIns) idbSet('checkIns', newData.checkIns);
-      if (newData.geofenceLogs) idbSet('geofenceLogs', newData.geofenceLogs);
-      if (newData.checkInLogs) idbSet('checkInLogs', newData.checkInLogs);
-      if (newData.contacts) idbSet('contacts', newData.contacts);
-      if (newData.relationships) idbSet('relationships', newData.relationships);
-      if (newData.offlineQueue) idbSet('offlineQueue', newData.offlineQueue);
+      // If profileId is set, save to IndexedDB
+      if (newData.profileId) {
+        guestAccountService.updateLocalProfileData(newData.profileId, newData)
+          .catch(error => console.error('Failed to save profile data:', error));
+      }
 
       return newData;
     });
   }, []);
 
-  // Backwards-compatible setter used throughout legacy code paths
-  const setGuestDataCompat = useCallback((value) => {
-    if (typeof value === 'function') {
-      updateGuestData(value);
-    } else {
-      updateGuestData(() => value);
-    }
-  }, [updateGuestData]);
+  // Export profile function
+  const exportProfile = useCallback(async () => {
+    if (!guestData.profileId) return null;
 
-  // Hydrate from IndexedDB on mount
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      const [
-        sealEvents, geofences, checkIns, geofenceLogs, checkInLogs,
-        contacts, relationships, offlineQueue
-      ] = await Promise.all([
-        idbGet('sealEvents'), idbGet('geofences'), idbGet('checkIns'),
-        idbGet('geofenceLogs'), idbGet('checkInLogs'),
-        idbGet('contacts'), idbGet('relationships'), idbGet('offlineQueue')
-      ]);
-
-      if (!mounted) return;
-
-      updateGuestData(prev => ({
-        ...prev,
-        sealEvents: sealEvents || prev.sealEvents,
-        geofences: geofences || prev.geofences,
-        checkIns: checkIns || prev.checkIns,
-        geofenceLogs: geofenceLogs || prev.geofenceLogs,
-        checkInLogs: checkInLogs || prev.checkInLogs,
-        contacts: contacts || prev.contacts || [],
-        relationships: relationships || prev.relationships || [],
-        offlineQueue: offlineQueue || prev.offlineQueue || []
-      }));
-    })();
-    return () => { mounted = false; };
-  }, [updateGuestData]);
-
-  // Export profile functionality
-  const exportProfile = useCallback(() => {
-    const exportData = {
-      profile: guestData.profile,
-      deviceType: guestData.deviceType,
-      trustScore: guestData.trustScore,
-      verifications: guestData.verifications,
-      contacts: guestData.contacts,
-      relationships: guestData.relationships,
-      geofences: guestData.geofences,
-      checkIns: guestData.checkIns,
-      servicesRegistered: guestData.servicesRegistered,
-      role: guestData.role,
-      exportedAt: Date.now(),
-      version: '1.0'
-    };
-
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `lifesync-profile-${Date.now()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }, [guestData]);
-
-  // Import profile functionality
-  const importProfile = useCallback(async (file) => {
     try {
-      const text = await file.text();
-      const importData = JSON.parse(text);
-
-      if (!importData.version || !importData.profile) {
-        throw new Error('Invalid profile file format');
-      }
-
-      updateGuestData(prev => ({
-        ...prev,
-        profile: { ...prev.profile, ...importData.profile },
-        deviceType: importData.deviceType || prev.deviceType,
-        trustScore: importData.trustScore || prev.trustScore,
-        verifications: importData.verifications || prev.verifications,
-        contacts: importData.contacts || prev.contacts,
-        relationships: importData.relationships || prev.relationships,
-        geofences: importData.geofences || prev.geofences,
-        checkIns: importData.checkIns || prev.checkIns,
-        servicesRegistered: importData.servicesRegistered || prev.servicesRegistered,
-        role: importData.role || prev.role
-      }));
-
-      return { success: true };
+      const profileData = await guestAccountService.getLocalProfileData(guestData.profileId);
+      return {
+        ...profileData,
+        exportedAt: Date.now(),
+        version: '1.0'
+      };
     } catch (error) {
-      return { success: false, error: error.message };
+      console.error('Failed to export profile:', error);
+      return null;
     }
-  }, [updateGuestData]);
+  }, [guestData.profileId]);
 
-  // Add to offline queue
+  // Import profile function
+  const importProfile = useCallback(async (profileData) => {
+    if (!guestData.profileId) return false;
+
+    try {
+      await guestAccountService.updateLocalProfileData(guestData.profileId, profileData);
+      await loadProfileData(guestData.profileId);
+      return true;
+    } catch (error) {
+      console.error('Failed to import profile:', error);
+      return false;
+    }
+  }, [guestData.profileId, loadProfileData]);
+
+  // Queue offline action
   const queueOfflineAction = useCallback((action) => {
-    const queuedAction = {
-      id: Date.now().toString(),
-      type: action.type,
-      payload: action.payload,
-      timestamp: Date.now(),
-      status: 'pending'
-    };
-
-    updateGuestData(prev => ({
-      ...prev,
-      offlineQueue: [...(prev.offlineQueue || []), queuedAction]
-    }));
-
-    return queuedAction.id;
-  }, [updateGuestData]);
+    updateGuestData({
+      offlineQueue: [...(guestData.offlineQueue || []), {
+        ...action,
+        timestamp: Date.now(),
+        id: `action_${Date.now()}_${Math.random()}`
+      }]
+    });
+  }, [guestData.offlineQueue, updateGuestData]);
 
   // Process offline queue
   const processOfflineQueue = useCallback(async () => {
-    if (!guestData.offlineQueue?.length || guestData.syncStatus === 'syncing') return;
+    if (!guestData.offlineQueue || guestData.offlineQueue.length === 0) return;
 
-    updateGuestData(prev => ({ ...prev, syncStatus: 'syncing' }));
+    const queue = [...guestData.offlineQueue];
+    updateGuestData({ offlineQueue: [] });
 
-    try {
-      // Process queue items (this would integrate with syncQueue.js)
-      const processedIds = [];
-
-      for (const item of guestData.offlineQueue) {
-        try {
-          // Here you would implement the actual sync logic
-          // For now, just mark as completed
-          processedIds.push(item.id);
-        } catch (error) {
-          console.error('Failed to process offline action:', item, error);
-        }
+    for (const action of queue) {
+      try {
+        // Process each action (implement based on action type)
+        console.log('Processing offline action:', action);
+      } catch (error) {
+        console.error('Failed to process offline action:', error);
+        // Re-queue failed actions
+        queueOfflineAction(action);
       }
-
-      // Remove processed items
-      updateGuestData(prev => ({
-        ...prev,
-        offlineQueue: prev.offlineQueue.filter(item => !processedIds.includes(item.id)),
-        lastSync: Date.now(),
-        syncStatus: 'idle'
-      }));
-    } catch (error) {
-      updateGuestData(prev => ({ ...prev, syncStatus: 'error' }));
-      console.error('Offline queue processing failed:', error);
     }
-  }, [guestData.offlineQueue, guestData.syncStatus, updateGuestData]);
+  }, [guestData.offlineQueue, updateGuestData, queueOfflineAction]);
+
+  // Compatibility setter for existing code
+  const setGuestDataCompat = useCallback((data) => {
+    updateGuestData(data);
+  }, [updateGuestData]);
 
   return {
     guestData,
     updateGuestData,
+    setGuestData: updateGuestData,
     exportProfile,
     importProfile,
     queueOfflineAction,
     processOfflineQueue,
-    setGuestData: setGuestDataCompat
+    loadProfileData,
+    setGuestDataCompat
   };
 };
 

@@ -12,10 +12,12 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Heart, Moon, Sun, Menu, X, LogOut, Settings, User as UserIcon, Bell } from 'lucide-react';
+import { Heart, Moon, Sun, Menu, X, LogOut, Settings, User as UserIcon, Bell, Home } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useGuestData } from '../contexts/GuestContext';
+import { guestAccountService } from '../services/guestAccountService';
 import { signOut } from 'firebase/auth';
 import { auth } from '../config/firebase';
 import LanguageSelector from './LanguageSelector';
@@ -24,15 +26,28 @@ const DashboardHeader = ({ onSidebarToggle, sidebarCollapsed }) => {
   const { theme, toggleTheme } = useTheme();
   const { t } = useTranslation();
   const { user, loading } = useAuth();
+  const { guestData } = useGuestData();
   const navigate = useNavigate();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const userMenuRef = useRef(null);
   const notificationsRef = useRef(null);
 
+  // Check if user is a guest
+  const isGuest = guestAccountService.isGuestUser();
+  const isAuthenticated = user || isGuest;
+
   const handleLogout = async () => {
     try {
-      await signOut(auth);
+      if (isGuest) {
+        // For guest logout, clear guest data
+        localStorage.removeItem('lifesync_guest');
+        localStorage.removeItem('lifesync_guest_account');
+        localStorage.removeItem('lifesync_guest_data');
+      } else {
+        // For Firebase logout
+        await signOut(auth);
+      }
       setShowUserMenu(false);
       navigate('/');
     } catch (error) {
@@ -56,9 +71,29 @@ const DashboardHeader = ({ onSidebarToggle, sidebarCollapsed }) => {
   }, []);
 
   // Get user display info
-  const userDisplayName = user?.displayName || user?.email?.split('@')[0] || 'User';
-  const userEmail = user?.email || '';
-  const userPhotoURL = user?.photoURL;
+  let userDisplayName = 'User';
+  let userEmail = '';
+  let userPhotoURL = '';
+
+  if (isGuest) {
+    // Use guest profile data from context
+    if (guestData?.profile) {
+      userDisplayName = guestData.profile.firstName && guestData.profile.lastName
+        ? `${guestData.profile.firstName} ${guestData.profile.lastName}`
+        : 'Guest User';
+      userEmail = guestData.profile.emails?.[0]?.address || 'local@lifesync.local';
+      userPhotoURL = '';
+    } else {
+      userDisplayName = 'Guest User';
+      userEmail = 'local@lifesync.local';
+      userPhotoURL = '';
+    }
+  } else {
+    // Use Firebase user data
+    userDisplayName = user?.displayName || user?.email?.split('@')[0] || 'User';
+    userEmail = user?.email || '';
+    userPhotoURL = user?.photoURL || '';
+  }
 
   return (
     <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30">
@@ -81,9 +116,9 @@ const DashboardHeader = ({ onSidebarToggle, sidebarCollapsed }) => {
             </button>
 
             {/* Brand - Hidden on mobile */}
-            <Link to="/dashboard" className="hidden sm:flex items-center space-x-2 hover:opacity-80 transition-opacity">
+            <Link to="/" className="hidden sm:flex items-center space-x-2 hover:opacity-80 transition-opacity" title="LifeSync Home">
               <Heart className="h-6 w-6 text-red-500" />
-              <span className="text-lg font-bold text-gray-900 dark:text-white">LifeSync</span>
+              <span className="text-lg font-bold text-gray-900 dark:text-white">LifeSync Home</span>
             </Link>
           </div>
 
@@ -136,7 +171,7 @@ const DashboardHeader = ({ onSidebarToggle, sidebarCollapsed }) => {
             <LanguageSelector />
 
             {/* User Menu */}
-            {!loading && user && (
+            {!loading && isAuthenticated && (
               <div ref={userMenuRef} className="relative">
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
@@ -157,6 +192,11 @@ const DashboardHeader = ({ onSidebarToggle, sidebarCollapsed }) => {
                   <span className="hidden sm:inline text-sm font-medium text-gray-700 dark:text-gray-300">
                     {userDisplayName}
                   </span>
+                  {isGuest && (
+                    <span className="hidden sm:inline text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 rounded-full font-medium">
+                      Local
+                    </span>
+                  )}
                 </button>
 
                 {/* User Menu Dropdown */}

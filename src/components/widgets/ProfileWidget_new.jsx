@@ -23,13 +23,14 @@ export default function ProfileWidget() {
   let displayEmail = '';
 
   if (isGuest) {
-    // Use guest profile data from context
-    if (guestData?.profile) {
-      displayName = guestData.profile.firstName && guestData.profile.lastName
-        ? `${guestData.profile.firstName} ${guestData.profile.lastName}`
-        : 'Guest User';
-      displayEmail = guestData.profile.emails?.[0]?.address || 'local@lifesync.local';
-
+    // Use guest profile data
+    const guestAccount = guestAccountService.getGuestAccount();
+    if (guestAccount) {
+      displayName = guestAccount.firstName && guestAccount.lastName 
+        ? `${guestAccount.firstName} ${guestAccount.lastName}`
+        : guestAccount.displayName || 'Guest User';
+      displayEmail = guestAccount.email || 'local@lifesync.local';
+      
       displayProfile = {
         displayName: displayName,
         email: displayEmail,
@@ -37,8 +38,8 @@ export default function ProfileWidget() {
         bio: guestData?.profile?.bio || null,
         verificationStatus: guestData?.verifications?.length > 0 ? 'verified' : 'unverified',
         photoURL: null,
-        createdAt: new Date(guestData?.createdAt || Date.now()),
-        updatedAt: new Date(guestData?.lastUpdated || Date.now()),
+        createdAt: new Date(guestAccount.createdAt),
+        updatedAt: new Date(guestData?.lastUpdated || guestAccount.createdAt),
       };
     } else {
       displayProfile = {
@@ -48,8 +49,6 @@ export default function ProfileWidget() {
         bio: null,
         verificationStatus: 'unverified',
         photoURL: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       };
     }
   } else {
@@ -59,13 +58,13 @@ export default function ProfileWidget() {
     displayError = profileError;
   }
 
-  if (profileError) {
+  if (displayError) {
     return (
       <WidgetCard icon={AlertCircle} title="Profile" className="col-span-full sm:col-span-2 lg:col-span-1">
         <div className="flex items-center justify-center h-40">
           <div className="text-center text-red-600">
             <AlertCircle className="w-8 h-8 mx-auto mb-2" />
-            <p className="text-sm">{profileError}</p>
+            <p className="text-sm">{displayError}</p>
           </div>
         </div>
       </WidgetCard>
@@ -103,6 +102,11 @@ export default function ProfileWidget() {
                 <span className="inline-block px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 text-xs rounded-full font-medium">
                   {displayProfile.verificationStatus || 'unverified'}
                 </span>
+                {isGuest && (
+                  <span className="inline-block px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200 text-xs rounded-full font-medium">
+                    Local
+                  </span>
+                )}
               </div>
             </div>
           </div>

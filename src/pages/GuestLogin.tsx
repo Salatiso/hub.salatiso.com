@@ -164,13 +164,27 @@ export const GuestLoginPage: React.FC<GuestLoginPageProps> = ({
   const handleGoogleSignIn = async () => {
     try {
       setIsLoading(true);
+      setError('');
       const provider = new GoogleAuthProvider();
       provider.addScope('profile');
       provider.addScope('email');
       await signInWithRedirect(auth, provider);
-    } catch (err) {
-      setError('Failed to sign in with Google. Please try again.');
+    } catch (err: any) {
       console.error('Google signin error:', err);
+      
+      // Handle specific OAuth errors
+      if (err?.code === 'auth/requests-from-referer-are-blocked') {
+        setError('⚠️ LOCALHOST NOT AUTHORIZED: Please add localhost:3000 to Firebase Console > Authentication > Authorized Domains. See GOOGLE_OAUTH_LOCALHOST_FIX.md for instructions.');
+      } else if (err?.code === 'auth/operation-not-supported-in-this-environment') {
+        setError('⚠️ BROWSER ISSUE: Third-party cookies might be blocked. Try using a different browser or incognito mode.');
+      } else if (err?.code === 'auth/popup-blocked') {
+        setError('⚠️ POPUP BLOCKED: Allow popups for this site and try again.');
+      } else if (err?.message?.includes('requests-from-referer')) {
+        setError('⚠️ LOCALHOST NOT AUTHORIZED: Please add localhost:3000 to Firebase Console > Authentication > Authorized Domains. See GOOGLE_OAUTH_LOCALHOST_FIX.md for instructions.');
+      } else {
+        setError(`Failed to sign in with Google: ${err?.message || 'Unknown error'}`);
+      }
+      
       setIsLoading(false);
     }
   };
